@@ -1,14 +1,15 @@
 package res
 
 import (
+	"glow-gui/glow"
 	"strings"
 
 	"fyne.io/fyne/v2"
 )
 
-var AppID = "glow-compose"
+var AppID = "com.centretown.glow.preferences"
 var WindowTitle = "Light Effects"
-var WindowSize = fyne.Size{Width: 400, Height: 500}
+var WindowSize = fyne.Size{Width: 600, Height: 400}
 
 type ImageID uint16
 
@@ -70,6 +71,8 @@ const (
 	HueLabel
 	SaturationLabel
 	ValueLabel
+	ChooseEffectLabel
+	LightEffectLabel
 )
 
 var entryLabels = []string{
@@ -78,11 +81,46 @@ var entryLabels = []string{
 	"Begin At", "End At",
 	"Origin", "Orientation",
 	"Colors", "Hue", "Saturation", "Value",
+	"Choose Effect", "Light Effect",
 }
 
 func (id LabelID) String() string {
 	return entryLabels[id]
 }
+
 func (id LabelID) PlaceHolder() string {
 	return strings.ToLower(entryLabels[id])
+}
+
+type OrientationID glow.Orientation
+
+var orientationLabels = []string{
+	"Horizontal",
+	"Vertical",
+	"Diagonal",
+}
+
+func (id OrientationID) String() string {
+	return orientationLabels[id]
+}
+
+func (id OrientationID) PlaceHolder() string {
+	return strings.ToLower(orientationLabels[id])
+}
+
+type OriginID glow.Origin
+
+var originLabels = []string{
+	"Top Left",
+	"Top Right",
+	"Bottom Left",
+	"Bottom Right",
+}
+
+func (id OriginID) String() string {
+	return originLabels[id]
+}
+
+func (id OriginID) PlaceHolder() string {
+	return strings.ToLower(originLabels[id])
 }

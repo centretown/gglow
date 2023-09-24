@@ -1,10 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"glow-gui/res"
+	"glow-gui/store"
 	"glow-gui/ui"
+	"os"
 
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/theme"
 )
 
 func main() {
@@ -14,10 +18,16 @@ func main() {
 		app.SetIcon(icon)
 	}
 
-	window := app.NewWindow(res.WindowTitle)
-	uiContent := ui.ContentManager{}
-	window.SetContent(uiContent.BuildContent(window))
+	app.Settings().SetTheme(theme.DarkTheme())
 
+	err = store.Setup()
+	if err != nil {
+		fmt.Println("failed to setup store")
+		os.Exit(1)
+	}
+
+	window := app.NewWindow(res.WindowTitle)
+	ui.NewUi(app, window)
 	window.Resize(res.WindowSize)
 	window.ShowAndRun()
 }

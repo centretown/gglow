@@ -58,7 +58,11 @@ func (layer *Layer) Validate() error {
 	if layer.Scan > layer.Length {
 		layer.Scan = layer.Length
 	}
+	if layer.End == 0 {
+		layer.End = 100
+	}
 	layer.setBounds()
+
 	return nil
 }
 
@@ -95,7 +99,6 @@ func (layer *Layer) Spin(light Light) {
 func (layer *Layer) updateScanPosition() (startAt, endAt uint16) {
 	startAt = layer.position
 	endAt = layer.position + layer.Scan
-
 	layer.position++
 	if layer.position >= layer.last {
 		layer.position = layer.first

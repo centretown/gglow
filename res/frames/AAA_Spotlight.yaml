@@ -1,0 +1,6 @@
+layers:
+  - chroma:
+      colors:
+        - hue: 0
+          saturation: 0
+          value: 100

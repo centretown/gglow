@@ -1,0 +1,29 @@
+layers:
+  - grid: 
+      origin: 0
+      orientation: 1
+    chroma:
+      colors:
+        - hue: 30
+          saturation: 80
+          value: 100
+        - hue: 330
+          saturation: 80
+          value: 100
+    begin: 0
+    end: 50
+    hue_shift: 1
+  - grid: 
+      origin: 0
+      orientation: 1
+    chroma:
+      colors:
+        - hue: 200
+          saturation: 80
+          value: 100
+        - hue: 330
+          saturation: 80
+          value: 100
+    begin: 50
+    end: 100
+    hue_shift: -1

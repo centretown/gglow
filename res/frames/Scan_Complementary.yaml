@@ -1,0 +1,14 @@
+layers:
+  - hue_shift: 1
+    chroma:
+      colors:
+        - hue: 0
+          saturation: 100
+          value: 100
+  - hue_shift: 1
+    scan: 3
+    chroma:
+      colors:
+        - hue: 180
+          saturation: 100
+          value: 100

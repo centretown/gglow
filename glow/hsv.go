@@ -102,6 +102,9 @@ func (hsv *HSV) ToGradient(target HSV, index uint16, length uint16) HSV {
 	}
 	ratio := float32(index) / float32(length)
 	hue := hsv.Hue + (target.Hue-hsv.Hue)*ratio
+
+	hue = float32(math.Mod(float64(hue), float64(HueMax)))
+
 	saturation := hsv.Saturation + (target.Saturation-hsv.Saturation)*ratio
 	value := hsv.Value + (target.Value-hsv.Value)*ratio
 	return HSV{hue, saturation, value}

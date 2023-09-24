@@ -36,8 +36,8 @@ func (frame *Frame) Setup(length, rows uint16, interval uint32) error {
 }
 
 func (frame *Frame) Spin(light Light) {
-	for _, layer := range frame.Layers {
-		layer.Spin(light)
+	for i := range frame.Layers {
+		frame.Layers[i].Spin(light)
 	}
 }
 

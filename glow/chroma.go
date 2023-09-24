@@ -67,12 +67,17 @@ func (chroma *Chroma) Update() {
 	var hsv *HSV
 	for i := range chroma.Colors {
 		hsv = &chroma.Colors[i]
+		// hue = int(hsv.Hue) + chroma.HueShift
+
 		hsv.Hue += float32(chroma.HueShift)
-		if hsv.Hue > 360.0 {
-			hsv.Hue = 0.0
-		} else if hsv.Hue < 0.0 {
-			hsv.Hue = 360.0
+
+		if hsv.Hue >= HueMax {
+			hsv.Hue = 360 - hsv.Hue
+		} else if hsv.Hue < 0 {
+			hsv.Hue = 360 + hsv.Hue
 		}
+
+		fmt.Println(i, "hue update", hsv.Hue, chroma.HueShift)
 	}
 
 	chroma.quick_color = chroma.Colors[0].ToRGB()

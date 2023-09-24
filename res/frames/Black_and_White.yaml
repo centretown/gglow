@@ -1,0 +1,12 @@
+layers:
+  - chroma:
+      colors:
+        - hue: 0
+          saturation: 0
+          value: 100
+  - scan: 1
+    chroma:
+      colors:
+        - hue: 0
+          saturation: 0
+          value: 0

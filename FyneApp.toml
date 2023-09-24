@@ -1,6 +1,6 @@
 [Details]
   Icon = "Icon.png"
-  Name = "Glow Composer"
-  ID = "centretown.glowui"
+  Name = "Effects Editor"
+  ID = "com.centretown.glow"
   Version = "0.1.0"
   Build = 1
