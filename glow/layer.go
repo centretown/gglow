@@ -90,10 +90,11 @@ func (layer *Layer) Spin(light Light) {
 	}
 
 	for i := startAt; i < endAt; i++ {
-		light.Set(layer.Grid.Map(i), layer.Chroma.Map(i))
+		x := layer.first + (i % (layer.last - layer.first))
+		light.Set(layer.Grid.Map(x), layer.Chroma.Map(x))
 	}
 
-	layer.Chroma.Update()
+	layer.Chroma.UpdateColors()
 }
 
 func (layer *Layer) updateScanPosition() (startAt, endAt uint16) {

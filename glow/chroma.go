@@ -59,7 +59,7 @@ func (chroma *Chroma) Map(index uint16) color.RGBA {
 	return result.ToRGB()
 }
 
-func (chroma *Chroma) Update() {
+func (chroma *Chroma) UpdateColors() {
 	if chroma.HueShift == 0 {
 		return
 	}
@@ -67,7 +67,6 @@ func (chroma *Chroma) Update() {
 	var hsv *HSV
 	for i := range chroma.Colors {
 		hsv = &chroma.Colors[i]
-		// hue = int(hsv.Hue) + chroma.HueShift
 
 		hsv.Hue += float32(chroma.HueShift)
 
@@ -77,7 +76,7 @@ func (chroma *Chroma) Update() {
 			hsv.Hue = 360 + hsv.Hue
 		}
 
-		fmt.Println(i, "hue update", hsv.Hue, chroma.HueShift)
+		// fmt.Println(i, "hue update", hsv.Hue, chroma.HueShift)
 	}
 
 	chroma.quick_color = chroma.Colors[0].ToRGB()

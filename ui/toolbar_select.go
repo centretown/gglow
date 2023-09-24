@@ -6,7 +6,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -16,7 +15,6 @@ type ToolbarSelect struct {
 }
 
 func (t *ToolbarSelect) ToolbarObject() fyne.CanvasObject {
-	t.icon = widget.NewIcon(theme.DocumentIcon())
 	hbox := container.NewHBox(t.icon, t.Chooser)
 	return hbox
 }
@@ -26,5 +24,6 @@ func NewToolbarSelect(ui *Ui) (t *ToolbarSelect) {
 	options := store.LookUpList()
 	t.Chooser = widget.NewSelect(options, ui.OnChangeFrame)
 	t.Chooser.PlaceHolder = res.ChooseEffectLabel.PlaceHolder()
+	t.icon = ui.frameIcon
 	return t
 }

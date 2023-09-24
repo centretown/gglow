@@ -8,7 +8,9 @@ layers:
         - hue: 180
           saturation: 100
           value: 100
-  - scan: 1
+    grid:
+      orientation: 2
+  - scan: 5
     hue_shift: 1
     chroma:
       colors:
@@ -18,3 +20,5 @@ layers:
         - hue: 0
           saturation: 100
           value: 100
+    grid:
+      orientation: 2
