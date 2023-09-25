@@ -1,9 +1,6 @@
 package ui
 
 import (
-	"glow-gui/res"
-	"glow-gui/store"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -21,9 +18,7 @@ func (t *ToolbarSelect) ToolbarObject() fyne.CanvasObject {
 
 func NewToolbarSelect(ui *Ui) (t *ToolbarSelect) {
 	t = &ToolbarSelect{}
-	options := store.LookUpList()
-	t.Chooser = widget.NewSelect(options, ui.OnChangeFrame)
-	t.Chooser.PlaceHolder = res.ChooseEffectLabel.PlaceHolder()
+	t.Chooser = NewFrameSelect(ui)
 	t.icon = ui.frameIcon
 	return t
 }

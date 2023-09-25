@@ -27,7 +27,11 @@ func main() {
 	}
 
 	window := app.NewWindow(res.WindowTitle)
-	ui.NewUi(app, window)
+
+	gui := ui.NewUi(app, window)
+	defer gui.OnExit()
+
 	window.Resize(res.WindowSize)
 	window.ShowAndRun()
+
 }

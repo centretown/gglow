@@ -19,6 +19,7 @@ const (
 type LightStrip struct {
 	widget.DisableableWidget
 	background *canvas.Rectangle
+	colorOff   color.RGBA
 	lights     []*canvas.Circle
 	length     float64
 	rows       float64
@@ -41,12 +42,15 @@ func (strip *LightStrip) Set(i uint16, color color.RGBA) {
 
 func NewLightStrip(length, rows, interval float64) *LightStrip {
 	strip := &LightStrip{
-		background: canvas.NewRectangle(theme.InputBackgroundColor()),
+		background: canvas.NewRectangle(theme.ShadowColor()),
 		length:     length,
 		rows:       rows,
 		interval:   interval,
 		diameter:   defaultDiameter,
 	}
+	hsv := glow.HSV{Hue: 0, Saturation: .1, Value: .2}
+	strip.colorOff = hsv.ToRGB()
+
 	strip.background.CornerRadius = defaultDiameter
 	// strip.background.StrokeColor = theme.ShadowColor()
 	// strip.background.StrokeWidth = 1
@@ -55,10 +59,18 @@ func NewLightStrip(length, rows, interval float64) *LightStrip {
 	return strip
 }
 
+func (strip *LightStrip) TurnOff() {
+	for i := range strip.lights {
+		l := strip.lights[i]
+		l.FillColor = strip.colorOff
+		l.Refresh()
+	}
+}
+
 func (strip *LightStrip) buildLights() {
 	strip.lights = make([]*canvas.Circle, int(strip.length))
 	for i := range strip.lights {
-		circle := strip.newLight(color.RGBA{30, 130, 255, 255})
+		circle := strip.newLight(strip.colorOff)
 		strip.lights[i] = circle
 	}
 }

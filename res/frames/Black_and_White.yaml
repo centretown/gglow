@@ -4,7 +4,7 @@ layers:
         - hue: 0
           saturation: 0
           value: 100
-  - scan: 1
+  - scan: 5
     chroma:
       colors:
         - hue: 0

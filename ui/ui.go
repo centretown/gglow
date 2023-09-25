@@ -34,9 +34,11 @@ type Ui struct {
 	window fyne.Window
 	app    fyne.App
 
-	appImage  *canvas.Image
-	frameIcon *widget.Icon
-	layerIcon *widget.Icon
+	appImage   *canvas.Image
+	frameIcon  *widget.Icon
+	layerIcon  *widget.Icon
+	gridIcon   *widget.Icon
+	chromaIcon *widget.Icon
 }
 
 func NewUi(app fyne.App, window fyne.Window) *Ui {
@@ -47,6 +49,10 @@ func NewUi(app fyne.App, window fyne.Window) *Ui {
 	}
 	window.SetContent(gui.buildContent())
 	return gui
+}
+
+func (ui *Ui) OnExit() {
+	ui.stopSpinner()
 }
 
 func (ui *Ui) stopSpinner() {
@@ -78,8 +84,10 @@ func (ui *Ui) startSpinner() {
 
 func (ui *Ui) buildContent() *fyne.Container {
 	ui.appImage = canvas.NewImageFromFile(res.GooseNoirImage.String())
-	ui.frameIcon = widget.NewIcon(theme.DocumentIcon())
-	ui.layerIcon = widget.NewIcon(theme.GridIcon())
+	ui.frameIcon = widget.NewIcon(theme.ListIcon())
+	ui.layerIcon = widget.NewIcon(theme.ListIcon())
+	ui.gridIcon = widget.NewIcon(theme.GridIcon())
+	ui.chromaIcon = widget.NewIcon(theme.ColorChromaticIcon())
 	// title := widget.NewRichTextWithText(res.ChooseEffectLabel.String())
 	ui.title = widget.NewLabel(res.LightEffectLabel.String())
 	ui.title.Alignment = fyne.TextAlignCenter
@@ -89,8 +97,12 @@ func (ui *Ui) buildContent() *fyne.Container {
 	ui.toolBox = ui.toolbar()
 	tc := container.New(layout.NewCenterLayout(), ui.toolBox)
 
+	fs := NewFrameSelect(ui)
+	hc := container.NewHBox(ui.frameIcon, fs)
+	sc := container.New(layout.NewCenterLayout(), hc)
+
 	ui.list = ui.NewLayerList()
-	top := container.NewVBox(ui.title, ui.strip, tc)
+	top := container.NewVBox(ui.title, ui.strip, tc, sc)
 
 	ui.mainBox = container.NewBorder(top, nil, nil, nil, ui.list)
 	ui.stop = make(chan int)
@@ -116,7 +128,7 @@ func (ui *Ui) SetFrame(frame *glow.Frame) {
 func (ui *Ui) toolbar() (t *widget.Toolbar) {
 	var items []widget.ToolbarItem
 
-	choose := NewToolbarSelect(ui)
+	// choose := NewToolbarSelect(ui)
 	create := widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {})
 	sep := widget.NewToolbarSeparator()
 	play := widget.NewToolbarAction(theme.MediaPlayIcon(), func() {
@@ -124,12 +136,13 @@ func (ui *Ui) toolbar() (t *widget.Toolbar) {
 	})
 	stop := widget.NewToolbarAction(theme.MediaStopIcon(), func() {
 		ui.stopSpinner()
+		ui.strip.TurnOff()
 	})
 	upload := widget.NewToolbarAction(theme.UploadIcon(), func() {})
 	settings := widget.NewToolbarAction(theme.SettingsIcon(), func() {})
 
 	items = append(items,
-		choose,
+		// choose,
 		create,
 		sep,
 		play,
@@ -165,7 +178,7 @@ func (ui *Ui) NewLayerList() *widget.List {
 		},
 		// CreateItem
 		func() fyne.CanvasObject {
-			icon := ui.layerIcon
+			icon := ui.gridIcon
 			return &fyne.Container{
 				Layout:  layout.NewBorderLayout(nil, nil, icon, nil),
 				Objects: []fyne.CanvasObject{icon, widget.NewLabel("Template Object")}}
