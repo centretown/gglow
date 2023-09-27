@@ -26,12 +26,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	window := app.NewWindow(res.WindowTitle)
-
+	window := app.NewWindow(res.GlowEffectsLabel.String())
 	gui := ui.NewUi(app, window)
 	defer gui.OnExit()
 
+	window.SetContent(gui.BuildContent())
 	window.Resize(res.WindowSize)
 	window.ShowAndRun()
-
 }

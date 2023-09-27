@@ -11,7 +11,7 @@ const (
 	Horizontal Orientation = iota
 	Vertical
 	Diagonal
-	Centred
+	// Centred
 	ORIENTATION_COUNT
 )
 

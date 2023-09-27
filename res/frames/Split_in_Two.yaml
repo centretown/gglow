@@ -1,7 +1,7 @@
 layers:
   - grid: 
-      origin: 0
-      orientation: 1
+      origin: 3
+      orientation: 2
     chroma:
       colors:
         - hue: 30
@@ -14,8 +14,8 @@ layers:
     end: 50
     hue_shift: 1
   - grid: 
-      origin: 0
-      orientation: 1
+      origin: 3
+      orientation: 2
     chroma:
       colors:
         - hue: 200

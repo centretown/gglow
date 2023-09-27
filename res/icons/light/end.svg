@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   enable-background="new 0 0 24 24"
+   height="24px"
+   viewBox="0 0 24 24"
+   width="24px"
+   fill="#000000"
+   version="1.1"
+   id="svg6"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <rect
+     fill="none"
+     height="24"
+     width="24"
+     id="rect2" />
+  <path
+     d="M 9.41,7.41 5.83,11 H 18 v 2 H 5.83 L 9.42,16.59 8,18 2,12 8,6 Z M 22,6 V 18 H 20 V 6 Z"
+     id="path4" />
+</svg>

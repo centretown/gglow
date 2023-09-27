@@ -2,6 +2,8 @@ package glow
 
 import (
 	"fmt"
+
+	"github.com/barkimedes/go-deepcopy"
 )
 
 type Frame struct {
@@ -44,4 +46,23 @@ func (frame *Frame) Spin(light Light) {
 func (frame *Frame) AddLayers(layers ...Layer) {
 	frame.Layers = append(frame.Layers, layers...)
 	frame.updateLayers()
+}
+
+func FrameCopy(source *Frame) (frame *Frame, err error) {
+
+	var (
+		deepCopy interface{}
+		ok       bool
+	)
+
+	deepCopy, err = deepcopy.Anything(source)
+	if err != nil {
+		return
+	}
+
+	frame, ok = deepCopy.(*Frame)
+	if !ok {
+		err = fmt.Errorf("frame deepcopy not ok")
+	}
+	return
 }

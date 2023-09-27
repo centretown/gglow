@@ -12,3 +12,16 @@ layers:
         - hue: 0
           saturation: 100
           value: 100
+  - hue_shift: -1
+    scan: 3
+    grid:
+      origin: 0
+      orientation: 1
+    chroma:
+      colors:
+        - hue: 0
+          saturation: 100
+          value: 100
+        - hue: 1
+          saturation: 100
+          value: 100

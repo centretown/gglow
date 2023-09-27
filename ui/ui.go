@@ -6,107 +6,75 @@ import (
 	"glow-gui/res"
 	"glow-gui/store"
 	"image/color"
-	"time"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	widgetx "fyne.io/x/fyne/widget"
 )
 
 type Ui struct {
-	frame *glow.Frame
+	frame glow.Frame
 
-	mainBox *fyne.Container
-	strip   *LightStrip
-	title   *widget.Label
-	toolBox *widget.Toolbar
-	list    *widget.List
-
-	stop       chan int
-	isSpinning bool
+	mainBox     *fyne.Container
+	strip       *LightStrip
+	title       *widget.Label
+	stripPlayer *LightStripPlayer
+	layerList   *widget.List
 
 	window fyne.Window
 	app    fyne.App
 
-	appImage   *canvas.Image
-	frameIcon  *widget.Icon
-	layerIcon  *widget.Icon
-	gridIcon   *widget.Icon
-	chromaIcon *widget.Icon
+	effectsIcon *widget.Icon
+	frameIcon   *widget.Icon
+	layerIcon   *widget.Icon
+	gridIcon    *widget.Icon
+	chromaIcon  *widget.Icon
 }
 
 func NewUi(app fyne.App, window fyne.Window) *Ui {
 	gui := &Ui{
-		frame:  &glow.Frame{},
 		window: window,
 		app:    app,
 	}
-	window.SetContent(gui.buildContent())
 	return gui
 }
 
 func (ui *Ui) OnExit() {
-	ui.stopSpinner()
+	ui.stripPlayer.OnExit()
 }
 
-func (ui *Ui) stopSpinner() {
-	if ui.isSpinning {
-		ui.stop <- 0
-		ui.isSpinning = false
+func (ui *Ui) BuildContent() *fyne.Container {
+	err := res.LoadGridIcons("dark")
+	if err != nil {
+		fmt.Println(err)
 	}
-}
 
-func (ui *Ui) startSpinner() {
-	ui.stopSpinner()
-
-	frame := *ui.frame
-
-	spin := func() {
-		for {
-			select {
-			case <-ui.stop:
-				return
-			default:
-				frame.Spin(ui.strip)
-				time.Sleep(time.Duration(ui.frame.Interval) * 4 * time.Millisecond)
-			}
-		}
-	}
-	ui.isSpinning = true
-	go spin()
-}
-
-func (ui *Ui) buildContent() *fyne.Container {
-	ui.appImage = canvas.NewImageFromFile(res.GooseNoirImage.String())
-	ui.frameIcon = widget.NewIcon(theme.ListIcon())
+	ui.effectsIcon = res.NewAppIcon(res.EffectsIcon)
+	ui.frameIcon = res.NewAppIcon(res.FrameIcon)
 	ui.layerIcon = widget.NewIcon(theme.ListIcon())
 	ui.gridIcon = widget.NewIcon(theme.GridIcon())
 	ui.chromaIcon = widget.NewIcon(theme.ColorChromaticIcon())
-	// title := widget.NewRichTextWithText(res.ChooseEffectLabel.String())
-	ui.title = widget.NewLabel(res.LightEffectLabel.String())
-	ui.title.Alignment = fyne.TextAlignCenter
-	ui.title.TextStyle = fyne.TextStyle{Bold: true}
 
-	ui.strip = NewLightStrip(50, 5, 16)
-	ui.toolBox = ui.toolbar()
-	tc := container.New(layout.NewCenterLayout(), ui.toolBox)
+	ui.title = widget.NewLabel(res.GlowEffectsLabel.String())
+	ui.title.TextStyle = fyne.TextStyle{Bold: true, Italic: true}
+	titleBox := container.New(layout.NewCenterLayout(),
+		container.NewHBox(ui.effectsIcon, ui.title))
 
-	fs := NewFrameSelect(ui)
-	hc := container.NewHBox(ui.frameIcon, fs)
-	sc := container.New(layout.NewCenterLayout(), hc)
+	ui.strip = NewLightStrip(res.StripLength, res.StripRows, res.StripInterval)
+	ui.stripPlayer = NewLightStripPlayer(ui.strip)
 
-	ui.list = ui.NewLayerList()
-	top := container.NewVBox(ui.title, ui.strip, tc, sc)
+	toolBox := container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
-	ui.mainBox = container.NewBorder(top, nil, nil, nil, ui.list)
-	ui.stop = make(chan int)
+	selector := container.NewBorder(nil, nil, ui.frameIcon, nil, NewFrameSelect(ui))
 
+	top := container.NewVBox(titleBox, ui.strip, toolBox, selector)
+
+	ui.layerList = ui.NewLayerList()
+
+	ui.mainBox = container.NewBorder(top, nil, nil, nil, ui.layerList)
 	return ui.mainBox
 }
 
@@ -119,114 +87,104 @@ func (ui *Ui) SetWindowTitle(title string) {
 }
 
 func (ui *Ui) SetFrame(frame *glow.Frame) {
-	ui.frame = frame
-	frame.Setup(uint16(ui.strip.length),
-		uint16(ui.strip.rows),
-		uint32(ui.strip.interval))
+	ui.frame = *frame
+	ui.frame.Setup(ui.strip.Length(),
+		ui.strip.Rows(),
+		ui.strip.Interval())
 }
 
-func (ui *Ui) toolbar() (t *widget.Toolbar) {
-	var items []widget.ToolbarItem
-
-	// choose := NewToolbarSelect(ui)
-	create := widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {})
-	sep := widget.NewToolbarSeparator()
-	play := widget.NewToolbarAction(theme.MediaPlayIcon(), func() {
-		ui.startSpinner()
-	})
-	stop := widget.NewToolbarAction(theme.MediaStopIcon(), func() {
-		ui.stopSpinner()
-		ui.strip.TurnOff()
-	})
-	upload := widget.NewToolbarAction(theme.UploadIcon(), func() {})
-	settings := widget.NewToolbarAction(theme.SettingsIcon(), func() {})
-
-	items = append(items,
-		// choose,
-		create,
-		sep,
-		play,
-		stop,
-		sep,
-		upload,
-		sep,
-		settings)
-
-	t = widget.NewToolbar(items...)
-
-	return
-}
-
-func (ui *Ui) OnChangeFrame(s string) {
-	uri, err := store.LookupURI(s)
+func (ui *Ui) OnChangeFrame(frameName string) {
+	uri, err := store.LookupURI(frameName)
 	if err != nil {
 		return
 	}
 	frame := &glow.Frame{}
-	store.LoadFrameURI(uri, frame)
+	err = store.LoadFrameURI(uri, frame)
+	if err != nil {
+		return
+	}
+
 	ui.SetFrame(frame)
-	ui.SetWindowTitle(res.WindowTitle + " - " + uri.Name())
-	ui.SetTitle(res.LightEffectLabel.String() + " - " + s)
-	ui.list.Refresh()
+	ui.SetWindowTitle(res.GlowEffectsLabel.String() + " - " + frameName)
+	ui.stripPlayer.SetFrame(&ui.frame)
+	ui.layerList.Refresh()
+}
+
+func (ui *Ui) createLayerItem() fyne.CanvasObject {
+	icon := res.NewGridIcon(0, 0)
+	s := "000"
+	return container.NewHBox(
+		res.NewAppIcon(res.LayerIcon),
+
+		widget.NewLabel(s),
+		res.NewAppIcon(res.HueShiftIcon),
+
+		widget.NewLabel(s),
+		res.NewAppIcon(res.ScanIcon),
+
+		widget.NewLabel(s),
+		res.NewAppIcon(res.BeginIcon),
+
+		widget.NewLabel(s),
+		res.NewAppIcon(res.EndIcon),
+
+		icon)
+}
+
+func (ui *Ui) updateLayerItem(id int, item fyne.CanvasObject) {
+	layer := &ui.frame.Layers[id]
+	cntr := item.(*fyne.Container)
+	cntr.Objects[1].(*widget.Label).SetText(fmt.Sprintf("%3d", layer.HueShift))
+	cntr.Objects[3].(*widget.Label).SetText(fmt.Sprintf("%3d", layer.Scan))
+	cntr.Objects[5].(*widget.Label).SetText(fmt.Sprintf("%3d", layer.Begin))
+	cntr.Objects[7].(*widget.Label).SetText(fmt.Sprintf("%3d", layer.End))
+	cntr.Objects[9] =
+		res.NewGridIcon(int(layer.Grid.Origin), int(layer.Grid.Orientation))
 }
 
 func (ui *Ui) NewLayerList() *widget.List {
 	list := widget.NewList(
-		// Length
 		func() int {
 			return len(ui.frame.Layers)
 		},
-		// CreateItem
-		func() fyne.CanvasObject {
-			icon := ui.gridIcon
-			return &fyne.Container{
-				Layout:  layout.NewBorderLayout(nil, nil, icon, nil),
-				Objects: []fyne.CanvasObject{icon, widget.NewLabel("Template Object")}}
-		},
-		// UpdateItem
-		func(id widget.ListItemID, item fyne.CanvasObject) {
-			layer := &ui.frame.Layers[id]
-			buf := fmt.Sprintf("#%d l:%d r:%d s:%d b%d e%d", id,
-				layer.Length, layer.Rows, layer.Scan, layer.Begin, layer.End)
-			item.(*fyne.Container).Objects[1].(*widget.Label).SetText(buf)
-		})
+		ui.createLayerItem,
+		ui.updateLayerItem)
 
 	return list
 }
 
-func (ui *Ui) LightInfo() *fyne.Container {
-	format := func(id res.LabelID, min, max float64,
-		boundf *float64) (slider *widget.Slider,
-		label *widget.Label, entry *widgetx.NumericalEntry) {
+// func (ui *Ui) LightInfo() *fyne.Container {
+// 	format := func(id res.LabelID, min, max float64,
+// 		boundf *float64) (slider *widget.Slider,
+// 		label *widget.Label, entry *widgetx.NumericalEntry) {
 
-		boundValue := binding.BindFloat(boundf)
-		slider = widget.NewSliderWithData(min, max, boundValue)
+// 		boundValue := binding.BindFloat(boundf)
+// 		slider = widget.NewSliderWithData(min, max, boundValue)
 
-		entry = widgetx.NewNumericalEntry()
+// 		entry = widgetx.NewNumericalEntry()
 
-		// widget.NewEntryWithData(boundString)
-		label = widget.NewLabel(id.String())
-		return
-	}
+// 		label = widget.NewLabel(id.String())
+// 		return
+// 	}
 
-	grid := container.NewGridWithColumns(3)
-	slider, label, entry := format(res.LengthLabel, 10, 100, &ui.strip.length)
-	grid.Add(label)
-	grid.Add(slider)
-	grid.Add(entry)
+// 	grid := container.NewGridWithColumns(3)
+// 	slider, label, entry := format(res.LengthLabel, 10, 100, &ui.strip.length)
+// 	grid.Add(label)
+// 	grid.Add(slider)
+// 	grid.Add(entry)
 
-	slider, label, entry = format(res.RowsLabel, 1, 10, &ui.strip.rows)
-	grid.Add(label)
-	grid.Add(slider)
-	grid.Add(entry)
+// 	slider, label, entry = format(res.RowsLabel, 1, 10, &ui.strip.rows)
+// 	grid.Add(label)
+// 	grid.Add(slider)
+// 	grid.Add(entry)
 
-	slider, label, entry = format(res.IntervalLabel, 1, 1000, &ui.strip.interval)
-	grid.Add(label)
-	grid.Add(slider)
-	grid.Add(entry)
+// 	slider, label, entry = format(res.IntervalLabel, 1, 1000, &ui.strip.interval)
+// 	grid.Add(label)
+// 	grid.Add(slider)
+// 	grid.Add(entry)
 
-	return grid
-}
+// 	return grid
+// }
 
 func ColorDialog(window fyne.Window) *fyne.Container {
 	hueLabel := widget.NewLabel(res.HueLabel.String())

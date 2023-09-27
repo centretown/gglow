@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"glow-gui/glow"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -27,6 +26,16 @@ type LightStrip struct {
 	diameter   float32
 }
 
+func (strip *LightStrip) Length() uint16 {
+	return uint16(strip.length)
+}
+func (strip *LightStrip) Rows() uint16 {
+	return uint16(strip.rows)
+}
+func (strip *LightStrip) Interval() uint32 {
+	return uint32(strip.interval)
+}
+
 // glow.Light interface
 func (strip *LightStrip) Get(i uint16) color.RGBA {
 	r, g, b, a := strip.lights[i].FillColor.RGBA()
@@ -48,12 +57,9 @@ func NewLightStrip(length, rows, interval float64) *LightStrip {
 		interval:   interval,
 		diameter:   defaultDiameter,
 	}
-	hsv := glow.HSV{Hue: 0, Saturation: .1, Value: .2}
-	strip.colorOff = hsv.ToRGB()
 
+	strip.colorOff = color.RGBA{48, 24, 16, 255}
 	strip.background.CornerRadius = defaultDiameter
-	// strip.background.StrokeColor = theme.ShadowColor()
-	// strip.background.StrokeWidth = 1
 	strip.buildLights()
 	strip.ExtendBaseWidget(strip)
 	return strip
@@ -78,13 +84,6 @@ func (strip *LightStrip) buildLights() {
 func (strip *LightStrip) newLight(color color.RGBA) (circle *canvas.Circle) {
 	circle = canvas.NewCircle(color)
 	return
-}
-
-func (strip *LightStrip) SetUpFrame(frame *glow.Frame) {
-	err := frame.Setup(uint16(strip.length), uint16(strip.rows), uint32(strip.interval))
-	if err != nil {
-		// handle error
-	}
 }
 
 func (strip *LightStrip) CreateRenderer() fyne.WidgetRenderer {
