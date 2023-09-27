@@ -14,7 +14,6 @@ type LightStripPlayer struct {
 
 	strip  *LightStrip
 	source *glow.Frame
-	// frame  *glow.Frame
 
 	sep         *widget.ToolbarSeparator
 	playButton  *widget.ToolbarAction
@@ -93,7 +92,9 @@ func (sb *LightStripPlayer) Stop() {
 func (sb *LightStripPlayer) Reset() {
 	isSpinning := sb.isSpinning
 	isActive := sb.isActive
+
 	sb.stopSpinner()
+
 	if isActive {
 		if isSpinning {
 			sb.Play()
@@ -101,11 +102,9 @@ func (sb *LightStripPlayer) Reset() {
 			sb.Step()
 		}
 	}
-
 }
 
 func (sb *LightStripPlayer) stopSpinner() {
-	sb.isSpinning = false
 	if sb.isActive {
 		sb.stopChan <- 0
 	}
@@ -122,7 +121,7 @@ func (sb *LightStripPlayer) startSpinner() {
 	frame, err = glow.FrameCopy(sb.source)
 	if err != nil {
 		fmt.Println("startSpinner FrameCopy", err)
-		return
+		panic("startSpinner")
 	}
 
 	frame.Setup(sb.strip.Length(), sb.strip.Rows(), sb.strip.Interval())
