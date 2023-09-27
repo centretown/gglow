@@ -72,7 +72,7 @@ func (ui *Ui) BuildContent() *fyne.Container {
 
 	top := container.NewVBox(titleBox, ui.strip, toolBox, selector)
 
-	ui.layerList = ui.NewLayerList()
+	ui.layerList = NewLayerList(&ui.frame)
 
 	ui.mainBox = container.NewBorder(top, nil, nil, nil, ui.layerList)
 	return ui.mainBox
@@ -108,49 +108,6 @@ func (ui *Ui) OnChangeFrame(frameName string) {
 	ui.SetWindowTitle(res.GlowEffectsLabel.String() + " - " + frameName)
 	ui.stripPlayer.SetFrame(&ui.frame)
 	ui.layerList.Refresh()
-}
-
-func (ui *Ui) createLayerItem() fyne.CanvasObject {
-	icon := res.NewGridIcon(0, 0)
-	s := "000"
-	return container.NewHBox(
-		res.NewAppIcon(res.LayerIcon),
-
-		widget.NewLabel(s),
-		res.NewAppIcon(res.HueShiftIcon),
-
-		widget.NewLabel(s),
-		res.NewAppIcon(res.ScanIcon),
-
-		widget.NewLabel(s),
-		res.NewAppIcon(res.BeginIcon),
-
-		widget.NewLabel(s),
-		res.NewAppIcon(res.EndIcon),
-
-		icon)
-}
-
-func (ui *Ui) updateLayerItem(id int, item fyne.CanvasObject) {
-	layer := &ui.frame.Layers[id]
-	cntr := item.(*fyne.Container)
-	cntr.Objects[1].(*widget.Label).SetText(fmt.Sprintf("%3d", layer.HueShift))
-	cntr.Objects[3].(*widget.Label).SetText(fmt.Sprintf("%3d", layer.Scan))
-	cntr.Objects[5].(*widget.Label).SetText(fmt.Sprintf("%3d", layer.Begin))
-	cntr.Objects[7].(*widget.Label).SetText(fmt.Sprintf("%3d", layer.End))
-	cntr.Objects[9] =
-		res.NewGridIcon(int(layer.Grid.Origin), int(layer.Grid.Orientation))
-}
-
-func (ui *Ui) NewLayerList() *widget.List {
-	list := widget.NewList(
-		func() int {
-			return len(ui.frame.Layers)
-		},
-		ui.createLayerItem,
-		ui.updateLayerItem)
-
-	return list
 }
 
 // func (ui *Ui) LightInfo() *fyne.Container {

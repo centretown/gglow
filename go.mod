@@ -4,12 +4,12 @@ go 1.21.1
 
 require (
 	fyne.io/fyne/v2 v2.4.0
+	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	fyne.io/systray v1.10.1-0.20230722100817-88df1e0ffa9a // indirect
-	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect

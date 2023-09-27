@@ -83,8 +83,8 @@ const (
 
 var entryLabels = []string{
 	"Length", "Rows", "Interval", "Layers",
-	"Grid", "Chroma", "Hue Shift", "Scan Length",
-	"Begin At", "End At",
+	"Grid", "Chroma", "Shift", "Scan",
+	"Begin", "End",
 	"Origin", "Orientation",
 	"Colors", "Hue", "Saturation", "Value",
 	"pick an effect...", "Glow Effects",
@@ -131,19 +131,21 @@ func (id OriginID) PlaceHolder() string {
 	return strings.ToLower(originLabels[id])
 }
 
+type AppIconID int
+
 const (
-	FrameIcon = iota
+	FrameIcon AppIconID = iota
 	LayerIcon
 	HueShiftIcon
 	ScanIcon
 	BeginIcon
 	EndIcon
 	EffectsIcon
-	FRAME_ICON_COUNT
+	APP_ICON_COUNT
 )
 
-func NewAppIcon(i int) (w *widget.Icon) {
-	if i >= len(appResoures) {
+func NewAppIcon(i AppIconID) (w *widget.Icon) {
+	if int(i) >= len(appResoures) {
 		i = 0
 	}
 	w = widget.NewIcon(appResoures[i])
@@ -160,9 +162,9 @@ var appIconFiles = []string{
 	"effect.svg",
 }
 
-var appResoures = make([]fyne.Resource, int(FRAME_ICON_COUNT))
+var appResoures = make([]fyne.Resource, int(APP_ICON_COUNT))
 
-func LayerResource(i int) fyne.Resource {
+func AppIconResource(i AppIconID) fyne.Resource {
 	return appResoures[i]
 }
 

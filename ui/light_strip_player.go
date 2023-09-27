@@ -129,17 +129,21 @@ func (sb *LightStripPlayer) startSpinner() {
 	spin := func() {
 		for {
 			select {
+
 			case <-sb.stopChan:
 				sb.isActive = false
 				return
 
 			case <-sb.startChan:
 				isSpinning = true
+
 			case <-sb.pauseChan:
 				isSpinning = false
+
 			case <-sb.stepChan:
 				isSpinning = false
 				frame.Spin(sb.strip)
+
 			default:
 				if isSpinning {
 					frame.Spin(sb.strip)
