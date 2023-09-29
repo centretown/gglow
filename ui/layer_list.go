@@ -1,98 +1,99 @@
 package ui
 
 import (
-	"fmt"
 	"glow-gui/glow"
 	"glow-gui/res"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 )
 
-type LayerItem int
+// type LayerListData struct {
+// 	binding.StringList
+// 	frame *glow.Frame
+// }
 
-const (
-	LayerIcon LayerItem = iota
-	HueItem
-	ScanItem
-	BeginItem
-	EndItem
-	LAYER_ITEM_COUNT
-)
+// func NewLayerListData(frame *glow.Frame) *LayerListData {
+
+// 	list := binding.NewStringList()
+
+// 	for _, l := range frame.Layers {
+// 		list.Append(Summarize(&l))
+// 	}
+
+// 	return &LayerListData{
+// 		StringList: list,
+// 		frame:      frame,
+// 	}
+
+// }
+
+// func (lld *LayerListData) GetItem(i int) (binding.DataItem, error) {
+// 	return lld.list.
+// 	// return binding.String())
+// }
+
+// func (lld *LayerListData) Length() int {
+// 	return len(lld.frame.Layers)
+// }
 
 type LayerList struct {
+	binding.DataItem
 	*widget.List
-	frame        *glow.Frame
-	numberFormat string
+	window fyne.Window
+	data   binding.UntypedList
 }
 
-func (ll *LayerList) createLayerItem() fyne.CanvasObject {
-	s := fmt.Sprintf("%4d", 0)
-
-	createItem := func(labelID res.LabelID, iconID res.AppIconID, fn func()) *fyne.Container {
-		head := widget.NewLabel(labelID.String())
-		head.Alignment = fyne.TextAlignCenter
-		btn := widget.NewButtonWithIcon("", res.AppIconResource(iconID), fn)
-		data := widget.NewLabel(s)
-		hbox := container.NewHBox(btn, data)
-		vbox := container.NewVBox(head, hbox)
-		return vbox
-	}
-
-	ctr := container.NewHBox(
-		res.NewAppIcon(res.LayerIcon),
-		createItem(res.HueShiftLabel, res.HueShiftIcon, func() {}),
-		createItem(res.ScanLabel, res.ScanIcon, func() {}),
-		createItem(res.BeginLabel, res.BeginIcon, func() {}),
-		createItem(res.EndLabel, res.EndIcon, func() {}),
-	)
-	// widget.NewButtonWithIcon(res.HueShiftLabel.String(),
-	// 	res.AppIconResource(res.HueShiftIcon), func() {}),
-	// widget.NewLabel(s),
-
-	// widget.NewButtonWithIcon(res.ScanLabel.String(),
-	// 	res.AppIconResource(res.ScanIcon), func() {}),
-	// widget.NewLabel(s),
-
-	// widget.NewButtonWithIcon(res.BeginLabel.String(),
-	// 	res.AppIconResource(res.BeginIcon), func() {}),
-	// widget.NewLabel(s),
-
-	// widget.NewButtonWithIcon(res.EndLabel.String(),
-	// 	res.AppIconResource(res.EndIcon), func() {}),
-	// widget.NewLabel(s))
-	return ctr
-}
-
-func (ll *LayerList) updateLayerItem(id int, item fyne.CanvasObject) {
-	layer := ll.frame.Layers[id]
-	cntr := item.(*fyne.Container)
-
-	setItem := func(id LayerItem, v interface{}) {
-		vbox := cntr.Objects[id].(*fyne.Container)
-		hbox := vbox.Objects[1].(*fyne.Container)
-		label := hbox.Objects[1].(*widget.Label)
-		label.SetText(fmt.Sprintf(ll.numberFormat, v))
-	}
-	setItem(HueItem, layer.HueShift)
-	setItem(ScanItem, layer.Scan)
-	setItem(BeginItem, layer.Begin)
-	setItem(EndItem, layer.End)
-}
-
-func NewLayerList(frame *glow.Frame) *widget.List {
+func NewLayerList(window fyne.Window, frame *glow.Frame) *LayerList {
 	ll := &LayerList{
-		frame:        frame,
-		numberFormat: "%3d",
+		window: window,
 	}
 
-	ll.List = widget.NewList(
-		func() int {
-			return len(frame.Layers)
-		},
+	ll.data = binding.NewUntypedList()
+	ll.SetFrame(frame)
+
+	ll.List = widget.NewListWithData(ll.data,
 		ll.createLayerItem,
 		ll.updateLayerItem)
 
-	return ll.List
+	ll.DataItem = ll.data
+	return ll
+}
+
+func (ll *LayerList) createLayerItem() fyne.CanvasObject {
+	return container.NewHBox(
+		widget.NewButtonWithIcon("",
+			res.AppIconResource(res.LayerIcon), func() {}),
+		widget.NewLabel("template"))
+}
+
+func (ll *LayerList) updateLayerItem(i binding.DataItem, box fyne.CanvasObject) {
+	c := box.(*fyne.Container)
+	x, err := i.(binding.Untyped).Get()
+	if err != nil {
+		fyne.LogError("Error getting data item", err)
+	}
+
+	layer := x.(*glow.Layer)
+	s := binding.NewString()
+	s.Set(Summarize(layer))
+
+	l := c.Objects[1].(*widget.Label)
+	l.Bind(s)
+
+	b := c.Objects[0].(*widget.Button)
+	b.OnTapped = func() {
+		f := NewLayerForm(ll.window, layer)
+		f.Show()
+	}
+}
+
+func (ll *LayerList) SetFrame(frame *glow.Frame) {
+	list := make([]interface{}, 0, len(frame.Layers))
+	for i := range frame.Layers {
+		list = append(list, &frame.Layers[i])
+	}
+	ll.data.Set(list)
 }

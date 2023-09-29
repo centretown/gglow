@@ -26,7 +26,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	window := app.NewWindow(res.GlowEffectsLabel.String())
+	window := app.NewWindow(res.GlowLabel.String() + " " +
+		res.EffectsLabel.String())
 	gui := ui.NewUi(app, window)
 	defer gui.OnExit()
 

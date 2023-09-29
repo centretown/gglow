@@ -61,7 +61,8 @@ func ContentLabels() []string {
 type LabelID uint16
 
 const (
-	LengthLabel LabelID = iota
+	GlowLabel LabelID = iota
+	LengthLabel
 	RowsLabel
 	IntervalLabel
 	LayersLabel
@@ -78,16 +79,24 @@ const (
 	SaturationLabel
 	ValueLabel
 	ChooseEffectLabel
-	GlowEffectsLabel
+	EffectsLabel
+	ScannerLabel
+	BackDropLabel
+	DynamicLabel
+	StaticLabel
+	GradientLabel
 )
 
 var entryLabels = []string{
+	"Glow",
 	"Length", "Rows", "Interval", "Layers",
-	"Grid", "Chroma", "Shift", "Scan",
+	"Grid", "Chroma", "Hue Shift", "Scan Length",
 	"Begin", "End",
 	"Origin", "Orientation",
 	"Colors", "Hue", "Saturation", "Value",
-	"pick an effect...", "Glow Effects",
+	"pick an effect...", "Effects",
+	"scan", "backdrop",
+	"dynamic", "static", "gradient",
 }
 
 func (id LabelID) String() string {
@@ -100,35 +109,35 @@ func (id LabelID) PlaceHolder() string {
 
 type OrientationID glow.Orientation
 
-var orientationLabels = []string{
-	"Horizontal",
-	"Vertical",
-	"Diagonal",
+var OrientationLabels = []string{
+	"level",
+	"upright",
+	"tilted",
 }
 
 func (id OrientationID) String() string {
-	return orientationLabels[id]
+	return OrientationLabels[id]
 }
 
 func (id OrientationID) PlaceHolder() string {
-	return strings.ToLower(orientationLabels[id])
+	return strings.ToLower(OrientationLabels[id])
 }
 
 type OriginID glow.Origin
 
-var originLabels = []string{
-	"Top Left",
-	"Top Right",
-	"Bottom Left",
-	"Bottom Right",
+var OriginLabels = []string{
+	"top left",
+	"top right",
+	"bottom left",
+	"bottom right",
 }
 
 func (id OriginID) String() string {
-	return originLabels[id]
+	return OriginLabels[id]
 }
 
 func (id OriginID) PlaceHolder() string {
-	return strings.ToLower(originLabels[id])
+	return strings.ToLower(OriginLabels[id])
 }
 
 type AppIconID int

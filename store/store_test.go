@@ -47,7 +47,7 @@ func TestLoadFrame(t *testing.T) {
 
 	for i := range files {
 		var frame glow.Frame
-		err := LoadFrame(FramePath+files[i], &frame)
+		err := loadFrame(FramePath+files[i], &frame)
 		if err != nil {
 			t.Fatalf(err.Error())
 		}
@@ -78,7 +78,7 @@ func TestStoreFrame(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	err = LoadFrame(DerivedPath+fname, &frame)
+	err = loadFrame(DerivedPath+fname, &frame)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

@@ -3,6 +3,7 @@ package store
 import (
 	"fmt"
 	"glow-gui/glow"
+	"io"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -15,7 +16,7 @@ const (
 	max_buffer_size = 4096
 )
 
-var readbuf []byte = make([]byte, max_buffer_size)
+// var readbuf []byte = make([]byte, max_buffer_size)
 
 const (
 	FramePath   = "/home/dave/src/glow-gui/res/frames/"
@@ -104,21 +105,16 @@ func FrameListURI() fyne.ListableURI {
 	return FrameURI
 }
 
-func ReadFrame(rdr fyne.URIReadCloser, frame *glow.Frame) (err error) {
-	var (
-		count int
-	)
-
+func readFrame(rdr fyne.URIReadCloser, frame *glow.Frame) (err error) {
 	defer rdr.Close()
 
-	b := readbuf
+	var b []byte
 
-	count, err = rdr.Read(b)
+	b, err = io.ReadAll(rdr)
 	if err != nil {
 		return
 	}
 
-	b = b[:count]
 	err = yaml.Unmarshal(b, frame)
 	if err != nil {
 		return
@@ -136,10 +132,10 @@ func LoadFrameURI(uri fyne.URI, frame *glow.Frame) (err error) {
 		return
 	}
 
-	return ReadFrame(rdr, frame)
+	return readFrame(rdr, frame)
 }
 
-func LoadFrame(fname string, frame *glow.Frame) (err error) {
+func loadFrame(fname string, frame *glow.Frame) (err error) {
 	var (
 		uri fyne.URI
 		rdr fyne.URIReadCloser
@@ -155,7 +151,7 @@ func LoadFrame(fname string, frame *glow.Frame) (err error) {
 		return
 	}
 
-	return ReadFrame(rdr, frame)
+	return readFrame(rdr, frame)
 }
 
 func StoreFrame(fname string, frame *glow.Frame) (err error) {
