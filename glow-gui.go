@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"glow-gui/data"
 	"glow-gui/res"
 	"glow-gui/store"
 	"glow-gui/ui"
@@ -22,16 +23,16 @@ func main() {
 
 	err = store.Setup()
 	if err != nil {
-		fmt.Println("failed to setup store")
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
 	window := app.NewWindow(res.GlowLabel.String() + " " +
 		res.EffectsLabel.String())
-	gui := ui.NewUi(app, window)
-	defer gui.OnExit()
+	ui := ui.NewUi(app, window, data.NewModel())
+	defer ui.OnExit()
 
-	window.SetContent(gui.BuildContent())
+	window.SetContent(ui.BuildContent())
 	window.Resize(res.WindowSize)
 	window.ShowAndRun()
 }

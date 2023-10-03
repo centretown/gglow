@@ -9,7 +9,7 @@ import (
 )
 
 var AppID = "com.centretown.glow.preferences"
-var WindowSize = fyne.Size{Width: 600, Height: 400}
+var WindowSize = fyne.Size{Width: 480, Height: 480}
 
 type ImageID uint16
 

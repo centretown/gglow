@@ -3,6 +3,7 @@ package store
 import (
 	"fmt"
 	"glow-gui/glow"
+	"glow-gui/res"
 	"io"
 	"strings"
 
@@ -50,28 +51,39 @@ func Setup() (err error) {
 		canList bool
 	)
 
-	uri, err = storage.ParseURI(scheme + FramePath)
+	path := scheme + FramePath
+
+	formatMessage := func(id res.MessageID, msg string, err error) error {
+		id.Log(path, err)
+		return fmt.Errorf("%s %s %s", id, msg, err.Error())
+	}
+
+	uri, err = storage.ParseURI(path)
 	if err != nil {
+		err = formatMessage(res.MsgParseEffectPath, path, err)
 		return
 	}
 
 	canList, err = storage.CanList(uri)
 	if err != nil {
+		err = formatMessage(res.MsgNoAccess, path, err)
 		return
 	}
 
 	if !canList {
-		err = fmt.Errorf("%s un-listable", FramePath)
+		err = formatMessage(res.MsgPathNotFolder, path, err)
 		return
 	}
 
 	FrameURI, err = storage.ListerForURI(uri)
 	if err != nil {
+		err = formatMessage(res.MsgNoList, path, err)
 		return
 	}
 
 	uriList, err := FrameURI.List()
 	if err != nil {
+		err = formatMessage(res.MsgNoList, path, err)
 		return
 	}
 

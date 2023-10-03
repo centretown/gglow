@@ -10,13 +10,16 @@ import (
 )
 
 var files = []string{
-	"spotlight.yaml",
-	"split.yaml",
-	"split_in_two.yaml",
-	"black_and_white.yaml",
-	"complementary_scan.yaml",
-	"double_scan.yaml",
-	"gradient_scan.yaml",
+	"AAA_Spotlight.yaml",
+	"Black_and_White.yaml",
+	"Rainbow_Diagonal.yaml",
+	"Rainbow_Horizontal.yaml",
+	"Rainbow_Vertical.yaml",
+	"Scan_Complementary.yaml",
+	"Scan_Double.yaml",
+	"Scan_Gradient.yaml",
+	"Split_in_Three.yaml",
+	"Split_in_Two.yaml",
 }
 
 func TestSetup(t *testing.T) {
