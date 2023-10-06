@@ -18,7 +18,7 @@ const (
 )
 
 var imagePath = []string{
-	"res/gangsta-goose.png",
+	"res/dark-gander.png",
 }
 
 func (id ImageID) String() string {
@@ -69,13 +69,14 @@ const (
 	GridLabel
 	ChromaLabel
 	HueShiftLabel
-	ScanLabel
+	ScanLengthLabel
 	BeginLabel
 	EndLabel
 	OriginLabel
 	OrientationLabel
 	ColorsLabel
 	HueLabel
+	ScanLabel
 	SaturationLabel
 	ValueLabel
 	ChooseEffectLabel
@@ -90,13 +91,14 @@ const (
 var entryLabels = []string{
 	"Glow",
 	"Length", "Rows", "Interval", "Layers",
-	"Grid", "Chroma", "Hue Shift", "Scan Length",
+	"Grid", "Colors", "Hue Shift", "Scan Length",
 	"Begin", "End",
 	"Origin", "Orientation",
-	"Colors", "Hue", "Saturation", "Value",
-	"pick an effect...", "Effects",
-	"scan", "backdrop",
-	"dynamic", "static", "gradient",
+	"Colors", "Hue", "Scan",
+	"Saturation", "Value",
+	"Pick an Effect...", "Effects",
+	"Scanner", "Backdrop",
+	"Dynamic", "Static", "Gradient",
 }
 
 func (id LabelID) String() string {
@@ -110,9 +112,9 @@ func (id LabelID) PlaceHolder() string {
 type OrientationID glow.Orientation
 
 var OrientationLabels = []string{
-	"level",
-	"upright",
-	"tilted",
+	"Level",
+	"Upright",
+	"Tilted",
 }
 
 func (id OrientationID) String() string {
@@ -126,10 +128,10 @@ func (id OrientationID) PlaceHolder() string {
 type OriginID glow.Origin
 
 var OriginLabels = []string{
-	"top left",
-	"top right",
-	"bottom left",
-	"bottom right",
+	"Top Left",
+	"Top Right",
+	"Bottom Left",
+	"Bottom Right",
 }
 
 func (id OriginID) String() string {

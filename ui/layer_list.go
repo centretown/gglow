@@ -22,9 +22,13 @@ func NewLayerList(model *data.Model, changeView func()) *LayerList {
 		changeView: changeView,
 	}
 
-	ls.List = widget.NewListWithData(model.LayerList,
+	ls.List = widget.NewListWithData(model.LayerSummaryList,
 		ls.createLayerItem,
 		ls.updateLayerItem)
+
+	ls.List.OnSelected = func(id widget.ListItemID) {
+		ls.model.SetCurrentLayer(id)
+	}
 
 	return ls
 }
@@ -45,6 +49,12 @@ func (ls *LayerList) createLayerItem() fyne.CanvasObject {
 func (ls *LayerList) updateLayerItem(item binding.DataItem,
 	canvasObj fyne.CanvasObject) {
 
+	s := item.(binding.String)
+	text, _ := s.Get()
+	box := canvasObj.(*fyne.Container)
+	label := box.Objects[LabelPos].(*widget.Label)
+	label.SetText(text)
+
 	// layer := item.Get()
 	// box := canvasObj.(*fyne.Container)
 	// unTypedLayer, err := item.(binding.Untyped).Get()
@@ -57,7 +67,6 @@ func (ls *LayerList) updateLayerItem(item binding.DataItem,
 	// binder := binding.NewString()
 	// binder.Set(Summarize(layer))
 
-	// label := box.Objects[LabelPos].(*widget.Label)
 	// label.Bind(binder)
 
 	// button := box.Objects[ButtonPos].(*widget.Button)

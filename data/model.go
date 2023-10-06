@@ -10,19 +10,22 @@ import (
 )
 
 type Model struct {
-	Frame     binding.Untyped
-	Title     binding.String
-	LayerList binding.UntypedList
-	Layer     binding.Untyped
-	Fields    binding.Struct
+	Frame            binding.Untyped
+	Title            binding.String
+	LayerList        binding.UntypedList
+	LayerSummaryList binding.StringList
+	Layer            binding.Untyped
+	Fields           *Fields
 }
 
 func NewModel() *Model {
 	m := &Model{
-		Frame:     binding.NewUntyped(),
-		Title:     binding.NewString(),
-		LayerList: binding.NewUntypedList(),
-		Layer:     binding.NewUntyped(),
+		Frame:            binding.NewUntyped(),
+		Title:            binding.NewString(),
+		LayerList:        binding.NewUntypedList(),
+		LayerSummaryList: binding.NewStringList(),
+		Layer:            binding.NewUntyped(),
+		Fields:           NewFields(),
 	}
 
 	m.Frame.Set(&glow.Frame{})
@@ -30,36 +33,39 @@ func NewModel() *Model {
 	m.LayerList.Set(make([]interface{}, 0))
 	layer := &glow.Layer{}
 	m.Layer.Set(layer)
-	m.Fields = binding.BindStruct(layer)
-
+	m.Fields.FromLayer(layer)
+	m.Frame.AddListener(binding.NewDataListener(m.onChangeFrame))
 	return m
 }
 
-func (m *Model) GetTitle() string {
-	str, _ := m.Title.Get()
-	return str
+func (m *Model) onChangeFrame() {
+	frame := m.getFrame()
+	list := make([]interface{}, 0, len(frame.Layers))
+	for i := range frame.Layers {
+		list = append(list, &frame.Layers[i])
+	}
+	m.LayerList.Set(list)
+	m.SetCurrentLayer(0)
+
+	summaries := make([]string, 0, m.LayerList.Length())
+	m.LayerSummaryList.Set(summaries)
+	for i := 0; i < m.LayerList.Length(); i++ {
+		item, _ := m.LayerList.GetItem(i)
+		untyped := item.(binding.Untyped)
+		face, _ := untyped.Get()
+		layer := face.(*glow.Layer)
+		summaries = append(summaries, Summarize(layer))
+	}
+	m.LayerSummaryList.Set(summaries)
 }
 
 func (m *Model) getFrame() (frame *glow.Frame) {
-	face, err := getUntyped("getFrame", m.Frame, res.MsgGetFrame)
-	if err != nil {
-		panic(res.MsgGetFrame) // panic
-	}
+	face, _ := m.Frame.Get()
 	frame = face.(*glow.Frame) // panic
 	return
 }
 
-func (m *Model) GetLayer() (layer *glow.Layer) {
-	face, err := getUntyped("getLayer", m.Layer, res.MsgGetLayer)
-	if err != nil {
-		s := res.MsgGetFrame.String() + err.Error()
-		panic(s) // panic
-	}
-	layer = face.(*glow.Layer) // panic
-	return
-}
-
-func (m *Model) SetLayer(i int) {
+func (m *Model) SetCurrentLayer(i int) {
 	frame := m.getFrame()
 	var layer *glow.Layer
 	if i < len(frame.Layers) {
@@ -68,37 +74,7 @@ func (m *Model) SetLayer(i int) {
 		layer = &glow.Layer{}
 	}
 	setUntyped(m.Layer, layer, res.MsgSetLayer)
-	m.Fields = binding.BindStruct(layer)
-}
-
-func (m *Model) setFrame(frame *glow.Frame) (err error) {
-	err = setUntyped(m.Frame, frame, res.MsgSetFrame)
-	if err != nil {
-		return
-	}
-
-	list := make([]interface{}, 0, len(frame.Layers))
-	for i := range frame.Layers {
-		list = append(list, &frame.Layers[i])
-	}
-	err = setUntypedList(m.LayerList, list, res.MsgSetLayerList)
-	if err != nil {
-		return
-	}
-
-	var layer *glow.Layer
-	if len(frame.Layers) > 0 {
-		layer = &frame.Layers[0]
-	} else {
-		layer = &glow.Layer{}
-	}
-	err = setUntyped(m.Layer, layer, res.MsgSetLayer)
-	if err != nil {
-		return
-	}
-
-	m.Fields = binding.BindStruct(layer)
-	return
+	m.Fields.FromLayer(layer)
 }
 
 func (m *Model) LoadFrame(frameName string) (err error) {
@@ -115,6 +91,11 @@ func (m *Model) LoadFrame(frameName string) (err error) {
 		res.MsgGetEffectLoad.Log(uri.Name(), err)
 		return
 	}
-	err = m.setFrame(frame)
+	err = setUntyped(m.Frame, frame, res.MsgSetFrame)
 	return
+}
+
+func (m *Model) GetTitle() string {
+	str, _ := m.Title.Get()
+	return str
 }
