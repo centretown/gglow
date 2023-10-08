@@ -38,13 +38,6 @@ func NewUi(app fyne.App, window fyne.Window, model *data.Model) *Ui {
 		app:    app,
 		model:  model,
 	}
-
-	model.Title.AddListener(binding.NewDataListener(func() {
-		title := model.GetTitle()
-		ui.SetWindowTitle(fmt.Sprintf("%s %s-%s",
-			res.GlowLabel.String(), res.EffectsLabel.String(), title))
-	}))
-
 	return ui
 }
 
@@ -67,7 +60,7 @@ func (ui *Ui) BuildContent() *fyne.Container {
 		container.NewHBox(ui.effectsIcon, ui.title))
 
 	ui.strip = NewLightStrip(res.StripLength, res.StripRows, res.StripInterval)
-	ui.stripPlayer = NewLightStripPlayer(ui.strip)
+	ui.stripPlayer = NewLightStripPlayer(ui.strip, ui.model.Frame)
 
 	stripTools := container.New(layout.NewCenterLayout(), ui.stripPlayer)
 	ui.playContainer = container.NewVBox(titleBox, ui.strip, stripTools)
@@ -89,7 +82,24 @@ func (ui *Ui) BuildContent() *fyne.Container {
 		form.AppTabs)
 
 	ui.mainContainer = container.NewBorder(ui.playContainer, nil, nil, nil, ui.frameView)
+	ui.AddListeners()
 	return ui.mainContainer
+}
+
+func (ui *Ui) AddListeners() {
+	ui.model.Title.AddListener(binding.NewDataListener(func() {
+		title := ui.model.GetTitle()
+		ui.SetWindowTitle(fmt.Sprintf("%s %s-%s",
+			res.GlowLabel.String(), res.EffectsLabel.String(), title))
+	}))
+
+	// ui.model.Frame.AddListener(binding.NewDataListener(func() {
+	// 	face, _ := ui.model.Frame.Get()
+	// 	if face != nil {
+	// 		frame := face.(*glow.Frame)
+	// 		ui.stripPlayer.SetFrame(frame)
+	// 	}
+	// }))
 }
 
 func (ui *Ui) setView(ctr *fyne.Container) {
@@ -112,41 +122,3 @@ func (ui *Ui) SetTitle(title string) {
 func (ui *Ui) SetWindowTitle(title string) {
 	ui.window.SetTitle(title)
 }
-
-// func (ui *Ui) SetFrame(frame *glow.Frame) {
-// 	frame.Setup(ui.strip.Length(),
-// 		ui.strip.Rows(),
-// 		ui.strip.Interval())
-
-// 	ui.frameBinder.Set(frame)
-// 	if len(frame.Layers) > 0 {
-// 		ui.layerBinder.Set(&frame.Layers[0])
-// 	} else {
-// 		ui.layerBinder.Set(&glow.Layer{})
-// 	}
-// }
-
-// func (ui *Ui) SetLayer(frame *glow.Frame) {
-// }
-
-// func (ui *Ui) OnChangeFrame() {
-// 	// uri, err := store.LookupURI(frameName)
-// 	// if err != nil {
-// 	// 	fyne.LogError(fmt.Sprintf("unable to lookup frame %s", frameName), err)
-// 	// 	return
-// 	// }
-
-// 	// frame := &glow.Frame{}
-// 	// err = store.LoadFrameURI(uri, frame)
-// 	// if err != nil {
-// 	// 	fyne.LogError(fmt.Sprintf("unable to load frame %s", uri.Name()), err)
-// 	// 	return
-// 	// }
-
-// 	// ui.SetFrame(frame)
-// 	ui.SetWindowTitle(fmt.Sprintf("%s %s-%s",
-// 		res.GlowLabel.String(), res.EffectsLabel.String(), frameName))
-
-// 	// ui.layerList.SetFrame(&ui.frame)
-// 	// ui.stripPlayer.SetFrame(&ui.frame)
-// }

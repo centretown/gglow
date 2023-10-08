@@ -14,6 +14,7 @@ type Model struct {
 	Title            binding.String
 	LayerList        binding.UntypedList
 	LayerSummaryList binding.StringList
+	LayerIndex       binding.Int
 	Layer            binding.Untyped
 	Fields           *Fields
 }
@@ -24,6 +25,7 @@ func NewModel() *Model {
 		Title:            binding.NewString(),
 		LayerList:        binding.NewUntypedList(),
 		LayerSummaryList: binding.NewStringList(),
+		LayerIndex:       binding.NewInt(),
 		Layer:            binding.NewUntyped(),
 		Fields:           NewFields(),
 	}
@@ -44,6 +46,7 @@ func (m *Model) onChangeFrame() {
 	for i := range frame.Layers {
 		list = append(list, &frame.Layers[i])
 	}
+
 	m.LayerList.Set(list)
 	m.SetCurrentLayer(0)
 
@@ -70,8 +73,11 @@ func (m *Model) SetCurrentLayer(i int) {
 	var layer *glow.Layer
 	if i < len(frame.Layers) {
 		layer = &frame.Layers[i]
+		m.LayerIndex.Set(i)
 	} else {
 		layer = &glow.Layer{}
+		// m.LayerIndex.Set(0)
+		m.LayerIndex.Set(-1)
 	}
 	setUntyped(m.Layer, layer, res.MsgSetLayer)
 	m.Fields.FromLayer(layer)

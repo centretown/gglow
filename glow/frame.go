@@ -48,7 +48,7 @@ func (frame *Frame) AddLayers(layers ...Layer) {
 	frame.updateLayers()
 }
 
-func FrameCopy(source *Frame) (frame *Frame, err error) {
+func FrameDeepCopy(source *Frame) (frame *Frame, err error) {
 
 	var (
 		deepCopy interface{}

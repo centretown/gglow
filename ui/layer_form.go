@@ -24,48 +24,18 @@ func NewLayerForm(model *data.Model, changeView func()) *LayerForm {
 		changeView: changeView,
 	}
 
-	var (
-		label fyne.CanvasObject
-		tab   *container.TabItem
-	)
-
-	// first tab
+	// hue shift tab
 	frm := lf.createHueTab()
-	tab = container.NewTabItem(res.HueLabel.String(), frm)
+	tab := container.NewTabItem(res.HueLabel.String(), frm)
 	lf.AppTabs.Append(tab)
 
-	// second tab
+	// scan tab
 	frm = lf.createScanTab()
 	tab = container.NewTabItem(res.ScanLabel.String(), frm)
 	lf.AppTabs.Append(tab)
 
 	// grid tab
-
-	frm = container.New(layout.NewFormLayout())
-	label = lf.createLabel(res.OriginLabel, res.HueShiftIcon)
-	sel := widget.NewSelect(res.OriginLabels, func(s string) {})
-	sel.OnChanged = func(s string) {
-		model.Fields.Origin.Set(sel.SelectedIndex())
-	}
-	model.Fields.Origin.AddListener(binding.NewDataListener(func() {
-		index, _ := model.Fields.Origin.Get()
-		sel.SetSelectedIndex(index)
-	}))
-
-	frm.Objects = append(frm.Objects, label, sel)
-
-	label = lf.createLabel(res.OrientationLabel, res.HueShiftIcon)
-	sel = widget.NewSelect(res.OrientationLabels, func(s string) {})
-	sel.OnChanged = func(s string) {
-		model.Fields.Orientation.Set(sel.SelectedIndex())
-	}
-	model.Fields.Orientation.AddListener(binding.NewDataListener(func() {
-		index, _ := model.Fields.Orientation.Get()
-		sel.SetSelectedIndex(index)
-	}))
-
-	frm.Objects = append(frm.Objects, label, sel)
-
+	frm = lf.createGridTab()
 	tab = container.NewTabItem(res.GridLabel.String(), frm)
 	lf.AppTabs.Append(tab)
 
@@ -78,7 +48,7 @@ func NewLayerForm(model *data.Model, changeView func()) *LayerForm {
 }
 
 func (lf *LayerForm) createLabel(labelID res.LabelID, iconID res.AppIconID) fyne.CanvasObject {
-	icon := widget.NewIcon(res.AppIconResource(iconID))
+	icon := container.NewPadded(widget.NewIcon(res.AppIconResource(iconID)))
 	label := widget.NewLabel(labelID.String())
 	hbox := container.NewHBox(icon, label)
 	return hbox
@@ -90,7 +60,8 @@ func (lf *LayerForm) createHueTab() *fyne.Container {
 	slider := widget.NewSliderWithData(-10, 10, lf.model.Fields.HueShift)
 	dataLabel := widget.NewLabelWithData(
 		binding.FloatToStringWithFormat(lf.model.Fields.HueShift, "%.0f"))
-	box := container.NewBorder(nil, nil, dataLabel, nil, slider)
+	box := container.NewBorder(nil, nil,
+		dataLabel, nil, slider)
 	checkLabel := widget.NewLabel(res.DynamicLabel.String())
 	check := widget.NewCheck("",
 		func(b bool) {
@@ -105,12 +76,7 @@ func (lf *LayerForm) createHueTab() *fyne.Container {
 
 	lf.model.Fields.HueShift.AddListener(binding.NewDataListener(func() {
 		f, _ := lf.model.Fields.HueShift.Get()
-		if f == 0 {
-			check.SetChecked(false)
-		} else {
-			check.SetChecked(true)
-		}
-
+		check.SetChecked(f != 0)
 	}))
 	frm.Objects = append(frm.Objects, checkLabel, check, label, box)
 	return frm
@@ -134,12 +100,37 @@ func (lf *LayerForm) createScanTab() *fyne.Container {
 				box.Hide()
 			}
 		})
-	f, _ := lf.model.Fields.Scan.Get()
-	if f == 0 {
-		check.SetChecked(false)
-		label.Hide()
-		box.Hide()
-	}
+	lf.model.Fields.Scan.AddListener(binding.NewDataListener(func() {
+		f, _ := lf.model.Fields.Scan.Get()
+		check.SetChecked((f > 0))
+	}))
 	frm.Objects = append(frm.Objects, checkLabel, check, label, box)
+	return frm
+}
+
+func (lf *LayerForm) createGridTab() *fyne.Container {
+	frm := container.New(layout.NewFormLayout())
+	labelOrigin := lf.createLabel(res.OriginLabel, res.HueShiftIcon)
+	selectOrigin := widget.NewSelect(res.OriginLabels, func(s string) {})
+	selectOrigin.OnChanged = func(s string) {
+		lf.model.Fields.Origin.Set(selectOrigin.SelectedIndex())
+	}
+	lf.model.Fields.Origin.AddListener(binding.NewDataListener(func() {
+		index, _ := lf.model.Fields.Origin.Get()
+		selectOrigin.SetSelectedIndex(index)
+	}))
+
+	frm.Objects = append(frm.Objects, labelOrigin, selectOrigin)
+
+	labelOrientation := lf.createLabel(res.OrientationLabel, res.HueShiftIcon)
+	selectOrientation := widget.NewSelect(res.OrientationLabels, func(s string) {})
+	selectOrientation.OnChanged = func(s string) {
+		lf.model.Fields.Orientation.Set(selectOrientation.SelectedIndex())
+	}
+	lf.model.Fields.Orientation.AddListener(binding.NewDataListener(func() {
+		index, _ := lf.model.Fields.Orientation.Get()
+		selectOrientation.SetSelectedIndex(index)
+	}))
+	frm.Objects = append(frm.Objects, labelOrientation, selectOrientation)
 	return frm
 }

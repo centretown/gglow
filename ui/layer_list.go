@@ -30,6 +30,12 @@ func NewLayerList(model *data.Model, changeView func()) *LayerList {
 		ls.model.SetCurrentLayer(id)
 	}
 
+	// ls.model.LayerIndex.AddListener(binding.NewDataListener(func() {
+	// 	index, _ := model.LayerIndex.Get()
+	// 	fmt.Println("listener index", index)
+	// 	ls.List.Select(index)
+	// }))
+
 	return ls
 }
 
@@ -55,23 +61,8 @@ func (ls *LayerList) updateLayerItem(item binding.DataItem,
 	label := box.Objects[LabelPos].(*widget.Label)
 	label.SetText(text)
 
-	// layer := item.Get()
-	// box := canvasObj.(*fyne.Container)
-	// unTypedLayer, err := item.(binding.Untyped).Get()
-	// if err != nil {
-	// 	res.MsgGetLayer.Log("layerList item", err)
-	// 	panic(err.Error()) //PANIC
-	// }
-
-	// layer := unTypedLayer.(*glow.Layer)
-	// binder := binding.NewString()
-	// binder.Set(Summarize(layer))
-
-	// label.Bind(binder)
-
 	// button := box.Objects[ButtonPos].(*widget.Button)
 	// button.OnTapped = func() {
-	// 	// form := NewLayerDialog(ls.window, layer)
-	// 	// form.Show()
+	// 	ls
 	// }
 }

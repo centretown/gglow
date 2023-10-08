@@ -13,11 +13,19 @@ func NewLayerSelect(model *data.Model) (sel *widget.Select) {
 	sel.PlaceHolder = "choose layer..."
 	sel.Alignment = fyne.TextAlignCenter
 	sel.OnChanged = func(s string) {
-		model.SetCurrentLayer(sel.SelectedIndex())
+		index := sel.SelectedIndex()
+		if index >= 0 && index < len(sel.Options) {
+			model.SetCurrentLayer(index)
+		}
 	}
 	model.LayerSummaryList.AddListener(binding.NewDataListener(func() {
 		summaries, _ := model.LayerSummaryList.Get()
-		sel.Options = summaries
+		sel.SetOptions(summaries)
+		sel.SetSelectedIndex(0)
+	}))
+	model.LayerIndex.AddListener(binding.NewDataListener(func() {
+		index, _ := model.LayerIndex.Get()
+		sel.SetSelectedIndex(index)
 	}))
 	return
 }
