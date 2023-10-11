@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"glow-gui/glow"
 	"time"
 
@@ -30,8 +29,8 @@ func (bi *ButtonItem) ToolbarObject() fyne.CanvasObject {
 type LightStripPlayer struct {
 	*widget.Toolbar
 
-	strip       *LightStrip
 	sourceFrame binding.Untyped
+	strip       *LightStrip
 
 	playPauseButton *ButtonItem
 	stepButton      *widget.ToolbarAction
@@ -157,8 +156,10 @@ func (sb *LightStripPlayer) startSpinner() {
 		copyFrame := func(source *glow.Frame) {
 			frame, err = glow.FrameDeepCopy(source)
 			if err != nil {
-				fmt.Println("startSpinner FrameCopy", err)
-				panic("startSpinner")
+				reason := "startSpinner FrameDeepCopy"
+				fyne.LogError(reason, err)
+				reason += " " + err.Error()
+				panic(reason)
 			}
 			frame.Setup(sb.strip.Length(), sb.strip.Rows(), sb.strip.Interval())
 		}

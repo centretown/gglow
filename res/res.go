@@ -86,6 +86,7 @@ const (
 	DynamicLabel
 	StaticLabel
 	GradientLabel
+	ReversedLabel
 )
 
 var entryLabels = []string{
@@ -98,7 +99,8 @@ var entryLabels = []string{
 	"Saturation", "Value",
 	"Pick an Effect...", "Effects",
 	"Scanner", "Backdrop",
-	"Dynamic", "Static", "Gradient",
+	"Dynamic", "Static",
+	"Gradient", "Reversed",
 }
 
 func (id LabelID) String() string {

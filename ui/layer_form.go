@@ -15,6 +15,8 @@ type LayerForm struct {
 	*container.AppTabs
 	model      *data.Model
 	changeView func()
+	isDynamic  binding.Bool
+	isScanner  binding.Bool
 }
 
 func NewLayerForm(model *data.Model, changeView func()) *LayerForm {
@@ -22,6 +24,8 @@ func NewLayerForm(model *data.Model, changeView func()) *LayerForm {
 		AppTabs:    container.NewAppTabs(),
 		model:      model,
 		changeView: changeView,
+		isDynamic:  binding.NewBool(),
+		isScanner:  binding.NewBool(),
 	}
 
 	// hue shift tab
@@ -44,6 +48,15 @@ func NewLayerForm(model *data.Model, changeView func()) *LayerForm {
 	tab = container.NewTabItem(res.ChromaLabel.String(), frm)
 	lf.AppTabs.Append(tab)
 
+	lf.model.Fields.HueShift.AddListener(binding.NewDataListener(func() {
+		f, _ := lf.model.Fields.HueShift.Get()
+		lf.isDynamic.Set(f != 0)
+	}))
+	lf.model.Fields.Scan.AddListener(binding.NewDataListener(func() {
+		f, _ := lf.model.Fields.Scan.Get()
+		lf.isScanner.Set(f > 0)
+	}))
+
 	return lf
 }
 
@@ -54,57 +67,46 @@ func (lf *LayerForm) createLabel(labelID res.LabelID, iconID res.AppIconID) fyne
 	return hbox
 }
 
-func (lf *LayerForm) createHueTab() *fyne.Container {
+func (lf *LayerForm) createCheckSlide(field binding.Float,
+	label fyne.CanvasObject, checkLabelID res.LabelID,
+	isChecked binding.Bool) *fyne.Container {
+
 	frm := container.New(layout.NewFormLayout())
-	label := lf.createLabel(res.HueShiftLabel, res.HueShiftIcon)
-	slider := widget.NewSliderWithData(-10, 10, lf.model.Fields.HueShift)
+	slider := widget.NewSliderWithData(1, 10, field)
 	dataLabel := widget.NewLabelWithData(
-		binding.FloatToStringWithFormat(lf.model.Fields.HueShift, "%.0f"))
+		binding.FloatToStringWithFormat(field, "%.0f"))
 	box := container.NewBorder(nil, nil,
 		dataLabel, nil, slider)
-	checkLabel := widget.NewLabel(res.DynamicLabel.String())
-	check := widget.NewCheck("",
-		func(b bool) {
-			if b {
-				label.Show()
-				box.Show()
-			} else {
-				label.Hide()
-				box.Hide()
-			}
-		})
 
-	lf.model.Fields.HueShift.AddListener(binding.NewDataListener(func() {
-		f, _ := lf.model.Fields.HueShift.Get()
-		check.SetChecked(f != 0)
+	box.Hide()
+	label.Hide()
+	checkLabel := widget.NewLabel(checkLabelID.String())
+
+	isChecked.AddListener(binding.NewDataListener(func() {
+		b, _ := isChecked.Get()
+		if b {
+			label.Show()
+			box.Show()
+		} else {
+			label.Hide()
+			box.Hide()
+		}
 	}))
+
+	check := widget.NewCheckWithData("", isChecked)
 	frm.Objects = append(frm.Objects, checkLabel, check, label, box)
 	return frm
 }
 
+func (lf *LayerForm) createHueTab() *fyne.Container {
+	label := lf.createLabel(res.HueShiftLabel, res.HueShiftIcon)
+	frm := lf.createCheckSlide(lf.model.Fields.HueShift, label, res.DynamicLabel, lf.isDynamic)
+	return frm
+}
+
 func (lf *LayerForm) createScanTab() *fyne.Container {
-	frm := container.New(layout.NewFormLayout())
 	label := lf.createLabel(res.ScanLengthLabel, res.ScanIcon)
-	slider := widget.NewSliderWithData(-10, 10, lf.model.Fields.Scan)
-	dataLabel := widget.NewLabelWithData(
-		binding.FloatToStringWithFormat(lf.model.Fields.Scan, "%.0f"))
-	box := container.NewBorder(nil, nil, dataLabel, nil, slider)
-	checkLabel := widget.NewLabel(res.ScannerLabel.String())
-	check := widget.NewCheck("",
-		func(b bool) {
-			if b {
-				label.Show()
-				box.Show()
-			} else {
-				label.Hide()
-				box.Hide()
-			}
-		})
-	lf.model.Fields.Scan.AddListener(binding.NewDataListener(func() {
-		f, _ := lf.model.Fields.Scan.Get()
-		check.SetChecked((f > 0))
-	}))
-	frm.Objects = append(frm.Objects, checkLabel, check, label, box)
+	frm := lf.createCheckSlide(lf.model.Fields.Scan, label, res.ScannerLabel, lf.isScanner)
 	return frm
 }
 

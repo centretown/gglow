@@ -62,10 +62,9 @@ func (m *Model) onChangeFrame() {
 	m.LayerSummaryList.Set(summaries)
 }
 
-func (m *Model) getFrame() (frame *glow.Frame) {
-	face, _ := m.Frame.Get()
-	frame = face.(*glow.Frame) // panic
-	return
+func (m *Model) getFrame() *glow.Frame {
+	frame, _ := m.Frame.Get()
+	return frame.(*glow.Frame)
 }
 
 func (m *Model) SetCurrentLayer(i int) {
