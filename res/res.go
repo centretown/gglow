@@ -79,7 +79,6 @@ const (
 	ScanLabel
 	SaturationLabel
 	ValueLabel
-	ChooseEffectLabel
 	EffectsLabel
 	ScannerLabel
 	BackDropLabel
@@ -97,7 +96,7 @@ var entryLabels = []string{
 	"Origin", "Orientation",
 	"Colors", "Hue", "Scan",
 	"Saturation", "Value",
-	"Pick an Effect...", "Effects",
+	"Effects",
 	"Scanner", "Backdrop",
 	"Dynamic", "Static",
 	"Gradient", "Reversed",

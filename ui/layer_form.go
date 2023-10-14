@@ -13,19 +13,17 @@ import (
 
 type LayerForm struct {
 	*container.AppTabs
-	model      *data.Model
-	changeView func()
-	isDynamic  binding.Bool
-	isScanner  binding.Bool
+	model     *data.Model
+	isDynamic binding.Bool
+	isScanner binding.Bool
 }
 
-func NewLayerForm(model *data.Model, changeView func()) *LayerForm {
+func NewLayerForm(model *data.Model) *LayerForm {
 	lf := &LayerForm{
-		AppTabs:    container.NewAppTabs(),
-		model:      model,
-		changeView: changeView,
-		isDynamic:  binding.NewBool(),
-		isScanner:  binding.NewBool(),
+		AppTabs:   container.NewAppTabs(),
+		model:     model,
+		isDynamic: binding.NewBool(),
+		isScanner: binding.NewBool(),
 	}
 
 	// hue shift tab
@@ -48,12 +46,10 @@ func NewLayerForm(model *data.Model, changeView func()) *LayerForm {
 	tab = container.NewTabItem(res.ChromaLabel.String(), frm)
 	lf.AppTabs.Append(tab)
 
-	lf.model.Fields.HueShift.AddListener(binding.NewDataListener(func() {
+	lf.model.Layer.AddListener(binding.NewDataListener(func() {
 		f, _ := lf.model.Fields.HueShift.Get()
 		lf.isDynamic.Set(f != 0)
-	}))
-	lf.model.Fields.Scan.AddListener(binding.NewDataListener(func() {
-		f, _ := lf.model.Fields.Scan.Get()
+		f, _ = lf.model.Fields.Scan.Get()
 		lf.isScanner.Set(f > 0)
 	}))
 

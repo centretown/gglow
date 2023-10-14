@@ -10,9 +10,8 @@ import (
 )
 
 const (
-	minDiameter     float32 = 10
-	maxDiameter     float32 = 100
-	defaultDiameter float32 = 14
+	minStripWidth  float32 = 320
+	minStripHeight float32 = 120
 )
 
 type LightStrip struct {
@@ -23,7 +22,6 @@ type LightStrip struct {
 	length     float64
 	rows       float64
 	interval   float64
-	diameter   float32
 }
 
 func (strip *LightStrip) Length() uint16 {
@@ -55,11 +53,10 @@ func NewLightStrip(length, rows, interval float64) *LightStrip {
 		length:     length,
 		rows:       rows,
 		interval:   interval,
-		diameter:   defaultDiameter,
 	}
 
 	strip.colorOff = color.RGBA{48, 24, 16, 255}
-	strip.background.CornerRadius = defaultDiameter
+	strip.background.CornerRadius = 14
 	strip.buildLights()
 	strip.ExtendBaseWidget(strip)
 	return strip
@@ -76,14 +73,17 @@ func (strip *LightStrip) TurnOff() {
 func (strip *LightStrip) buildLights() {
 	strip.lights = make([]*canvas.Circle, int(strip.length))
 	for i := range strip.lights {
-		circle := strip.newLight(strip.colorOff)
+		circle := canvas.NewCircle(strip.colorOff)
 		strip.lights[i] = circle
 	}
 }
 
-func (strip *LightStrip) newLight(color color.RGBA) (circle *canvas.Circle) {
-	circle = canvas.NewCircle(color)
-	return
+type lightStripRenderer struct {
+	objects  []fyne.CanvasObject
+	strip    *LightStrip
+	diameter float32
+	space    float32
+	padding  float32
 }
 
 func (strip *LightStrip) CreateRenderer() fyne.WidgetRenderer {
@@ -95,68 +95,68 @@ func (strip *LightStrip) CreateRenderer() fyne.WidgetRenderer {
 		objects = append(objects, l)
 	}
 
-	rs := lightStripRenderer{
+	lrs := lightStripRenderer{
 		objects: objects,
 		strip:   strip,
 		space:   padding * 2,
 		padding: padding * 2,
 	}
 
-	return &rs
+	return &lrs
 }
 
-type lightStripRenderer struct {
-	objects  []fyne.CanvasObject
-	strip    *LightStrip
-	diameter float32
-	space    float32
-	padding  float32
-}
+func (lsr *lightStripRenderer) getPos(row, col int, xSpace, ySpace,
+	xPadding, yPadding float32) (x, y float32) {
 
-func (r *lightStripRenderer) getPos(row, col int, xSpace, ySpace, padding float32) (x, y float32) {
-	x = float32(col)*(r.diameter+xSpace) + padding
-	y = float32(row)*(r.diameter+ySpace) + r.padding
+	x = float32(col)*(lsr.diameter+xSpace) + xPadding
+	y = float32(row)*(lsr.diameter+ySpace) + yPadding
 	return
 }
 
-func (r *lightStripRenderer) Layout(size fyne.Size) {
-	r.strip.BaseWidget.Resize(size)
-	r.strip.background.Resize(size)
+func (lsr *lightStripRenderer) Layout(size fyne.Size) {
+	lsr.strip.BaseWidget.Resize(size) //before or after
+	lsr.strip.background.Resize(size) //before or after
 
-	rows := int(r.strip.rows)
-	cols := int(r.strip.length) / rows
+	rows := int(lsr.strip.rows)
+	cols := int(lsr.strip.length) / rows
 
-	r.diameter = defaultDiameter
-	circleSize := fyne.Size{Width: r.diameter, Height: r.diameter}
+	lsr.diameter = lsr.calculateDiameter(size, float32(rows), float32(cols))
+	circleSize := fyne.Size{Width: lsr.diameter, Height: lsr.diameter}
 
 	xSpace := size.Width / float32(cols+1)
-	xSpace -= r.diameter
-	padding := xSpace + r.diameter/2
+	xSpace -= lsr.diameter
+	xPadding := xSpace + lsr.diameter/2
+	ySpace := size.Height / float32(rows)
+	ySpace -= lsr.diameter
+	yPadding := ySpace + lsr.diameter/2
 
-	for i, light := range r.strip.lights {
+	for i, light := range lsr.strip.lights {
 		light.Resize(circleSize)
-		x, y := r.getPos(i/cols, i%cols, xSpace, r.space, padding)
+		x, y := lsr.getPos(i/cols, i%cols, xSpace, lsr.space, xPadding, yPadding)
 		light.Move(fyne.Position{X: x, Y: y})
 	}
 }
 
-func (r *lightStripRenderer) MinSize() (size fyne.Size) {
-	rows := int(r.strip.rows)
-	cols := int(r.strip.length) / rows
-	x, y := r.getPos(rows, cols, r.space, r.space, r.padding)
-	size.Width = x
-	size.Height = y
+func (lsr *lightStripRenderer) calculateDiameter(size fyne.Size, rows, cols float32) float32 {
+	width := size.Width / cols
+	height := size.Height / rows
+	return min(width, height) / 2
+}
+
+func (lsr *lightStripRenderer) MinSize() (size fyne.Size) {
+	size.Width = minStripWidth
+	size.Height = minStripHeight
 	return
 }
 
-func (r *lightStripRenderer) Refresh() {
-	r.Layout(r.strip.BaseWidget.Size())
-	canvas.Refresh(&r.strip.BaseWidget)
-	r.strip.background.Refresh()
+func (lsr *lightStripRenderer) Refresh() {
+	lsr.Layout(lsr.strip.BaseWidget.Size())
+	canvas.Refresh(&lsr.strip.BaseWidget)
+	lsr.strip.background.Refresh()
 }
 
-func (r *lightStripRenderer) Objects() []fyne.CanvasObject {
-	return r.objects
+func (lsr *lightStripRenderer) Objects() []fyne.CanvasObject {
+	return lsr.objects
 }
 
-func (r *lightStripRenderer) Destroy() {}
+func (lsr *lightStripRenderer) Destroy() {}
