@@ -33,6 +33,6 @@ func main() {
 	defer ui.OnExit()
 
 	window.SetContent(ui.BuildContent())
-	window.Resize(res.WindowSize)
+	// window.Resize(res.WindowSize)
 	window.ShowAndRun()
 }

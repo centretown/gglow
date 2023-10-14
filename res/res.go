@@ -45,9 +45,9 @@ const (
 var contentLabels = []string{"Frames", "Layers", "Colors"}
 
 const (
-	StripLength   float64 = 36
-	StripRows     float64 = 4
-	StripInterval float64 = 64
+	StripLength   float64 = 1000
+	StripRows     float64 = 20
+	StripInterval float64 = 32
 )
 
 func (id ContentID) String() string {

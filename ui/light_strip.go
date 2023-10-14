@@ -1,7 +1,9 @@
 package ui
 
 import (
+	"fmt"
 	"image/color"
+	"math"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -12,6 +14,8 @@ import (
 const (
 	minStripWidth  float32 = 320
 	minStripHeight float32 = 120
+	maxRows        int     = 20
+	maxCols        int     = 50
 )
 
 type LightStrip struct {
@@ -73,21 +77,16 @@ func (strip *LightStrip) TurnOff() {
 func (strip *LightStrip) buildLights() {
 	strip.lights = make([]*canvas.Circle, int(strip.length))
 	for i := range strip.lights {
-		circle := canvas.NewCircle(strip.colorOff)
-		strip.lights[i] = circle
+		strip.lights[i] = canvas.NewCircle(strip.colorOff)
 	}
 }
 
 type lightStripRenderer struct {
-	objects  []fyne.CanvasObject
-	strip    *LightStrip
-	diameter float32
-	space    float32
-	padding  float32
+	objects []fyne.CanvasObject
+	strip   *LightStrip
 }
 
 func (strip *LightStrip) CreateRenderer() fyne.WidgetRenderer {
-	padding := theme.Padding()
 	objects := make([]fyne.CanvasObject, 0, len(strip.lights)+1)
 	objects = append(objects, strip.background)
 
@@ -95,52 +94,40 @@ func (strip *LightStrip) CreateRenderer() fyne.WidgetRenderer {
 		objects = append(objects, l)
 	}
 
-	lrs := lightStripRenderer{
+	lsr := lightStripRenderer{
 		objects: objects,
 		strip:   strip,
-		space:   padding * 2,
-		padding: padding * 2,
 	}
 
-	return &lrs
-}
-
-func (lsr *lightStripRenderer) getPos(row, col int, xSpace, ySpace,
-	xPadding, yPadding float32) (x, y float32) {
-
-	x = float32(col)*(lsr.diameter+xSpace) + xPadding
-	y = float32(row)*(lsr.diameter+ySpace) + yPadding
-	return
+	return &lsr
 }
 
 func (lsr *lightStripRenderer) Layout(size fyne.Size) {
-	lsr.strip.BaseWidget.Resize(size) //before or after
-	lsr.strip.background.Resize(size) //before or after
-
 	rows := int(lsr.strip.rows)
 	cols := int(lsr.strip.length) / rows
 
-	lsr.diameter = lsr.calculateDiameter(size, float32(rows), float32(cols))
-	circleSize := fyne.Size{Width: lsr.diameter, Height: lsr.diameter}
+	cellSize := min(size.Width/float32(cols), size.Height/float32(rows))
+	cellSize = float32(math.Floor(float64(cellSize)))
 
-	xSpace := size.Width / float32(cols+1)
-	xSpace -= lsr.diameter
-	xPadding := xSpace + lsr.diameter/2
-	ySpace := size.Height / float32(rows)
-	ySpace -= lsr.diameter
-	yPadding := ySpace + lsr.diameter/2
+	diameter := float32(math.Ceil(float64(cellSize / 2)))
+	circleSize := fyne.Size{Width: diameter, Height: diameter}
+
+	xOrigin := (size.Width - cellSize*float32(cols)) / 2
+	yOrigin := (size.Height - cellSize*float32(rows)) / 2
+
+	getPos := func(row, col int) (x, y float32) {
+		x = float32(col)*cellSize + xOrigin
+		y = float32(row)*cellSize + yOrigin
+		return x, y
+	}
 
 	for i, light := range lsr.strip.lights {
 		light.Resize(circleSize)
-		x, y := lsr.getPos(i/cols, i%cols, xSpace, lsr.space, xPadding, yPadding)
+		x, y := getPos(i/cols, i%cols)
 		light.Move(fyne.Position{X: x, Y: y})
 	}
-}
 
-func (lsr *lightStripRenderer) calculateDiameter(size fyne.Size, rows, cols float32) float32 {
-	width := size.Width / cols
-	height := size.Height / rows
-	return min(width, height) / 2
+	fmt.Println("rows", rows, "cols", cols, "cellSize", cellSize, "diameter", diameter)
 }
 
 func (lsr *lightStripRenderer) MinSize() (size fyne.Size) {
