@@ -3,7 +3,7 @@ package data
 import (
 	"fmt"
 	"glow-gui/glow"
-	"glow-gui/res"
+	"glow-gui/resources"
 	"strings"
 )
 
@@ -14,20 +14,20 @@ func Summarize(layer *glow.Layer) string {
 	space := " "
 
 	if layer.HueShift != 0 {
-		bldr.WriteString(res.DynamicLabel.String() + space)
+		bldr.WriteString(resources.DynamicLabel.String() + space)
 	} else {
-		bldr.WriteString(res.StaticLabel.String() + space)
+		bldr.WriteString(resources.StaticLabel.String() + space)
 	}
 
-	bldr.WriteString(res.OrientationID(
+	bldr.WriteString(resources.OrientationID(
 		layer.Grid.Orientation).String() + space)
 
 	if len(layer.Chroma.Colors) > 1 {
-		bldr.WriteString(res.GradientLabel.String() + space)
+		bldr.WriteString(resources.GradientLabel.String() + space)
 	}
 
 	if layer.Scan > 0 {
-		bldr.WriteString(res.ScannerLabel.String() + space)
+		bldr.WriteString(resources.ScannerLabel.String() + space)
 	}
 
 	if layer.Begin != 0 || layer.End != 100 {

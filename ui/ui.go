@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 	"glow-gui/data"
-	"glow-gui/res"
+	"glow-gui/resources"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -37,12 +37,12 @@ func (ui *Ui) OnExit() {
 }
 
 func (ui *Ui) BuildContent() *fyne.Container {
-	err := res.LoadGridIcons("dark")
+	err := resources.LoadGridIcons("dark")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	ui.strip = NewLightStrip(res.StripLength, res.StripRows, res.StripInterval)
+	ui.strip = NewLightStrip(resources.StripLength, resources.StripRows, resources.StripInterval)
 	ui.stripPlayer = NewLightStripPlayer(ui.strip, ui.model.Frame)
 
 	stripTools := container.New(layout.NewCenterLayout(), ui.stripPlayer)

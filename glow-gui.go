@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"glow-gui/data"
-	"glow-gui/res"
+	"glow-gui/resources"
 	"glow-gui/store"
 	"glow-gui/ui"
 	"os"
@@ -13,11 +13,17 @@ import (
 )
 
 func main() {
-	app := app.NewWithID(res.AppID)
-	icon, err := res.GooseNoirImage.Load()
+	app := app.NewWithID(resources.AppID)
+	icon, err := resources.GooseNoirImage.Load()
 	if err == nil {
 		app.SetIcon(icon)
 	}
+
+	pref := app.Preferences()
+	pref.FloatWithFallback("StripLength", resources.StripLength)
+	pref.FloatWithFallback("StripRows", resources.StripRows)
+	pref.FloatWithFallback("StripInterval", resources.StripInterval)
+	// pref.StringWithFallback("ThemeVariant", "DarkTheme")
 
 	app.Settings().SetTheme(theme.DarkTheme())
 
@@ -27,8 +33,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	window := app.NewWindow(res.GlowLabel.String() + " " +
-		res.EffectsLabel.String())
+	window := app.NewWindow(resources.GlowLabel.String() + " " +
+		resources.EffectsLabel.String())
 	ui := ui.NewUi(app, window, data.NewModel())
 	defer ui.OnExit()
 

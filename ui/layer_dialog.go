@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/res"
+	"glow-gui/resources"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -12,13 +12,13 @@ import (
 )
 
 func ColorDialog(window fyne.Window) *fyne.Container {
-	hueLabel := widget.NewLabel(res.HueLabel.String())
+	hueLabel := widget.NewLabel(resources.HueLabel.String())
 	hueEntry := widget.NewEntry()
-	hueEntry.SetPlaceHolder(res.HueLabel.PlaceHolder())
+	hueEntry.SetPlaceHolder(resources.HueLabel.PlaceHolder())
 
-	label2 := widget.NewLabel(res.SaturationLabel.String())
+	label2 := widget.NewLabel(resources.SaturationLabel.String())
 	value2 := widget.NewEntry()
-	value2.SetPlaceHolder(res.SaturationLabel.PlaceHolder())
+	value2.SetPlaceHolder(resources.SaturationLabel.PlaceHolder())
 
 	button1 := widget.NewButton("Choose Color...", func() {
 		picker := dialog.NewColorPicker("Color Picker", "color", func(c color.Color) {

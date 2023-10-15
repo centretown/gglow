@@ -2,7 +2,7 @@ package ui
 
 import (
 	"glow-gui/data"
-	"glow-gui/res"
+	"glow-gui/resources"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
@@ -11,7 +11,7 @@ import (
 
 func NewLayerSelect(model *data.Model) (sel *widget.Select) {
 	sel = widget.NewSelect([]string{}, func(s string) {})
-	sel.PlaceHolder = res.LayersLabel.PlaceHolder() + "..."
+	sel.PlaceHolder = resources.LayersLabel.PlaceHolder() + "..."
 	sel.Alignment = fyne.TextAlignCenter
 	sel.OnChanged = func(s string) {
 		model.SetCurrentLayer(sel.SelectedIndex())

@@ -1,7 +1,7 @@
 package data
 
 import (
-	"glow-gui/res"
+	"glow-gui/resources"
 	"glow-gui/store"
 	"testing"
 	"time"
@@ -24,7 +24,7 @@ func TestNewModel(t *testing.T) {
 
 	sliderHueShift := widget.NewSliderWithData(-100, 100, model.Fields.HueShift)
 	sliderScan := widget.NewSliderWithData(-100, 100, model.Fields.Scan)
-	selectOrigin := widget.NewSelect(res.OriginLabels, func(s string) {})
+	selectOrigin := widget.NewSelect(resources.OriginLabels, func(s string) {})
 	selectOrigin.OnChanged = func(s string) {
 		model.Fields.Origin.Set(selectOrigin.SelectedIndex())
 	}
@@ -41,7 +41,7 @@ func TestNewModel(t *testing.T) {
 	doLogAndTest := func() {
 		t.Log()
 		hueShift, _ := model.Fields.HueShift.Get()
-		t.Log(res.HueShiftLabel, hueShift)
+		t.Log(resources.HueShiftLabel, hueShift)
 		t.Log("hue slider.Value", sliderHueShift.Value)
 		if hueShift != sliderHueShift.Value {
 			t.Errorf("hueShift %f doesn't match slider value %f",
@@ -49,7 +49,7 @@ func TestNewModel(t *testing.T) {
 		}
 
 		scan, _ := model.Fields.Scan.Get()
-		t.Log(res.ScanLabel, scan)
+		t.Log(resources.ScanLabel, scan)
 		t.Log("scan slider.Value", sliderScan.Value)
 		if scan != sliderScan.Value {
 			t.Errorf("scan %f doesn't match slider value %f",
@@ -57,7 +57,7 @@ func TestNewModel(t *testing.T) {
 		}
 
 		origin, _ := model.Fields.Origin.Get()
-		t.Log(res.OriginLabel, origin)
+		t.Log(resources.OriginLabel, origin)
 		t.Log("origin selection", selectOrigin.SelectedIndex())
 	}
 

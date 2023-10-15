@@ -2,7 +2,7 @@ package ui
 
 import (
 	"glow-gui/data"
-	"glow-gui/res"
+	"glow-gui/resources"
 	"glow-gui/store"
 
 	"fyne.io/fyne/v2"
@@ -22,7 +22,7 @@ func NewFrameSelect(model *data.Model) *widget.Select {
 
 	options := store.LookUpList()
 	fs.Select = widget.NewSelect(options, fs.onChange)
-	fs.Select.PlaceHolder = res.EffectsLabel.PlaceHolder() + "..."
+	fs.Select.PlaceHolder = resources.EffectsLabel.PlaceHolder() + "..."
 	fs.Select.Alignment = fyne.TextAlignCenter
 
 	return fs.Select

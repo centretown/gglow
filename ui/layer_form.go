@@ -2,7 +2,7 @@ package ui
 
 import (
 	"glow-gui/data"
-	"glow-gui/res"
+	"glow-gui/resources"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -28,22 +28,22 @@ func NewLayerForm(model *data.Model) *LayerForm {
 
 	// hue shift tab
 	frm := lf.createHueTab()
-	tab := container.NewTabItem(res.HueLabel.String(), frm)
+	tab := container.NewTabItem(resources.HueLabel.String(), frm)
 	lf.AppTabs.Append(tab)
 
 	// scan tab
 	frm = lf.createScanTab()
-	tab = container.NewTabItem(res.ScanLabel.String(), frm)
+	tab = container.NewTabItem(resources.ScanLabel.String(), frm)
 	lf.AppTabs.Append(tab)
 
 	// grid tab
 	frm = lf.createGridTab()
-	tab = container.NewTabItem(res.GridLabel.String(), frm)
+	tab = container.NewTabItem(resources.GridLabel.String(), frm)
 	lf.AppTabs.Append(tab)
 
 	// colors tab
 	frm = container.New(layout.NewFormLayout())
-	tab = container.NewTabItem(res.ChromaLabel.String(), frm)
+	tab = container.NewTabItem(resources.ChromaLabel.String(), frm)
 	lf.AppTabs.Append(tab)
 
 	lf.model.Layer.AddListener(binding.NewDataListener(func() {
@@ -56,15 +56,15 @@ func NewLayerForm(model *data.Model) *LayerForm {
 	return lf
 }
 
-func (lf *LayerForm) createLabel(labelID res.LabelID, iconID res.AppIconID) fyne.CanvasObject {
-	icon := container.NewPadded(widget.NewIcon(res.AppIconResource(iconID)))
+func (lf *LayerForm) createLabel(labelID resources.LabelID, iconID resources.AppIconID) fyne.CanvasObject {
+	icon := container.NewPadded(widget.NewIcon(resources.AppIconResource(iconID)))
 	label := widget.NewLabel(labelID.String())
 	hbox := container.NewHBox(icon, label)
 	return hbox
 }
 
 func (lf *LayerForm) createCheckSlide(field binding.Float,
-	label fyne.CanvasObject, checkLabelID res.LabelID,
+	label fyne.CanvasObject, checkLabelID resources.LabelID,
 	isChecked binding.Bool) *fyne.Container {
 
 	frm := container.New(layout.NewFormLayout())
@@ -95,21 +95,21 @@ func (lf *LayerForm) createCheckSlide(field binding.Float,
 }
 
 func (lf *LayerForm) createHueTab() *fyne.Container {
-	label := lf.createLabel(res.HueShiftLabel, res.HueShiftIcon)
-	frm := lf.createCheckSlide(lf.model.Fields.HueShift, label, res.DynamicLabel, lf.isDynamic)
+	label := lf.createLabel(resources.HueShiftLabel, resources.HueShiftIcon)
+	frm := lf.createCheckSlide(lf.model.Fields.HueShift, label, resources.DynamicLabel, lf.isDynamic)
 	return frm
 }
 
 func (lf *LayerForm) createScanTab() *fyne.Container {
-	label := lf.createLabel(res.ScanLengthLabel, res.ScanIcon)
-	frm := lf.createCheckSlide(lf.model.Fields.Scan, label, res.ScannerLabel, lf.isScanner)
+	label := lf.createLabel(resources.ScanLengthLabel, resources.ScanIcon)
+	frm := lf.createCheckSlide(lf.model.Fields.Scan, label, resources.ScannerLabel, lf.isScanner)
 	return frm
 }
 
 func (lf *LayerForm) createGridTab() *fyne.Container {
 	frm := container.New(layout.NewFormLayout())
-	labelOrigin := lf.createLabel(res.OriginLabel, res.HueShiftIcon)
-	selectOrigin := widget.NewSelect(res.OriginLabels, func(s string) {})
+	labelOrigin := lf.createLabel(resources.OriginLabel, resources.HueShiftIcon)
+	selectOrigin := widget.NewSelect(resources.OriginLabels, func(s string) {})
 	selectOrigin.OnChanged = func(s string) {
 		lf.model.Fields.Origin.Set(selectOrigin.SelectedIndex())
 	}
@@ -120,8 +120,8 @@ func (lf *LayerForm) createGridTab() *fyne.Container {
 
 	frm.Objects = append(frm.Objects, labelOrigin, selectOrigin)
 
-	labelOrientation := lf.createLabel(res.OrientationLabel, res.HueShiftIcon)
-	selectOrientation := widget.NewSelect(res.OrientationLabels, func(s string) {})
+	labelOrientation := lf.createLabel(resources.OrientationLabel, resources.HueShiftIcon)
+	selectOrientation := widget.NewSelect(resources.OrientationLabels, func(s string) {})
 	selectOrientation.OnChanged = func(s string) {
 		lf.model.Fields.Orientation.Set(selectOrientation.SelectedIndex())
 	}

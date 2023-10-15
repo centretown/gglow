@@ -1,7 +1,8 @@
-package res
+package resources
 
 import (
 	"glow-gui/glow"
+	"path"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -45,8 +46,8 @@ const (
 var contentLabels = []string{"Frames", "Layers", "Colors"}
 
 const (
-	StripLength   float64 = 1000
-	StripRows     float64 = 20
+	StripLength   float64 = 200
+	StripRows     float64 = 10
 	StripInterval float64 = 32
 )
 
@@ -199,6 +200,8 @@ const (
 	GRID_ICON_COUNT
 )
 
+var gridIconPath = "resources/icons/"
+
 var gridIconFiles = []string{
 	"top_left_horizontal.svg",
 	"top_left_vertical.svg",
@@ -233,7 +236,8 @@ func LoadGridIcons(theme string) (err error) {
 	var res fyne.Resource
 
 	for i := 0; i < len(gridIconFiles); i++ {
-		res, err = fyne.LoadResourceFromPath("res/icons/" + theme + "/" + gridIconFiles[i])
+		res, err = fyne.LoadResourceFromPath(path.Join(gridIconPath, theme, gridIconFiles[i]))
+		// res, err = fyne.LoadResourceFromPath(gridIconPath + theme + "/" + gridIconFiles[i])
 		if err != nil {
 			return
 		}
@@ -241,7 +245,7 @@ func LoadGridIcons(theme string) (err error) {
 	}
 
 	for i := 0; i < len(appIconFiles); i++ {
-		res, err = fyne.LoadResourceFromPath("res/icons/" + theme + "/" + appIconFiles[i])
+		res, err = fyne.LoadResourceFromPath(gridIconPath + theme + "/" + appIconFiles[i])
 		if err != nil {
 			return
 		}

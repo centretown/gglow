@@ -3,7 +3,7 @@ package store
 import (
 	"fmt"
 	"glow-gui/glow"
-	"glow-gui/res"
+	"glow-gui/resources"
 	"io"
 	"strings"
 
@@ -20,8 +20,8 @@ const (
 // var readbuf []byte = make([]byte, max_buffer_size)
 
 const (
-	FramePath   = "/home/dave/src/glow-gui/res/frames/"
-	DerivedPath = "/home/dave/src/glow-gui/res/frames/derived"
+	FramePath   = "/home/dave/src/glow-gui/resources/frames/"
+	DerivedPath = "/home/dave/src/glow-gui/resources/frames/derived"
 )
 
 var (
@@ -53,37 +53,37 @@ func Setup() (err error) {
 
 	path := scheme + FramePath
 
-	formatMessage := func(id res.MessageID, msg string, err error) error {
+	formatMessage := func(id resources.MessageID, msg string, err error) error {
 		id.Log(path, err)
 		return fmt.Errorf("%s %s %s", id, msg, err.Error())
 	}
 
 	uri, err = storage.ParseURI(path)
 	if err != nil {
-		err = formatMessage(res.MsgParseEffectPath, path, err)
+		err = formatMessage(resources.MsgParseEffectPath, path, err)
 		return
 	}
 
 	canList, err = storage.CanList(uri)
 	if err != nil {
-		err = formatMessage(res.MsgNoAccess, path, err)
+		err = formatMessage(resources.MsgNoAccess, path, err)
 		return
 	}
 
 	if !canList {
-		err = formatMessage(res.MsgPathNotFolder, path, err)
+		err = formatMessage(resources.MsgPathNotFolder, path, err)
 		return
 	}
 
 	FrameURI, err = storage.ListerForURI(uri)
 	if err != nil {
-		err = formatMessage(res.MsgNoList, path, err)
+		err = formatMessage(resources.MsgNoList, path, err)
 		return
 	}
 
 	uriList, err := FrameURI.List()
 	if err != nil {
-		err = formatMessage(res.MsgNoList, path, err)
+		err = formatMessage(resources.MsgNoList, path, err)
 		return
 	}
 

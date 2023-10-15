@@ -2,7 +2,7 @@ package data
 
 import (
 	"glow-gui/glow"
-	"glow-gui/res"
+	"glow-gui/resources"
 	"glow-gui/store"
 
 	"fyne.io/fyne/v2"
@@ -78,7 +78,7 @@ func (m *Model) SetCurrentLayer(i int) {
 		// m.LayerIndex.Set(0)
 		m.LayerIndex.Set(-1)
 	}
-	setUntyped(m.Layer, layer, res.MsgSetLayer)
+	setUntyped(m.Layer, layer, resources.MsgSetLayer)
 	m.Fields.FromLayer(layer)
 }
 
@@ -86,17 +86,17 @@ func (m *Model) LoadFrame(frameName string) (err error) {
 	var uri fyne.URI
 	uri, err = store.LookupURI(frameName)
 	if err != nil {
-		res.MsgGetEffectLookup.Log(frameName, err)
+		resources.MsgGetEffectLookup.Log(frameName, err)
 		return
 	}
 
 	frame := &glow.Frame{}
 	err = store.LoadFrameURI(uri, frame)
 	if err != nil {
-		res.MsgGetEffectLoad.Log(uri.Name(), err)
+		resources.MsgGetEffectLoad.Log(uri.Name(), err)
 		return
 	}
-	err = setUntyped(m.Frame, frame, res.MsgSetFrame)
+	err = setUntyped(m.Frame, frame, resources.MsgSetFrame)
 	return
 }
 
