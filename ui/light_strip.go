@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"image/color"
 	"math"
 
@@ -126,8 +125,6 @@ func (lsr *lightStripRenderer) Layout(size fyne.Size) {
 		x, y := getPos(i/cols, i%cols)
 		light.Move(fyne.Position{X: x, Y: y})
 	}
-
-	fmt.Println("rows", rows, "cols", cols, "cellSize", cellSize, "diameter", diameter)
 }
 
 func (lsr *lightStripRenderer) MinSize() (size fyne.Size) {
