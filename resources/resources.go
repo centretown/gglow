@@ -19,7 +19,7 @@ const (
 )
 
 var imagePath = []string{
-	"res/dark-gander.png",
+	"resources/dark-gander.png",
 }
 
 func (id ImageID) String() string {
@@ -45,12 +45,6 @@ const (
 
 var contentLabels = []string{"Frames", "Layers", "Colors"}
 
-const (
-	StripLength   float64 = 200
-	StripRows     float64 = 10
-	StripInterval float64 = 32
-)
-
 func (id ContentID) String() string {
 	return contentLabels[id]
 }
@@ -63,6 +57,7 @@ type LabelID uint16
 
 const (
 	GlowLabel LabelID = iota
+	ColumnsLabel
 	LengthLabel
 	RowsLabel
 	IntervalLabel
@@ -87,10 +82,12 @@ const (
 	StaticLabel
 	GradientLabel
 	ReversedLabel
+	CancelLabel
+	ConfirmLabel
 )
 
 var entryLabels = []string{
-	"Glow",
+	"Glow", "Columns",
 	"Length", "Rows", "Interval", "Layers",
 	"Grid", "Colors", "Hue Shift", "Scan Length",
 	"Begin", "End",
@@ -101,6 +98,7 @@ var entryLabels = []string{
 	"Scanner", "Backdrop",
 	"Dynamic", "Static",
 	"Gradient", "Reversed",
+	"Cancel", "Confirm",
 }
 
 func (id LabelID) String() string {
@@ -254,3 +252,27 @@ func LoadGridIcons(theme string) (err error) {
 
 	return
 }
+
+type Settings int
+
+const (
+	StripColumns Settings = iota
+	StripRows
+	StripInterval
+)
+
+var settings = []string{
+	"StripColumns",
+	"StripRows",
+	"StripInterval",
+}
+
+func (s Settings) String() string {
+	return settings[s]
+}
+
+const (
+	StripColumnsDefault  float64 = 9
+	StripRowsDefault     float64 = 4
+	StripIntervalDefault float64 = 32
+)

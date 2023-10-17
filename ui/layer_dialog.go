@@ -6,6 +6,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
@@ -30,4 +31,13 @@ func ColorDialog(window fyne.Window) *fyne.Container {
 	grid := container.New(layout.NewVBoxLayout(),
 		hueLabel, hueEntry, label2, value2, button1)
 	return grid
+}
+
+func createSlide(field binding.Float, min, max float64) *fyne.Container {
+	slider := widget.NewSliderWithData(min, max, field)
+	dataLabel := widget.NewEntryWithData(
+		binding.FloatToStringWithFormat(field, "%.0f"))
+	box := container.NewBorder(nil, nil,
+		dataLabel, nil, slider)
+	return box
 }

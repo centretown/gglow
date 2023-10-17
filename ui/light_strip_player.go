@@ -30,6 +30,7 @@ type LightStripPlayer struct {
 	*widget.Toolbar
 
 	sourceFrame binding.Untyped
+	sourceStrip binding.Untyped
 	strip       *LightStrip
 
 	playPauseButton *ButtonItem
@@ -42,21 +43,23 @@ type LightStripPlayer struct {
 	pauseChan chan int
 	startChan chan int
 	resetChan chan int
+	stripChan chan int
 	frameChan chan *glow.Frame
 
 	isPlaying bool
 	isActive  bool
 }
 
-func NewLightStripPlayer(strip *LightStrip, sourceFrame binding.Untyped) *LightStripPlayer {
+func NewLightStripPlayer(sourceStrip binding.Untyped, sourceFrame binding.Untyped) *LightStripPlayer {
 	sb := &LightStripPlayer{
 		sourceFrame: sourceFrame,
-		strip:       strip,
+		sourceStrip: sourceStrip,
 		stopChan:    make(chan int),
 		stepChan:    make(chan int),
 		pauseChan:   make(chan int),
 		startChan:   make(chan int),
 		resetChan:   make(chan int),
+		stripChan:   make(chan int),
 		frameChan:   make(chan *glow.Frame),
 	}
 
@@ -74,10 +77,8 @@ func NewLightStripPlayer(strip *LightStrip, sourceFrame binding.Untyped) *LightS
 		sb.stopButton,
 	)
 
-	sb.sourceFrame.AddListener(binding.NewDataListener(func() {
-		sb.run()
-		sb.frameChan <- sb.getFrame()
-	}))
+	sb.strip = sb.getStrip()
+	sb.sourceFrame.AddListener(binding.NewDataListener(sb.frameListener))
 	return sb
 }
 
@@ -86,13 +87,29 @@ func (sb *LightStripPlayer) getFrame() *glow.Frame {
 	return frame.(*glow.Frame)
 }
 
+func (sb *LightStripPlayer) getStrip() *LightStrip {
+	strip, _ := sb.sourceStrip.Get()
+	return strip.(*LightStrip)
+}
+
+func (sb *LightStripPlayer) ResetStrip() {
+	sb.run()
+	sb.stripChan <- 0
+}
+
+func (sb *LightStripPlayer) frameListener() {
+	sb.run()
+	sb.frameChan <- sb.getFrame()
+}
+
 func (sb *LightStripPlayer) OnExit() {
 	sb.stopSpinner()
 }
 
 func (sb *LightStripPlayer) Stop() {
 	sb.stopSpinner()
-	sb.strip.TurnOff()
+	strip := sb.getStrip()
+	strip.TurnOff()
 }
 
 func (sb *LightStripPlayer) Step() {
@@ -145,60 +162,67 @@ func (sb *LightStripPlayer) stopSpinner() {
 
 func (sb *LightStripPlayer) startSpinner() {
 	sb.stopSpinner()
+	go sb.spin()
+	sb.isActive = true
+}
 
-	spin := func() {
-		var (
-			isSpinning bool
-			frame      *glow.Frame
-			err        error
-		)
+func (sb *LightStripPlayer) spin() {
 
-		copyFrame := func(source *glow.Frame) {
-			frame, err = glow.FrameDeepCopy(source)
-			if err != nil {
-				reason := "startSpinner FrameDeepCopy"
-				fyne.LogError(reason, err)
-				reason += " " + err.Error()
-				panic(reason)
-			}
-			frame.Setup(sb.strip.Length(), sb.strip.Rows(), sb.strip.Interval())
+	var (
+		isSpinning bool
+		frame      *glow.Frame
+		err        error
+	)
+
+	copyFrame := func(source *glow.Frame) {
+		frame, err = glow.FrameDeepCopy(source)
+		if err != nil {
+			reason := "startSpinner FrameDeepCopy"
+			fyne.LogError(reason, err)
+			reason += " " + err.Error()
+			panic(reason)
 		}
+		frame.Setup(sb.strip.Length(), sb.strip.Rows(), sb.strip.Interval())
+	}
 
-		copyFrame(sb.getFrame())
+	copyFrame(sb.getFrame())
 
-		for {
-			select {
+	for {
+		select {
 
-			case <-sb.stopChan:
-				sb.isActive = false
-				return
+		case <-sb.stopChan:
+			sb.isActive = false
+			return
 
-			case <-sb.startChan:
-				isSpinning = true
+		case <-sb.startChan:
+			isSpinning = true
 
-			case <-sb.pauseChan:
-				isSpinning = false
+		case <-sb.pauseChan:
+			isSpinning = false
 
-			case <-sb.stepChan:
-				isSpinning = false
+		case <-sb.stepChan:
+			isSpinning = false
+			frame.Spin(sb.strip)
+
+		case f := <-sb.frameChan:
+			copyFrame(f)
+			frame.Spin(sb.strip)
+
+		case <-sb.stripChan:
+			sb.strip = sb.getStrip()
+			frame.Setup(sb.strip.Length(), sb.strip.Rows(), sb.strip.Interval())
+			frame.Spin(sb.strip)
+
+		case <-sb.resetChan:
+			copyFrame(sb.getFrame())
+			frame.Spin(sb.strip)
+
+		default:
+			if isSpinning {
 				frame.Spin(sb.strip)
-
-			case f := <-sb.frameChan:
-				copyFrame(f)
-				frame.Spin(sb.strip)
-
-			case <-sb.resetChan:
-				copyFrame(sb.getFrame())
-				frame.Spin(sb.strip)
-
-			default:
-				if isSpinning {
-					frame.Spin(sb.strip)
-				}
-				time.Sleep(time.Duration(frame.Interval) * time.Millisecond)
 			}
+			time.Sleep(time.Duration(frame.Interval) * time.Millisecond)
 		}
 	}
-	go spin()
-	sb.isActive = true
+
 }

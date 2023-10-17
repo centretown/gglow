@@ -9,14 +9,14 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-type FrameSelect struct {
+type EffectSelect struct {
 	*widget.Select
 	model *data.Model
 }
 
-func NewFrameSelect(model *data.Model) *widget.Select {
+func NewEffectSelect(model *data.Model) *widget.Select {
 
-	fs := &FrameSelect{
+	fs := &EffectSelect{
 		model: model,
 	}
 
@@ -28,7 +28,7 @@ func NewFrameSelect(model *data.Model) *widget.Select {
 	return fs.Select
 }
 
-func (fs *FrameSelect) onChange(frameName string) {
+func (fs *EffectSelect) onChange(frameName string) {
 	err := fs.model.LoadFrame(frameName)
 	if err != nil {
 		//todo popup message

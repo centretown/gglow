@@ -19,13 +19,9 @@ func main() {
 		app.SetIcon(icon)
 	}
 
-	pref := app.Preferences()
-	pref.FloatWithFallback("StripLength", resources.StripLength)
-	pref.FloatWithFallback("StripRows", resources.StripRows)
-	pref.FloatWithFallback("StripInterval", resources.StripInterval)
-	// pref.StringWithFallback("ThemeVariant", "DarkTheme")
-
 	app.Settings().SetTheme(theme.DarkTheme())
+	// theme := app.Settings().Theme()
+	// fmt.Println(theme)
 
 	err = store.Setup()
 	if err != nil {
