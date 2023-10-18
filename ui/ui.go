@@ -40,12 +40,10 @@ func (ui *Ui) OnExit() {
 
 func (ui *Ui) BuildContent() *fyne.Container {
 
-	effectSelect := NewEffectSelect(ui.model)
-
 	layerSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {})
 	layerSelect := NewLayerSelect(ui.model)
 
-	form := NewLayerForm(ui.model)
+	layerForm := NewLayerForm(ui.model)
 
 	stripColumns := ui.preferences.FloatWithFallback(resources.StripColumns.String(),
 		resources.StripColumnsDefault)
@@ -62,16 +60,16 @@ func (ui *Ui) BuildContent() *fyne.Container {
 
 	lightStripSettings := NewLightStripSettings(ui.window, ui.app.Preferences(), ui.sourceStrip)
 	lightSettingsButton := widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
-		lightStripSettings.CustomDialog.Resize(ui.window.Canvas().Size())
+		lightStripSettings.CustomDialog.Resize(layerForm.Size())
 		lightStripSettings.CustomDialog.Show()
 	})
+	effectSelect := NewEffectSelect(ui.model)
 	effectBox := container.NewBorder(nil, nil, lightSettingsButton, nil, effectSelect)
 
 	layerBox := container.NewBorder(nil, nil, layerSettingsButton, nil, layerSelect)
-
 	selectors := container.NewVBox(effectBox, layerBox)
 	editor := container.NewBorder(selectors, nil, nil, nil,
-		form.AppTabs)
+		layerForm.AppTabs)
 
 	playContainer := container.NewBorder(nil, stripTools, nil, nil, strip)
 	ui.sourceStrip.AddListener(binding.NewDataListener(func() {
