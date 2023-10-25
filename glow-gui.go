@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/theme"
 )
 
 func main() {
@@ -19,9 +18,7 @@ func main() {
 		app.SetIcon(icon)
 	}
 
-	app.Settings().SetTheme(theme.DarkTheme())
-	// theme := app.Settings().Theme()
-	// fmt.Println(theme)
+	app.Settings().SetTheme(resources.NewGlowTheme(app.Preferences()))
 
 	err = store.Setup()
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -40,38 +39,26 @@ func (ui *Ui) OnExit() {
 
 func (ui *Ui) BuildContent() *fyne.Container {
 
-	layerSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {})
 	layerSelect := NewLayerSelect(ui.model)
 
-	layerForm := NewLayerForm(ui.model)
-
-	stripColumns := ui.preferences.FloatWithFallback(resources.StripColumns.String(),
-		resources.StripColumnsDefault)
-	stripRows := ui.preferences.FloatWithFallback(resources.StripRows.String(),
-		resources.StripRowsDefault)
-	stripInterval := ui.preferences.FloatWithFallback(resources.StripInterval.String(),
-		resources.StripIntervalDefault)
-
-	strip := NewLightStrip(stripColumns*stripRows, stripRows, stripInterval)
+	stripColumns, stripRows := ui.getLightPreferences()
+	strip := NewLightStrip(stripColumns*stripRows, stripRows)
 	ui.sourceStrip.Set(strip)
 
-	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model.Frame)
+	lightStripLayout := NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip)
+	lightStripSpeed := NewLightStripSpeed(ui.window, ui.app.Preferences(), ui.sourceStrip)
+	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model.Frame, lightStripLayout, lightStripSpeed)
 	stripTools := container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
-	lightStripSettings := NewLightStripSettings(ui.window, ui.app.Preferences(), ui.sourceStrip)
-	lightSettingsButton := widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
-		lightStripSettings.CustomDialog.Resize(layerForm.Size())
-		lightStripSettings.CustomDialog.Show()
-	})
 	effectSelect := NewEffectSelect(ui.model)
-	effectBox := container.NewBorder(nil, nil, lightSettingsButton, nil, effectSelect)
+	effectBox := container.NewBorder(nil, nil, nil, nil, effectSelect)
 
-	layerBox := container.NewBorder(nil, nil, layerSettingsButton, nil, layerSelect)
+	layerBox := container.NewBorder(nil, nil, nil, nil, layerSelect)
 	selectors := container.NewVBox(effectBox, layerBox)
-	editor := container.NewBorder(selectors, nil, nil, nil,
-		layerForm.AppTabs)
+	layerForm := NewLayerForm(ui.model, ui.window)
+	editor := container.NewBorder(selectors, nil, nil, nil, layerForm.Container)
 
-	playContainer := container.NewBorder(nil, stripTools, nil, nil, strip)
+	playContainer := container.NewBorder(widget.NewSeparator(), stripTools, nil, nil, strip)
 	ui.sourceStrip.AddListener(binding.NewDataListener(func() {
 		i, _ := ui.sourceStrip.Get()
 		strip = i.(*LightStrip)
@@ -82,4 +69,14 @@ func (ui *Ui) BuildContent() *fyne.Container {
 
 	ui.mainContainer = container.NewBorder(editor, nil, nil, nil, playContainer)
 	return ui.mainContainer
+}
+
+func (ui *Ui) getLightPreferences() (columns, rows float64) {
+	columns = ui.preferences.FloatWithFallback(resources.StripColumns.String(),
+		resources.StripColumnsDefault)
+	rows = ui.preferences.FloatWithFallback(resources.StripRows.String(),
+		resources.StripRowsDefault)
+	// interval = ui.preferences.FloatWithFallback(resources.StripInterval.String(),
+	// 	resources.StripIntervalDefault)
+	return
 }

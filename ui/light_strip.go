@@ -6,7 +6,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -24,7 +23,6 @@ type LightStrip struct {
 	lights     []*canvas.Circle
 	length     float64
 	rows       float64
-	interval   float64
 }
 
 func (strip *LightStrip) Length() uint16 {
@@ -32,9 +30,6 @@ func (strip *LightStrip) Length() uint16 {
 }
 func (strip *LightStrip) Rows() uint16 {
 	return uint16(strip.rows)
-}
-func (strip *LightStrip) Interval() uint32 {
-	return uint32(strip.interval)
 }
 
 // glow.Light interface
@@ -50,12 +45,11 @@ func (strip *LightStrip) Set(i uint16, color color.RGBA) {
 	c.Refresh()
 }
 
-func NewLightStrip(length, rows, interval float64) *LightStrip {
+func NewLightStrip(length, rows float64) *LightStrip {
 	strip := &LightStrip{
-		background: canvas.NewRectangle(theme.ShadowColor()),
+		background: canvas.NewRectangle(color.RGBA{255, 255, 255, 255}),
 		length:     length,
 		rows:       rows,
-		interval:   interval,
 	}
 
 	strip.colorOff = color.RGBA{48, 24, 16, 255}
@@ -125,6 +119,7 @@ func (lsr *lightStripRenderer) Layout(size fyne.Size) {
 		x, y := getPos(i/cols, i%cols)
 		light.Move(fyne.Position{X: x, Y: y})
 	}
+	lsr.strip.background.Refresh()
 }
 
 func (lsr *lightStripRenderer) MinSize() (size fyne.Size) {
@@ -135,8 +130,7 @@ func (lsr *lightStripRenderer) MinSize() (size fyne.Size) {
 
 func (lsr *lightStripRenderer) Refresh() {
 	lsr.Layout(lsr.strip.BaseWidget.Size())
-	canvas.Refresh(&lsr.strip.BaseWidget)
-	lsr.strip.background.Refresh()
+	// canvas.Refresh(&lsr.strip.BaseWidget)
 }
 
 func (lsr *lightStripRenderer) Objects() []fyne.CanvasObject {

@@ -56,7 +56,7 @@ func TestLoadFrame(t *testing.T) {
 		}
 
 		var b []byte
-		frame.Setup(100, 5, 32)
+		frame.Setup(100, 5)
 		b, err = yaml.Marshal(&frame)
 		if err != nil {
 			t.Fatalf(err.Error())

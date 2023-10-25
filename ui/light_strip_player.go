@@ -38,29 +38,35 @@ type LightStripPlayer struct {
 	resetButton     *widget.ToolbarAction
 	stopButton      *widget.ToolbarAction
 
-	stopChan  chan int
-	stepChan  chan int
-	pauseChan chan int
-	startChan chan int
-	resetChan chan int
-	stripChan chan int
-	frameChan chan *glow.Frame
+	layoutButton *widget.ToolbarAction
+
+	stopChan     chan int
+	stepChan     chan int
+	pauseChan    chan int
+	startChan    chan int
+	resetChan    chan int
+	stripChan    chan int
+	intervalChan chan int
+	frameChan    chan *glow.Frame
 
 	isPlaying bool
 	isActive  bool
 }
 
-func NewLightStripPlayer(sourceStrip binding.Untyped, sourceFrame binding.Untyped) *LightStripPlayer {
+func NewLightStripPlayer(sourceStrip binding.Untyped, sourceFrame binding.Untyped,
+	lightStripLayout *LightStripLayout, lightStripSpeed *LightStripSpeed) *LightStripPlayer {
+
 	sb := &LightStripPlayer{
-		sourceFrame: sourceFrame,
-		sourceStrip: sourceStrip,
-		stopChan:    make(chan int),
-		stepChan:    make(chan int),
-		pauseChan:   make(chan int),
-		startChan:   make(chan int),
-		resetChan:   make(chan int),
-		stripChan:   make(chan int),
-		frameChan:   make(chan *glow.Frame),
+		sourceFrame:  sourceFrame,
+		sourceStrip:  sourceStrip,
+		stopChan:     make(chan int),
+		stepChan:     make(chan int),
+		pauseChan:    make(chan int),
+		startChan:    make(chan int),
+		resetChan:    make(chan int),
+		stripChan:    make(chan int),
+		intervalChan: make(chan int),
+		frameChan:    make(chan *glow.Frame),
 	}
 
 	sb.playPauseButton = NewButtonItem(
@@ -70,16 +76,26 @@ func NewLightStripPlayer(sourceStrip binding.Untyped, sourceFrame binding.Untype
 	sb.resetButton = widget.NewToolbarAction(theme.MediaReplayIcon(), sb.Reset)
 	sb.stopButton = widget.NewToolbarAction(theme.MediaStopIcon(), sb.Stop)
 
+	sb.layoutButton = widget.NewToolbarAction(theme.ZoomFitIcon(), func() {
+		lightStripLayout.CustomDialog.Show()
+	})
+
 	sb.Toolbar = widget.NewToolbar(
 		sb.playPauseButton,
 		sb.stepButton,
 		sb.resetButton,
 		sb.stopButton,
+		sb.layoutButton,
 	)
 
 	sb.strip = sb.getStrip()
 	sb.sourceFrame.AddListener(binding.NewDataListener(sb.frameListener))
 	return sb
+}
+
+func (sb *LightStripPlayer) PopupInterval() {
+}
+func (sb *LightStripPlayer) PopupLayout() {
 }
 
 func (sb *LightStripPlayer) getFrame() *glow.Frame {
@@ -182,7 +198,10 @@ func (sb *LightStripPlayer) spin() {
 			reason += " " + err.Error()
 			panic(reason)
 		}
-		frame.Setup(sb.strip.Length(), sb.strip.Rows(), sb.strip.Interval())
+		frame.Setup(sb.strip.Length(), sb.strip.Rows())
+		if frame.Interval == 0 {
+			frame.Interval = glow.DefaultInterval
+		}
 	}
 
 	copyFrame(sb.getFrame())
@@ -210,7 +229,7 @@ func (sb *LightStripPlayer) spin() {
 
 		case <-sb.stripChan:
 			sb.strip = sb.getStrip()
-			frame.Setup(sb.strip.Length(), sb.strip.Rows(), sb.strip.Interval())
+			copyFrame(sb.getFrame())
 			frame.Spin(sb.strip)
 
 		case <-sb.resetChan:

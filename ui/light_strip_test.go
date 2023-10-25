@@ -15,7 +15,7 @@ func TestLightStrip(t *testing.T) {
 	app := test.NewApp()
 	w := app.NewWindow("Circle")
 
-	strip := NewLightStrip(50, 5, 16)
+	strip := NewLightStrip(50, 5)
 	if len(strip.lights) != int(strip.length) {
 		t.Fatalf("LightStrip got %d want %.0f",
 			len(strip.lights), strip.length)
@@ -104,7 +104,8 @@ func readOs(t *testing.T,
 		t.Fatalf(err.Error())
 	}
 
-	frame.Setup(36, 4, 16)
+	frame.Setup(36, 4)
+	frame.SetInterval(16)
 
 	t.Logf("%v", frame)
 }
@@ -143,7 +144,8 @@ func readStorage(t *testing.T,
 		t.Fatalf(err.Error())
 	}
 
-	frame.Setup(36, 4, 16)
+	frame.Setup(36, 4)
+	frame.SetInterval(16)
 
 	t.Logf("%v", frame)
 

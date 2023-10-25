@@ -6,6 +6,12 @@ import (
 	"github.com/barkimedes/go-deepcopy"
 )
 
+const (
+	DefaultInterval = 48
+	MinimumInterval = 16
+	MaximumInterval = 10000
+)
+
 type Frame struct {
 	Length   uint16  `yaml:"length" json:"length"`
 	Rows     uint16  `yaml:"rows" json:"rows"`
@@ -30,11 +36,15 @@ func (frame *Frame) Validate() (err error) {
 	return err
 }
 
-func (frame *Frame) Setup(length, rows uint16, interval uint32) error {
+func (frame *Frame) Setup(length, rows uint16) error {
 	frame.Length = length
 	frame.Rows = rows
-	frame.Interval = interval
 	return frame.Validate()
+}
+
+func (frame *Frame) SetInterval(interval uint32) {
+	frame.Interval = interval
+	frame.Interval = interval
 }
 
 func (frame *Frame) Spin(light Light) {

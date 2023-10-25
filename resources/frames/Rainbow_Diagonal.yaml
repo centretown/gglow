@@ -1,3 +1,4 @@
+interval: 48
 layers:
   - hue_shift: 1
     grid:

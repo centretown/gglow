@@ -16,7 +16,7 @@ type Fields struct {
 }
 
 func NewFields() *Fields {
-	inp := &Fields{
+	fld := &Fields{
 		HueShift:    binding.NewFloat(),
 		Scan:        binding.NewFloat(),
 		Begin:       binding.NewFloat(),
@@ -24,39 +24,39 @@ func NewFields() *Fields {
 		Origin:      binding.NewInt(),
 		Orientation: binding.NewInt(),
 	}
-	return inp
+	return fld
 }
 
-func (inp *Fields) FromLayer(layer *glow.Layer) {
-	inp.HueShift.Set(float64(layer.HueShift))
-	inp.Scan.Set(float64(layer.Scan))
-	inp.Begin.Set(float64(layer.Begin))
-	inp.End.Set(float64(layer.End))
-	inp.Origin.Set(int(layer.Grid.Origin))
-	inp.Orientation.Set(int(layer.Grid.Orientation))
+func (fld *Fields) FromLayer(layer *glow.Layer) {
+	fld.HueShift.Set(float64(layer.HueShift))
+	fld.Scan.Set(float64(layer.Scan))
+	fld.Begin.Set(float64(layer.Begin))
+	fld.End.Set(float64(layer.End))
+	fld.Origin.Set(int(layer.Grid.Origin))
+	fld.Orientation.Set(int(layer.Grid.Orientation))
 }
 
-func (inp *Fields) ToLayer(layer *glow.Layer) {
+func (fld *Fields) ToLayer(layer *glow.Layer) {
 	var (
-		floatTemp float64
-		intTemp   int
+		f float64
+		i int
 	)
 
-	floatTemp, _ = inp.HueShift.Get()
-	layer.HueShift = int16(floatTemp)
+	f, _ = fld.HueShift.Get()
+	layer.HueShift = int16(f)
 
-	floatTemp, _ = inp.Scan.Get()
-	layer.Scan = uint16(floatTemp)
+	f, _ = fld.Scan.Get()
+	layer.Scan = uint16(f)
 
-	floatTemp, _ = inp.Begin.Get()
-	layer.Begin = uint16(floatTemp)
+	f, _ = fld.Begin.Get()
+	layer.Begin = uint16(f)
 
-	floatTemp, _ = inp.End.Get()
-	layer.End = uint16(floatTemp)
+	f, _ = fld.End.Get()
+	layer.End = uint16(f)
 
-	intTemp, _ = inp.Origin.Get()
-	layer.Grid.Origin = glow.Origin(intTemp)
+	i, _ = fld.Origin.Get()
+	layer.Grid.Origin = glow.Origin(i)
 
-	intTemp, _ = inp.Orientation.Get()
-	layer.Grid.Orientation = glow.Orientation(intTemp)
+	i, _ = fld.Orientation.Get()
+	layer.Grid.Orientation = glow.Orientation(i)
 }

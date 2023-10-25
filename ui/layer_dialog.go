@@ -33,11 +33,8 @@ func ColorDialog(window fyne.Window) *fyne.Container {
 	return grid
 }
 
-func createSlide(field binding.Float, min, max float64) *fyne.Container {
-	slider := widget.NewSliderWithData(min, max, field)
-	dataLabel := widget.NewEntryWithData(
-		binding.FloatToStringWithFormat(field, "%.0f"))
-	box := container.NewBorder(nil, nil,
-		dataLabel, nil, slider)
-	return box
+func NewLabelCheck(labelText string, field binding.Bool) (label *widget.Label, check *widget.Check) {
+	label = widget.NewLabel(labelText)
+	check = widget.NewCheckWithData("", field)
+	return
 }

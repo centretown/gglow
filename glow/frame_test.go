@@ -49,10 +49,11 @@ func TestFrameBasic(t *testing.T) {
 
 	var frame Frame
 	frame.AddLayers(layer1, layer2)
-	err := frame.Setup(36, 4, 16)
+	err := frame.Setup(36, 4)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+	frame.SetInterval(16)
 
 	layer1.Scan = 1
 	layer2.Scan = 3

@@ -42,24 +42,20 @@ func NewModel() *Model {
 
 func (m *Model) onChangeFrame() {
 	frame := m.getFrame()
-	list := make([]interface{}, 0, len(frame.Layers))
+	listLength := len(frame.Layers)
+	list := make([]interface{}, 0, listLength)
 	for i := range frame.Layers {
 		list = append(list, &frame.Layers[i])
 	}
 
-	m.LayerList.Set(list)
-	m.SetCurrentLayer(0)
-
 	summaries := make([]string, 0, m.LayerList.Length())
-	m.LayerSummaryList.Set(summaries)
-	for i := 0; i < m.LayerList.Length(); i++ {
-		item, _ := m.LayerList.GetItem(i)
-		untyped := item.(binding.Untyped)
-		face, _ := untyped.Get()
-		layer := face.(*glow.Layer)
-		summaries = append(summaries, Summarize(layer))
+	for i, layer := range frame.Layers {
+		summaries = append(summaries, Summarize(&layer, i+1))
 	}
+
+	m.LayerList.Set(list)
 	m.LayerSummaryList.Set(summaries)
+	m.SetCurrentLayer(0)
 }
 
 func (m *Model) getFrame() *glow.Frame {
@@ -78,26 +74,27 @@ func (m *Model) SetCurrentLayer(i int) {
 		// m.LayerIndex.Set(0)
 		m.LayerIndex.Set(-1)
 	}
-	setUntyped(m.Layer, layer, resources.MsgSetLayer)
+	m.Layer.Set(layer)
 	m.Fields.FromLayer(layer)
 }
 
-func (m *Model) LoadFrame(frameName string) (err error) {
+func (m *Model) LoadFrame(frameName string) error {
 	var uri fyne.URI
-	uri, err = store.LookupURI(frameName)
+	uri, err := store.LookupURI(frameName)
 	if err != nil {
 		resources.MsgGetEffectLookup.Log(frameName, err)
-		return
+		return err
 	}
 
 	frame := &glow.Frame{}
 	err = store.LoadFrameURI(uri, frame)
 	if err != nil {
 		resources.MsgGetEffectLoad.Log(uri.Name(), err)
-		return
+		return err
 	}
-	err = setUntyped(m.Frame, frame, resources.MsgSetFrame)
-	return
+
+	m.Frame.Set(frame)
+	return nil
 }
 
 func (m *Model) GetTitle() string {

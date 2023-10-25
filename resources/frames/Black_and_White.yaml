@@ -1,3 +1,4 @@
+interval: 48
 layers:
   - chroma:
       colors:

@@ -8,43 +8,58 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
 type LayerForm struct {
-	*container.AppTabs
+	*fyne.Container
 	model     *data.Model
 	isDynamic binding.Bool
 	isScanner binding.Bool
+	window    fyne.Window
 }
 
-func NewLayerForm(model *data.Model) *LayerForm {
+func NewLayerForm(model *data.Model, window fyne.Window) *LayerForm {
 	lf := &LayerForm{
-		AppTabs:   container.NewAppTabs(),
+		Container: container.NewHBox(),
 		model:     model,
 		isDynamic: binding.NewBool(),
 		isScanner: binding.NewBool(),
+		window:    window,
 	}
 
-	// hue shift tab
-	frm := lf.createHueTab()
-	tab := container.NewTabItem(resources.HueLabel.String(), frm)
-	lf.AppTabs.Append(tab)
+	// theme.
+	showForm := func(btn *widget.Button, popup *widget.PopUp) func() {
+		f := func() {
+			popup.Resize(fyne.Size{Width: minStripWidth - 2*theme.Padding(),
+				Height: minStripHeight})
+			offset := fyne.NewDelta(theme.Padding(), btn.Size().Height+2*theme.Padding())
+			popup.Move(lf.Container.Position().Add(offset))
+			popup.Show()
+		}
+		return f
+	}
 
-	// scan tab
-	frm = lf.createScanTab()
-	tab = container.NewTabItem(resources.ScanLabel.String(), frm)
-	lf.AppTabs.Append(tab)
+	doNothingOnTapped := func() {}
 
-	// grid tab
-	frm = lf.createGridTab()
-	tab = container.NewTabItem(resources.GridLabel.String(), frm)
-	lf.AppTabs.Append(tab)
+	huePopup := lf.newHueDropDown()
+	hueButton := widget.NewButton(resources.HueLabel.String(), doNothingOnTapped)
+	hueButton.OnTapped = showForm(hueButton, huePopup)
 
-	// colors tab
-	frm = container.New(layout.NewFormLayout())
-	tab = container.NewTabItem(resources.ChromaLabel.String(), frm)
-	lf.AppTabs.Append(tab)
+	scanForm := lf.newScanDropDown()
+	scanButton := widget.NewButton(resources.ScanLabel.String(), doNothingOnTapped)
+	scanButton.OnTapped = showForm(scanButton, scanForm)
+
+	gridForm := lf.newGridDropDown()
+	gridButton := widget.NewButton(resources.GridLabel.String(), doNothingOnTapped)
+	gridButton.OnTapped = showForm(gridButton, gridForm)
+
+	// colorsForm := container.New(layout.NewFormLayout())
+	colorsButton := widget.NewButton(resources.ChromaLabel.String(), doNothingOnTapped)
+	// colorsButton.OnTapped = showForm(colorsButton, colorsForm)
+
+	lf.Container.Objects = []fyne.CanvasObject{gridButton, scanButton, colorsButton, hueButton}
 
 	lf.model.Layer.AddListener(binding.NewDataListener(func() {
 		f, _ := lf.model.Fields.HueShift.Get()
@@ -56,79 +71,49 @@ func NewLayerForm(model *data.Model) *LayerForm {
 	return lf
 }
 
-func (lf *LayerForm) createLabel(labelID resources.LabelID, iconID resources.AppIconID) fyne.CanvasObject {
-	icon := container.NewPadded(widget.NewIcon(resources.AppIconResource(iconID)))
-	label := widget.NewLabel(labelID.String())
-	hbox := container.NewHBox(icon, label)
-	return hbox
+func (lf *LayerForm) newHueDropDown() *widget.PopUp {
+	checkLabel, check := NewLabelCheck(resources.DynamicLabel.String(), lf.isDynamic)
+	bounds := EntryBounds{MinVal: -10, MaxVal: 10, OnVal: 1, OffVal: 0}
+	le := NewDisabledEntry(resources.HueShiftLabel.String(), lf.isDynamic,
+		lf.model.Fields.HueShift, &bounds)
+	return lf.makePopup(checkLabel, check, le.Label, le.InBox)
 }
 
-func (lf *LayerForm) createCheckSlide(field binding.Float,
-	label fyne.CanvasObject, checkLabelID resources.LabelID,
-	isChecked binding.Bool) *fyne.Container {
-
-	frm := container.New(layout.NewFormLayout())
-	slider := widget.NewSliderWithData(1, 10, field)
-	dataLabel := widget.NewLabelWithData(
-		binding.FloatToStringWithFormat(field, "%.0f"))
-	box := container.NewBorder(nil, nil,
-		dataLabel, nil, slider)
-
-	box.Hide()
-	label.Hide()
-	checkLabel := widget.NewLabel(checkLabelID.String())
-
-	isChecked.AddListener(binding.NewDataListener(func() {
-		b, _ := isChecked.Get()
-		if b {
-			label.Show()
-			box.Show()
-		} else {
-			label.Hide()
-			box.Hide()
-		}
-	}))
-
-	check := widget.NewCheckWithData("", isChecked)
-	frm.Objects = append(frm.Objects, checkLabel, check, label, box)
-	return frm
+func (lf *LayerForm) newScanDropDown() *widget.PopUp {
+	checkLabel, check := NewLabelCheck(resources.ScanLabel.String(), lf.isScanner)
+	bounds := EntryBounds{MinVal: 0, MaxVal: 10, OnVal: 1, OffVal: 0}
+	le := NewDisabledEntry(resources.LengthLabel.String(), lf.isScanner,
+		lf.model.Fields.Scan, &bounds)
+	return lf.makePopup(checkLabel, check, le.Label, le.InBox)
 }
 
-func (lf *LayerForm) createHueTab() *fyne.Container {
-	label := lf.createLabel(resources.HueShiftLabel, resources.HueShiftIcon)
-	frm := lf.createCheckSlide(lf.model.Fields.HueShift, label, resources.DynamicLabel, lf.isDynamic)
-	return frm
-}
+func (lf *LayerForm) newGridDropDown() *widget.PopUp {
 
-func (lf *LayerForm) createScanTab() *fyne.Container {
-	label := lf.createLabel(resources.ScanLengthLabel, resources.ScanIcon)
-	frm := lf.createCheckSlide(lf.model.Fields.Scan, label, resources.ScannerLabel, lf.isScanner)
-	return frm
-}
-
-func (lf *LayerForm) createGridTab() *fyne.Container {
-	frm := container.New(layout.NewFormLayout())
-	labelOrigin := lf.createLabel(resources.OriginLabel, resources.HueShiftIcon)
+	labelOrigin := widget.NewLabel(resources.OriginLabel.String())
 	selectOrigin := widget.NewSelect(resources.OriginLabels, func(s string) {})
 	selectOrigin.OnChanged = func(s string) {
 		lf.model.Fields.Origin.Set(selectOrigin.SelectedIndex())
 	}
-	lf.model.Fields.Origin.AddListener(binding.NewDataListener(func() {
-		index, _ := lf.model.Fields.Origin.Get()
-		selectOrigin.SetSelectedIndex(index)
-	}))
 
-	frm.Objects = append(frm.Objects, labelOrigin, selectOrigin)
-
-	labelOrientation := lf.createLabel(resources.OrientationLabel, resources.HueShiftIcon)
+	labelOrientation := widget.NewLabel(resources.OrientationLabel.String())
 	selectOrientation := widget.NewSelect(resources.OrientationLabels, func(s string) {})
 	selectOrientation.OnChanged = func(s string) {
 		lf.model.Fields.Orientation.Set(selectOrientation.SelectedIndex())
 	}
-	lf.model.Fields.Orientation.AddListener(binding.NewDataListener(func() {
-		index, _ := lf.model.Fields.Orientation.Get()
-		selectOrientation.SetSelectedIndex(index)
+
+	lf.model.Layer.AddListener(binding.NewDataListener(func() {
+		origin, _ := lf.model.Fields.Origin.Get()
+		selectOrigin.SetSelectedIndex(origin)
+		orientation, _ := lf.model.Fields.Orientation.Get()
+		selectOrientation.SetSelectedIndex(orientation)
 	}))
-	frm.Objects = append(frm.Objects, labelOrientation, selectOrientation)
-	return frm
+
+	return lf.makePopup(labelOrigin, selectOrigin,
+		labelOrientation, selectOrientation)
+}
+
+func (lf *LayerForm) makePopup(objects ...fyne.CanvasObject) *widget.PopUp {
+	frm := container.New(layout.NewFormLayout())
+	frm.Objects = append(frm.Objects, objects...)
+	return widget.NewPopUp(frm, lf.window.Canvas())
 }

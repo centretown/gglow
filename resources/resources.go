@@ -70,14 +70,12 @@ const (
 	EndLabel
 	OriginLabel
 	OrientationLabel
-	ColorsLabel
 	HueLabel
 	ScanLabel
 	SaturationLabel
 	ValueLabel
 	EffectsLabel
 	ScannerLabel
-	BackDropLabel
 	DynamicLabel
 	StaticLabel
 	GradientLabel
@@ -89,13 +87,13 @@ const (
 var entryLabels = []string{
 	"Glow", "Columns",
 	"Length", "Rows", "Interval", "Layers",
-	"Grid", "Colors", "Hue Shift", "Scan Length",
+	"Grid", "Color", "Hue Shift", "Scan Length",
 	"Begin", "End",
 	"Origin", "Orientation",
-	"Colors", "Hue", "Scan",
+	"Hue", "Scan",
 	"Saturation", "Value",
 	"Effects",
-	"Scanner", "Backdrop",
+	"Scanner",
 	"Dynamic", "Static",
 	"Gradient", "Reversed",
 	"Cancel", "Confirm",
@@ -152,6 +150,7 @@ const (
 	BeginIcon
 	EndIcon
 	EffectsIcon
+	SpeedIcon
 	APP_ICON_COUNT
 )
 
@@ -171,6 +170,7 @@ var appIconFiles = []string{
 	"begin.svg",
 	"end.svg",
 	"effect.svg",
+	"speed.svg",
 }
 
 var appResoures = make([]fyne.Resource, int(APP_ICON_COUNT))
@@ -230,7 +230,7 @@ func NewGridIcon(origin, orientation int) (w *widget.Icon) {
 	return
 }
 
-func LoadGridIcons(theme string) (err error) {
+func LoadIcons(theme string) (err error) {
 	var res fyne.Resource
 
 	for i := 0; i < len(gridIconFiles); i++ {
@@ -252,27 +252,3 @@ func LoadGridIcons(theme string) (err error) {
 
 	return
 }
-
-type Settings int
-
-const (
-	StripColumns Settings = iota
-	StripRows
-	StripInterval
-)
-
-var settings = []string{
-	"StripColumns",
-	"StripRows",
-	"StripInterval",
-}
-
-func (s Settings) String() string {
-	return settings[s]
-}
-
-const (
-	StripColumnsDefault  float64 = 9
-	StripRowsDefault     float64 = 4
-	StripIntervalDefault float64 = 32
-)
