@@ -30,8 +30,8 @@ func (s Settings) String() string {
 }
 
 const (
-	StripColumnsDefault  float64           = 9
-	StripRowsDefault     float64           = 4
+	StripColumnsDefault  int               = 9
+	StripRowsDefault     int               = 4
 	StripIntervalDefault float64           = 32
 	VariantDefault       fyne.ThemeVariant = theme.VariantDark
 	ScaleDefault         float64           = 1

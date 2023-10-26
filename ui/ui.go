@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -39,24 +40,26 @@ func (ui *Ui) OnExit() {
 
 func (ui *Ui) BuildContent() *fyne.Container {
 
-	layerSelect := NewLayerSelect(ui.model)
-
-	stripColumns, stripRows := ui.getLightPreferences()
-	strip := NewLightStrip(stripColumns*stripRows, stripRows)
+	columns, rows := ui.getLightPreferences()
+	strip := NewLightStrip(columns*rows, rows)
 	ui.sourceStrip.Set(strip)
 
-	lightStripLayout := NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip)
-	lightStripSpeed := NewLightStripSpeed(ui.window, ui.app.Preferences(), ui.sourceStrip)
-	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model.Frame, lightStripLayout, lightStripSpeed)
+	stripLayout := NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip)
+	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model.Frame, stripLayout)
 	stripTools := container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
 	effectSelect := NewEffectSelect(ui.model)
-	effectBox := container.NewBorder(nil, nil, nil, nil, effectSelect)
+	effectMenuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
+	effectBox := container.NewBorder(nil, nil, effectMenuButton, nil, effectSelect)
 
-	layerBox := container.NewBorder(nil, nil, nil, nil, layerSelect)
+	layerSelect := NewLayerSelect(ui.model)
+	layertMenuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
+	layerBox := container.NewBorder(nil, nil, layertMenuButton, nil, layerSelect)
+
 	selectors := container.NewVBox(effectBox, layerBox)
-	layerForm := NewLayerForm(ui.model, ui.window)
-	editor := container.NewBorder(selectors, nil, nil, nil, layerForm.Container)
+
+	layerEditor := NewLayerEditor(ui.model, ui.window)
+	editor := container.NewBorder(selectors, nil, nil, nil, layerEditor.Container)
 
 	playContainer := container.NewBorder(widget.NewSeparator(), stripTools, nil, nil, strip)
 	ui.sourceStrip.AddListener(binding.NewDataListener(func() {
@@ -71,10 +74,10 @@ func (ui *Ui) BuildContent() *fyne.Container {
 	return ui.mainContainer
 }
 
-func (ui *Ui) getLightPreferences() (columns, rows float64) {
-	columns = ui.preferences.FloatWithFallback(resources.StripColumns.String(),
+func (ui *Ui) getLightPreferences() (columns, rows int) {
+	columns = ui.preferences.IntWithFallback(resources.StripColumns.String(),
 		resources.StripColumnsDefault)
-	rows = ui.preferences.FloatWithFallback(resources.StripRows.String(),
+	rows = ui.preferences.IntWithFallback(resources.StripRows.String(),
 		resources.StripRowsDefault)
 	// interval = ui.preferences.FloatWithFallback(resources.StripInterval.String(),
 	// 	resources.StripIntervalDefault)

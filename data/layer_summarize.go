@@ -23,18 +23,17 @@ func Summarize(layer *glow.Layer, index int) string {
 	bldr.WriteString(resources.OrientationID(
 		layer.Grid.Orientation).String() + space)
 
-	// if len(layer.Chroma.Colors) > 1 {
-	// 	bldr.WriteString(resources.GradientLabel.String() + space)
-	// }
-
-	if layer.Scan > 0 {
-		bldr.WriteString(resources.ScannerLabel.String() + space)
+	if len(layer.Chroma.Colors) > 1 {
+		bldr.WriteString(resources.GradientLabel.String() + space)
 	}
 
-	// if layer.Begin != 0 || layer.End != 100 {
-	// 	bldr.WriteString(fmt.Sprintf("%d%%",
-	// 		layer.End-layer.Begin))
-	// }
+	if layer.Scan > 0 {
+		bldr.WriteString(resources.ScanLabel.String() + space)
+	}
+
+	if layer.Begin != 0 {
+		bldr.WriteString(fmt.Sprintf("%d%%", layer.Begin))
+	}
 
 	return bldr.String()
 }

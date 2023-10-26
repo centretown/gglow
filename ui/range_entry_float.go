@@ -11,13 +11,14 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-type RangeEntry struct {
+type RangeEntryFloat struct {
 	widget.Entry
 }
 
-func NewRangeEntry(field binding.Float, bounds *EntryBounds) *RangeEntry {
-	e := &RangeEntry{}
-	e.Bind(binding.FloatToStringWithFormat(field, "%3.0f"))
+func NewRangeEntryFloat(field binding.Float, bounds *EntryBoundsFloat) *RangeEntryFloat {
+	e := &RangeEntryFloat{}
+	binder := binding.FloatToStringWithFormat(field, "%3f")
+	e.Bind(binder)
 
 	validateRange := func(s string) error {
 		val, _ := strconv.ParseFloat(s, 64)
@@ -33,13 +34,13 @@ func NewRangeEntry(field binding.Float, bounds *EntryBounds) *RangeEntry {
 	return e
 }
 
-func (e *RangeEntry) TypedRune(r rune) {
+func (e *RangeEntryFloat) TypedRune(r rune) {
 	if (r >= '0' && r <= '9') || r == '.' || r == ',' {
 		e.Entry.TypedRune(r)
 	}
 }
 
-func (e *RangeEntry) TypedShortcut(shortcut fyne.Shortcut) {
+func (e *RangeEntryFloat) TypedShortcut(shortcut fyne.Shortcut) {
 	paste, ok := shortcut.(*fyne.ShortcutPaste)
 	if !ok {
 		e.Entry.TypedShortcut(shortcut)
@@ -52,6 +53,6 @@ func (e *RangeEntry) TypedShortcut(shortcut fyne.Shortcut) {
 	}
 }
 
-func (e *RangeEntry) Keyboard() mobile.KeyboardType {
+func (e *RangeEntryFloat) Keyboard() mobile.KeyboardType {
 	return mobile.NumberKeyboard
 }

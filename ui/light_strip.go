@@ -21,8 +21,8 @@ type LightStrip struct {
 	background *canvas.Rectangle
 	colorOff   color.RGBA
 	lights     []*canvas.Circle
-	length     float64
-	rows       float64
+	length     int
+	rows       int
 }
 
 func (strip *LightStrip) Length() uint16 {
@@ -45,7 +45,7 @@ func (strip *LightStrip) Set(i uint16, color color.RGBA) {
 	c.Refresh()
 }
 
-func NewLightStrip(length, rows float64) *LightStrip {
+func NewLightStrip(length, rows int) *LightStrip {
 	strip := &LightStrip{
 		background: canvas.NewRectangle(color.RGBA{255, 255, 255, 255}),
 		length:     length,

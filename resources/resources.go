@@ -75,13 +75,14 @@ const (
 	SaturationLabel
 	ValueLabel
 	EffectsLabel
-	ScannerLabel
 	DynamicLabel
 	StaticLabel
 	GradientLabel
 	ReversedLabel
-	CancelLabel
-	ConfirmLabel
+	RevertLabel
+	ApplyLabel
+	RateLabel
+	Override
 )
 
 var entryLabels = []string{
@@ -93,10 +94,10 @@ var entryLabels = []string{
 	"Hue", "Scan",
 	"Saturation", "Value",
 	"Effects",
-	"Scanner",
 	"Dynamic", "Static",
 	"Gradient", "Reversed",
-	"Cancel", "Confirm",
+	"Revert", "Apply",
+	"Rate", "Override",
 }
 
 func (id LabelID) String() string {

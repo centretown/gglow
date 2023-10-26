@@ -12,6 +12,7 @@ type Layer struct {
 	Scan     uint16 `yaml:"scan" json:"scan"`
 	Begin    uint16 `yaml:"begin" json:"begin"`
 	End      uint16 `yaml:"end" json:"end"`
+	Rate     uint32 `yaml:"rate" json:"rate"`
 
 	position uint16
 	first    uint16
@@ -42,6 +43,10 @@ func (layer *Layer) SetupLength(length, rows uint16) error {
 	return layer.Validate()
 }
 
+func (layer *Layer) SetRate(rate uint32) {
+	layer.Rate = rate
+}
+
 func (layer *Layer) Validate() error {
 	if layer.Length == 0 {
 		return fmt.Errorf("Layer.Setup zero length")
@@ -60,6 +65,9 @@ func (layer *Layer) Validate() error {
 	}
 	if layer.End == 0 {
 		layer.End = 100
+	}
+	if layer.Rate == 0 {
+		layer.Rate = 48
 	}
 	layer.setBounds()
 

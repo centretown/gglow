@@ -7,8 +7,9 @@ import (
 )
 
 type Fields struct {
-	HueShift    binding.Float
-	Scan        binding.Float
+	HueShift    binding.Int
+	Scan        binding.Int
+	Rate        binding.Int
 	Begin       binding.Float
 	End         binding.Float
 	Origin      binding.Int
@@ -17,8 +18,9 @@ type Fields struct {
 
 func NewFields() *Fields {
 	fld := &Fields{
-		HueShift:    binding.NewFloat(),
-		Scan:        binding.NewFloat(),
+		HueShift:    binding.NewInt(),
+		Scan:        binding.NewInt(),
+		Rate:        binding.NewInt(),
 		Begin:       binding.NewFloat(),
 		End:         binding.NewFloat(),
 		Origin:      binding.NewInt(),
@@ -28,8 +30,9 @@ func NewFields() *Fields {
 }
 
 func (fld *Fields) FromLayer(layer *glow.Layer) {
-	fld.HueShift.Set(float64(layer.HueShift))
-	fld.Scan.Set(float64(layer.Scan))
+	fld.HueShift.Set(int(layer.HueShift))
+	fld.Scan.Set(int(layer.Scan))
+	fld.Rate.Set(int(layer.Rate))
 	fld.Begin.Set(float64(layer.Begin))
 	fld.End.Set(float64(layer.End))
 	fld.Origin.Set(int(layer.Grid.Origin))
@@ -42,11 +45,14 @@ func (fld *Fields) ToLayer(layer *glow.Layer) {
 		i int
 	)
 
-	f, _ = fld.HueShift.Get()
-	layer.HueShift = int16(f)
+	i, _ = fld.HueShift.Get()
+	layer.HueShift = int16(i)
 
-	f, _ = fld.Scan.Get()
-	layer.Scan = uint16(f)
+	i, _ = fld.Scan.Get()
+	layer.Scan = uint16(i)
+
+	i, _ = fld.Rate.Get()
+	layer.Scan = uint16(i)
 
 	f, _ = fld.Begin.Get()
 	layer.Begin = uint16(f)

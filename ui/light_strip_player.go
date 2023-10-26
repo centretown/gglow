@@ -54,7 +54,7 @@ type LightStripPlayer struct {
 }
 
 func NewLightStripPlayer(sourceStrip binding.Untyped, sourceFrame binding.Untyped,
-	lightStripLayout *LightStripLayout, lightStripSpeed *LightStripSpeed) *LightStripPlayer {
+	lightStripLayout *LightStripLayout) *LightStripPlayer {
 
 	sb := &LightStripPlayer{
 		sourceFrame:  sourceFrame,

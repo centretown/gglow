@@ -5,7 +5,6 @@ import (
 	"glow-gui/resources"
 	"glow-gui/store"
 
-	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -23,7 +22,7 @@ func NewEffectSelect(model *data.Model) *widget.Select {
 	options := store.LookUpList()
 	fs.Select = widget.NewSelect(options, fs.onChange)
 	fs.Select.PlaceHolder = resources.EffectsLabel.PlaceHolder() + "..."
-	fs.Select.Alignment = fyne.TextAlignCenter
+	// fs.Select.Alignment = fyne.TextAlignCenter
 
 	return fs.Select
 }
