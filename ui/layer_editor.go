@@ -16,153 +16,246 @@ type LayerEditor struct {
 	*fyne.Container
 	model  *data.Model
 	fields *data.Fields
+	window fyne.Window
 	// frame  *glow.Frame
-	isDynamic  binding.Bool
-	isScanner  binding.Bool
-	isOverride binding.Bool
-	window     fyne.Window
+	isDirty binding.Bool
+	// isDynamic  binding.Bool
+	// isScanner  binding.Bool
+	// isOverride binding.Bool
+
+	bDynamic  bool
+	bScanner  bool
+	bOverride bool
 
 	selectOrigin      *widget.Select
 	selectOrientation *widget.Select
+	checkScan         *widget.Check
+	checkHue          *widget.Check
+	checkRate         *widget.Check
+
+	scanBox *RangeIntBox
+	hueBox  *RangeIntBox
+	rateBox *RangeIntBox
+
+	offsetHeight float32
+	applyButton  *widget.Button
+	revertButton *widget.Button
+	buttonBox    *fyne.Container
+	rateBounds   *EntryBoundsInt
+	hueBounds    *EntryBoundsInt
+	scanBounds   *EntryBoundsInt
 }
 
 func NewLayerEditor(model *data.Model, window fyne.Window) *LayerEditor {
-	lf := &LayerEditor{
-		Container:  container.NewHBox(),
-		model:      model,
-		fields:     data.NewFields(),
-		isDynamic:  binding.NewBool(),
-		isScanner:  binding.NewBool(),
-		isOverride: binding.NewBool(),
+	le := &LayerEditor{
+		Container: container.NewHBox(),
+		window:    window,
+
+		model:   model,
+		fields:  data.NewFields(),
+		isDirty: binding.NewBool(),
+		// isDynamic:  binding.NewBool(),
+		// isScanner:  binding.NewBool(),
+		// isOverride: binding.NewBool(),
+
+		rateBounds: &EntryBoundsInt{MinVal: 16, MaxVal: 360, OnVal: 48, OffVal: 0},
+		hueBounds:  &EntryBoundsInt{MinVal: 1, MaxVal: 10, OnVal: 1, OffVal: 0},
+		scanBounds: &EntryBoundsInt{MinVal: 1, MaxVal: 10, OnVal: 1, OffVal: 0},
 
 		selectOrigin:      widget.NewSelect(resources.OriginLabels, func(s string) {}),
 		selectOrientation: widget.NewSelect(resources.OrientationLabels, func(s string) {}),
 
-		window: window,
+		applyButton:  widget.NewButton(resources.ApplyLabel.String(), func() {}),
+		revertButton: widget.NewButton(resources.RevertLabel.String(), func() {}),
+		offsetHeight: theme.CaptionTextSize() + 2*(theme.InnerPadding()+theme.Padding()+theme.LineSpacing()),
 	}
 
-	buttonHeight := theme.CaptionTextSize() + 2*(theme.InnerPadding()+theme.Padding()+theme.LineSpacing())
-	showForm := func(popup *widget.PopUp) func() {
-		f := func() {
-			popup.Resize(fyne.Size{Width: minStripWidth - 2*theme.Padding(),
-				Height: minStripHeight})
-			offset := fyne.NewDelta(theme.Padding(), buttonHeight)
-			popup.Move(lf.Container.Position().Add(offset))
-			popup.Show()
+	le.applyButton.Disable()
+	le.revertButton.Disable()
+	le.buttonBox = container.NewCenter(container.NewHBox(le.revertButton, le.applyButton))
+
+	le.hueBox = NewRangeIntBox(le.fields.HueShift, le.hueBounds)
+	le.scanBox = NewRangeIntBox(le.fields.Scan, le.scanBounds)
+	le.rateBox = NewRangeIntBox(le.fields.Rate, le.rateBounds)
+
+	le.checkScan = widget.NewCheck("", checkBox(le.scanBox, le.fields.Scan))
+	le.checkHue = widget.NewCheck("", checkBox(le.hueBox, le.fields.HueShift))
+	le.checkRate = widget.NewCheck("", checkBox(le.rateBox, le.fields.Rate))
+
+	le.buildButtons()
+
+	le.model.Layer.AddListener(binding.NewDataListener(le.setFields))
+	le.isDirty.AddListener(binding.NewDataListener(func() {
+		b, _ := le.isDirty.Get()
+		if b {
+			le.applyButton.Enable()
+			le.revertButton.Enable()
+		} else {
+			le.applyButton.Disable()
+			le.revertButton.Disable()
 		}
-		return f
+	}))
+	return le
+}
+
+func checkBox(rangeBox *RangeIntBox, field binding.Int) func(bool) {
+	return func(b bool) {
+		if b {
+			i, _ := field.Get()
+			if i == rangeBox.Bounds.OffVal {
+				field.Set(rangeBox.Bounds.OnVal)
+			}
+			rangeBox.Enable(true)
+		} else {
+			field.Set(rangeBox.Bounds.OffVal)
+			rangeBox.Enable(false)
+		}
+	}
+}
+
+func (le *LayerEditor) IsDirty() bool {
+	b, _ := le.isDirty.Get()
+	return b
+}
+
+func (le *LayerEditor) buildButtons() {
+
+	sep := widget.NewSeparator()
+	makeDropDown := func(form *fyne.Container) *widget.PopUp {
+		dropDown := widget.NewPopUp(container.NewVBox(form, sep, le.buttonBox), le.window.Canvas())
+		return dropDown
 	}
 
-	hueDropDown := lf.newHueDropDown()
-	hueButton := widget.NewButton(resources.HueLabel.String(), showForm(hueDropDown))
-
-	scanDropDown := lf.newScanDropDown()
-	scanButton := widget.NewButton(resources.ScanLabel.String(), showForm(scanDropDown))
-
-	gridDropDown := lf.newGridDropDown()
-	gridButton := widget.NewButton(resources.GridLabel.String(), showForm(gridDropDown))
-
-	colorsButton := widget.NewButton(resources.ChromaLabel.String(), func() {})
-
-	rateDropDown := lf.newRateDropDown()
-	rateButton := widget.NewButton(resources.RateLabel.String(), showForm(rateDropDown))
-
-	lf.Container.Objects =
+	le.Container.Objects =
 		[]fyne.CanvasObject{
-			gridButton,
-			scanButton,
-			colorsButton,
-			hueButton,
-			rateButton}
+			widget.NewButton(resources.GridLabel.String(),
+				le.showDropDown(makeDropDown(le.newGridForm()))),
 
-	// lf.model.Frame.AddListener(binding.NewDataListener(func() {
-	// 	lf.frame, _ = glow.FrameDeepCopy(lf.model.GetFrame())
-	// }))
+			widget.NewButton(resources.ScanLabel.String(),
+				le.showDropDown(makeDropDown(le.newScanForm()))),
 
-	lf.model.Layer.AddListener(binding.NewDataListener(lf.setFields))
+			widget.NewButton(resources.ChromaLabel.String(), func() {}),
 
-	return lf
+			widget.NewButton(resources.HueLabel.String(),
+				le.showDropDown(makeDropDown(le.newHueForm()))),
+
+			widget.NewButton(resources.RateLabel.String(),
+				le.showDropDown(makeDropDown(le.newRateForm())))}
+
 }
 
-func (lf *LayerEditor) setFields() {
-	lf.fields.FromLayer(lf.model.GetCurrentLayer())
+func (le *LayerEditor) setFields() {
+	layer := le.model.GetCurrentLayer()
+	le.fields.FromLayer(layer)
 
-	origin, _ := lf.fields.Origin.Get()
-	lf.selectOrigin.SetSelectedIndex(origin)
-	orientation, _ := lf.fields.Orientation.Get()
-	lf.selectOrientation.SetSelectedIndex(orientation)
+	le.selectOrigin.SetSelectedIndex(int(layer.Grid.Origin))
+	le.selectOrientation.SetSelectedIndex(int(layer.Grid.Orientation))
 
-	i, _ := lf.fields.HueShift.Get()
-	lf.isDynamic.Set(i != 0)
-	i, _ = lf.fields.Scan.Get()
-	lf.isScanner.Set(i > 0)
-	i, _ = lf.fields.Rate.Get()
-	lf.isOverride.Set(i > 0)
+	le.bDynamic = (layer.HueShift != int16(le.hueBounds.OffVal))
+	le.checkHue.SetChecked(le.bDynamic)
+	le.hueBox.Enable(le.bDynamic)
+
+	le.bScanner = (layer.Scan != uint16(le.scanBounds.OffVal))
+	le.checkScan.SetChecked(le.bScanner)
+	le.scanBox.Enable(le.bScanner)
+
+	le.bOverride = (layer.Rate != uint32(le.rateBounds.OffVal))
+	le.checkRate.SetChecked(le.bOverride)
+	le.rateBox.Enable(le.bOverride)
 }
 
-func (lf *LayerEditor) newRateDropDown() *widget.PopUp {
-	checkLabel, check := NewLabelCheck(resources.Override.String(), lf.isOverride)
-	bounds := EntryBoundsInt{MinVal: 16, MaxVal: 360, OnVal: 48, OffVal: 0}
-	le := NewDisabledEntry(resources.RateLabel.String(), lf.isOverride,
-		lf.fields.Rate, &bounds)
-	return lf.makeDropDown(checkLabel, check, le.Label, le.RangeBox.Container)
+func (le *LayerEditor) showDropDown(dropDown *widget.PopUp) func() {
+	f := func() {
+		le.isDirty.Set(le.fields.IsDirty(le.model.GetCurrentLayer()))
+		le.applyButton.OnTapped = le.apply(dropDown)
+		le.revertButton.OnTapped = le.revert()
+		dropDown.Resize(fyne.Size{Width: minStripWidth - 2*theme.Padding(),
+			Height: minStripHeight})
+		offset := fyne.NewDelta(theme.Padding(), le.offsetHeight)
+		dropDown.Move(le.Container.Position().Add(offset))
+		dropDown.Show()
+	}
+	return f
 }
 
-func (lf *LayerEditor) newHueDropDown() *widget.PopUp {
-	checkLabel, check := NewLabelCheck(resources.DynamicLabel.String(), lf.isDynamic)
-	bounds := EntryBoundsInt{MinVal: -10, MaxVal: 10, OnVal: 1, OffVal: 0}
-	le := NewDisabledEntry(resources.HueShiftLabel.String(), lf.isDynamic,
-		lf.fields.HueShift, &bounds)
-	return lf.makeDropDown(checkLabel, check, le.Label, le.RangeBox.Container)
+func addDirty[T int16 | uint16 | uint32](isDirty binding.Bool,
+	field binding.Int, val T) {
+
+	field.AddListener(binding.NewDataListener(func() {
+		i, _ := field.Get()
+		isDirty.Set(val != T(i))
+	}))
 }
 
-func (lf *LayerEditor) newScanDropDown() *widget.PopUp {
-	checkLabel, check := NewLabelCheck(resources.ScanLabel.String(), lf.isScanner)
-	bounds := EntryBoundsInt{MinVal: 1, MaxVal: 10, OnVal: 1, OffVal: 0}
-	le := NewDisabledEntry(resources.LengthLabel.String(), lf.isScanner,
-		lf.fields.Scan, &bounds)
-	return lf.makeDropDown(checkLabel, check, le.Label, le.RangeBox.Container)
+func (le *LayerEditor) newRateForm() *fyne.Container {
+	label := widget.NewLabel(resources.RateLabel.String())
+	checkLabel := widget.NewLabel(resources.OverrideLabel.String())
+	rate := le.model.GetCurrentLayer().Rate
+	addDirty(le.isDirty, le.fields.Rate, rate)
+	return container.New(layout.NewFormLayout(),
+		checkLabel, le.checkRate, label, le.rateBox.Container)
 }
 
-func (lf *LayerEditor) newGridDropDown() *widget.PopUp {
+func (le *LayerEditor) newHueForm() *fyne.Container {
+	label := widget.NewLabel(resources.HueShiftLabel.String())
+	checkLabel := widget.NewLabel(resources.DynamicLabel.String())
+	shift := le.model.GetCurrentLayer().HueShift
 
+	addDirty(le.isDirty, le.fields.HueShift, shift)
+	return container.New(layout.NewFormLayout(),
+		checkLabel, le.checkHue, label, le.hueBox.Container)
+}
+
+func (le *LayerEditor) newScanForm() *fyne.Container {
+	label := widget.NewLabel(resources.LengthLabel.String())
+	checkLabel := widget.NewLabel(resources.ScanLabel.String())
+	scan := le.model.GetCurrentLayer().Scan
+
+	addDirty(le.isDirty, le.fields.Scan, scan)
+	return container.New(layout.NewFormLayout(),
+		checkLabel, le.checkScan, label, le.scanBox.Container)
+}
+
+func (le *LayerEditor) newGridForm() *fyne.Container {
 	labelOrigin := widget.NewLabel(resources.OriginLabel.String())
-	lf.selectOrigin.OnChanged = func(s string) {
-		lf.fields.Origin.Set(lf.selectOrigin.SelectedIndex())
+	le.selectOrigin.OnChanged = func(s string) {
+		current := le.model.GetCurrentLayer().Grid.Origin
+		selected := le.selectOrigin.SelectedIndex()
+		if selected != int(current) {
+			le.fields.Origin.Set(selected)
+			le.isDirty.Set(true)
+		}
 	}
-
 	labelOrientation := widget.NewLabel(resources.OrientationLabel.String())
-	lf.selectOrientation.OnChanged = func(s string) {
-		lf.fields.Orientation.Set(lf.selectOrientation.SelectedIndex())
+	le.selectOrientation.OnChanged = func(s string) {
+		current := le.model.GetCurrentLayer().Grid.Orientation
+		selected := le.selectOrientation.SelectedIndex()
+		if selected != int(current) {
+			le.fields.Orientation.Set(selected)
+			le.isDirty.Set(true)
+		}
 	}
 
-	return lf.makeDropDown(labelOrigin, lf.selectOrigin,
-		labelOrientation, lf.selectOrientation)
+	// addDirty(le.isDirty, le.fields.Origin, le.model.GetCurrentLayer().Grid.Origin)
+	// addDirty(le.isDirty, le.fields.Orientation, le.model.GetCurrentLayer().Grid.Orientation)
+
+	return container.New(layout.NewFormLayout(),
+		labelOrigin, le.selectOrigin,
+		labelOrientation, le.selectOrientation)
 }
 
-func (lf *LayerEditor) makeDropDown(objects ...fyne.CanvasObject) *widget.PopUp {
-	vbox := container.NewVBox()
-	dropDown := widget.NewPopUp(vbox, lf.window.Canvas())
-
-	frm := container.New(layout.NewFormLayout())
-	frm.Objects = append(frm.Objects, objects...)
-	applyButton := widget.NewButton(resources.ApplyLabel.String(), lf.apply(dropDown))
-	revertButton := widget.NewButton(resources.RevertLabel.String(), lf.revert(dropDown))
-	hbox := container.NewCenter(container.NewHBox(revertButton, applyButton))
-	vbox.Objects = append(vbox.Objects, frm, widget.NewSeparator(), hbox)
-	return dropDown
-}
-
-func (lf *LayerEditor) apply(dropDown *widget.PopUp) func() {
+func (le *LayerEditor) apply(dropDown *widget.PopUp) func() {
 	return func() {
 		dropDown.Hide()
+
 		// lf.fields.ToLayer()
 	}
 }
 
-func (lf *LayerEditor) revert(dropDown *widget.PopUp) func() {
+func (le *LayerEditor) revert() func() {
 	return func() {
 		// dropDown.Hide()
-		lf.setFields()
+		le.setFields()
+		le.isDirty.Set(false)
 	}
 }

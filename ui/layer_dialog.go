@@ -6,7 +6,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
@@ -31,10 +30,4 @@ func ColorDialog(window fyne.Window) *fyne.Container {
 	grid := container.New(layout.NewVBoxLayout(),
 		hueLabel, hueEntry, label2, value2, button1)
 	return grid
-}
-
-func NewLabelCheck(labelText string, field binding.Bool) (label *widget.Label, check *widget.Check) {
-	label = widget.NewLabel(labelText)
-	check = widget.NewCheckWithData("", field)
-	return
 }

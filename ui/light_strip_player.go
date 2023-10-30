@@ -93,11 +93,6 @@ func NewLightStripPlayer(sourceStrip binding.Untyped, sourceFrame binding.Untype
 	return sb
 }
 
-func (sb *LightStripPlayer) PopupInterval() {
-}
-func (sb *LightStripPlayer) PopupLayout() {
-}
-
 func (sb *LightStripPlayer) getFrame() *glow.Frame {
 	frame, _ := sb.sourceFrame.Get()
 	return frame.(*glow.Frame)
@@ -183,7 +178,6 @@ func (sb *LightStripPlayer) startSpinner() {
 }
 
 func (sb *LightStripPlayer) spin() {
-
 	var (
 		isSpinning bool
 		frame      *glow.Frame
@@ -208,7 +202,6 @@ func (sb *LightStripPlayer) spin() {
 
 	for {
 		select {
-
 		case <-sb.stopChan:
 			sb.isActive = false
 			return

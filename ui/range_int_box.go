@@ -10,6 +10,7 @@ import (
 
 type RangeIntBox struct {
 	*fyne.Container
+	Bounds   *EntryBoundsInt
 	Decrease *widget.Button
 	Increase *widget.Button
 	Entry    *RangeEntryInt
@@ -27,6 +28,7 @@ func NewRangeIntBox(field binding.Int, bounds *EntryBoundsInt) *RangeIntBox {
 	}
 
 	rb := &RangeIntBox{
+		Bounds:   bounds,
 		Decrease: widget.NewButtonWithIcon("", theme.MoveDownIcon(), buttonCheck(-1)),
 		Entry:    NewRangeEntryInt(field, bounds),
 		Increase: widget.NewButtonWithIcon("", theme.MoveUpIcon(), buttonCheck(1)),
@@ -36,14 +38,14 @@ func NewRangeIntBox(field binding.Int, bounds *EntryBoundsInt) *RangeIntBox {
 	return rb
 }
 
-func (rb *RangeIntBox) Disable() {
+func (rb *RangeIntBox) Enable(b bool) {
+	if b {
+		rb.Decrease.Enable()
+		rb.Increase.Enable()
+		rb.Entry.Enable()
+		return
+	}
 	rb.Decrease.Disable()
 	rb.Increase.Disable()
 	rb.Entry.Disable()
-}
-
-func (rb *RangeIntBox) Enable() {
-	rb.Decrease.Enable()
-	rb.Increase.Enable()
-	rb.Entry.Enable()
 }

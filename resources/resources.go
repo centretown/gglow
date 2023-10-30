@@ -34,24 +34,24 @@ func (id ImageID) Load() (res fyne.Resource, err error) {
 	return
 }
 
-type ContentID uint16
+// type ContentID uint16
 
-const (
-	FrameContent ContentID = iota
-	LayerContent
-	ChromaContent
-	ContentCount
-)
+// const (
+// 	FrameContent ContentID = iota
+// 	LayerContent
+// 	ChromaContent
+// 	ContentCount
+// )
 
-var contentLabels = []string{"Frames", "Layers", "Colors"}
+// var contentLabels = []string{"Frames", "Layers", "Colors"}
 
-func (id ContentID) String() string {
-	return contentLabels[id]
-}
+// func (id ContentID) String() string {
+// 	return contentLabels[id]
+// }
 
-func ContentLabels() []string {
-	return contentLabels
-}
+// func ContentLabels() []string {
+// 	return contentLabels
+// }
 
 type LabelID uint16
 
@@ -78,11 +78,10 @@ const (
 	DynamicLabel
 	StaticLabel
 	GradientLabel
-	ReversedLabel
 	RevertLabel
 	ApplyLabel
 	RateLabel
-	Override
+	OverrideLabel
 )
 
 var entryLabels = []string{
@@ -94,8 +93,7 @@ var entryLabels = []string{
 	"Hue", "Scan",
 	"Saturation", "Value",
 	"Effects",
-	"Dynamic", "Static",
-	"Gradient", "Reversed",
+	"Dynamic", "Static", "Gradient",
 	"Revert", "Apply",
 	"Rate", "Override",
 }

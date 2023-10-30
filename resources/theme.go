@@ -13,6 +13,8 @@ const (
 	StripColumns Settings = iota
 	StripRows
 	StripInterval
+	ContentWidth
+	ContentHeight
 	GlowThemeVariant
 	GlowThemeScale
 )
@@ -21,6 +23,8 @@ var settings = []string{
 	"StripColumns",
 	"StripRows",
 	"StripInterval",
+	"ContentWidth",
+	"ContentHeight",
 	"ThemeVariant",
 	"ThemeScale",
 }
