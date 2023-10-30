@@ -10,32 +10,36 @@ import (
 
 type RangeIntBox struct {
 	*fyne.Container
-	Bounds   *EntryBoundsInt
-	Decrease *widget.Button
-	Increase *widget.Button
-	Entry    *RangeEntryInt
+	Bounds       *EntryBoundsInt
+	Decrease     *widget.Button
+	Increase     *widget.Button
+	Entry        *RangeEntryInt
+	Field        binding.Int
+	initialValue int
 }
 
 func NewRangeIntBox(field binding.Int, bounds *EntryBoundsInt) *RangeIntBox {
-	buttonCheck := func(val int) func() {
-		return func() {
-			f, _ := field.Get()
-			f += val
-			if f >= bounds.MinVal && f <= bounds.MaxVal {
-				field.Set(f)
-			}
-		}
-	}
 
 	rb := &RangeIntBox{
-		Bounds:   bounds,
-		Decrease: widget.NewButtonWithIcon("", theme.MoveDownIcon(), buttonCheck(-1)),
-		Entry:    NewRangeEntryInt(field, bounds),
-		Increase: widget.NewButtonWithIcon("", theme.MoveUpIcon(), buttonCheck(1)),
+		Bounds: bounds,
+		Entry:  NewRangeEntryInt(field, bounds),
+		Field:  field,
 	}
 
+	rb.Decrease = widget.NewButtonWithIcon("", theme.MoveDownIcon(), rb.buttonCheck(-1))
+	rb.Increase = widget.NewButtonWithIcon("", theme.MoveUpIcon(), rb.buttonCheck(1))
 	rb.Container = container.NewHBox(rb.Decrease, rb.Entry, rb.Increase)
 	return rb
+}
+
+func (rb *RangeIntBox) buttonCheck(inc int) func() {
+	return func() {
+		f, _ := rb.Field.Get()
+		f += inc
+		if f >= rb.Bounds.MinVal && f <= rb.Bounds.MaxVal {
+			rb.Field.Set(f)
+		}
+	}
 }
 
 func (rb *RangeIntBox) Enable(b bool) {

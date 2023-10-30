@@ -2,6 +2,7 @@ package ui
 
 import (
 	"glow-gui/data"
+	"glow-gui/glow"
 	"glow-gui/resources"
 
 	"fyne.io/fyne/v2"
@@ -15,6 +16,7 @@ import (
 type LayerEditor struct {
 	*fyne.Container
 	model  *data.Model
+	layer  *glow.Layer
 	fields *data.Fields
 	window fyne.Window
 	// frame  *glow.Frame
@@ -51,7 +53,8 @@ func NewLayerEditor(model *data.Model, window fyne.Window) *LayerEditor {
 		Container: container.NewHBox(),
 		window:    window,
 
-		model:   model,
+		model: model,
+
 		fields:  data.NewFields(),
 		isDirty: binding.NewBool(),
 		// isDynamic:  binding.NewBool(),
@@ -59,7 +62,7 @@ func NewLayerEditor(model *data.Model, window fyne.Window) *LayerEditor {
 		// isOverride: binding.NewBool(),
 
 		rateBounds: &EntryBoundsInt{MinVal: 16, MaxVal: 360, OnVal: 48, OffVal: 0},
-		hueBounds:  &EntryBoundsInt{MinVal: 1, MaxVal: 10, OnVal: 1, OffVal: 0},
+		hueBounds:  &EntryBoundsInt{MinVal: -10, MaxVal: 10, OnVal: 1, OffVal: 0},
 		scanBounds: &EntryBoundsInt{MinVal: 1, MaxVal: 10, OnVal: 1, OffVal: 0},
 
 		selectOrigin:      widget.NewSelect(resources.OriginLabels, func(s string) {}),
@@ -70,6 +73,7 @@ func NewLayerEditor(model *data.Model, window fyne.Window) *LayerEditor {
 		offsetHeight: theme.CaptionTextSize() + 2*(theme.InnerPadding()+theme.Padding()+theme.LineSpacing()),
 	}
 
+	le.layer = le.model.GetCurrentLayer()
 	le.applyButton.Disable()
 	le.revertButton.Disable()
 	le.buttonBox = container.NewCenter(container.NewHBox(le.revertButton, le.applyButton))
@@ -145,21 +149,21 @@ func (le *LayerEditor) buildButtons() {
 }
 
 func (le *LayerEditor) setFields() {
-	layer := le.model.GetCurrentLayer()
-	le.fields.FromLayer(layer)
+	le.layer = le.model.GetCurrentLayer()
+	le.fields.FromLayer(le.layer)
 
-	le.selectOrigin.SetSelectedIndex(int(layer.Grid.Origin))
-	le.selectOrientation.SetSelectedIndex(int(layer.Grid.Orientation))
+	le.selectOrigin.SetSelectedIndex(int(le.layer.Grid.Origin))
+	le.selectOrientation.SetSelectedIndex(int(le.layer.Grid.Orientation))
 
-	le.bDynamic = (layer.HueShift != int16(le.hueBounds.OffVal))
+	le.bDynamic = (le.layer.HueShift != int16(le.hueBounds.OffVal))
 	le.checkHue.SetChecked(le.bDynamic)
 	le.hueBox.Enable(le.bDynamic)
 
-	le.bScanner = (layer.Scan != uint16(le.scanBounds.OffVal))
+	le.bScanner = (le.layer.Scan != uint16(le.scanBounds.OffVal))
 	le.checkScan.SetChecked(le.bScanner)
 	le.scanBox.Enable(le.bScanner)
 
-	le.bOverride = (layer.Rate != uint32(le.rateBounds.OffVal))
+	le.bOverride = (le.layer.Rate != uint32(le.rateBounds.OffVal))
 	le.checkRate.SetChecked(le.bOverride)
 	le.rateBox.Enable(le.bOverride)
 }
@@ -178,20 +182,15 @@ func (le *LayerEditor) showDropDown(dropDown *widget.PopUp) func() {
 	return f
 }
 
-func addDirty[T int16 | uint16 | uint32](isDirty binding.Bool,
-	field binding.Int, val T) {
-
-	field.AddListener(binding.NewDataListener(func() {
-		i, _ := field.Get()
-		isDirty.Set(val != T(i))
-	}))
-}
-
 func (le *LayerEditor) newRateForm() *fyne.Container {
 	label := widget.NewLabel(resources.RateLabel.String())
 	checkLabel := widget.NewLabel(resources.OverrideLabel.String())
-	rate := le.model.GetCurrentLayer().Rate
-	addDirty(le.isDirty, le.fields.Rate, rate)
+
+	le.fields.Rate.AddListener(binding.NewDataListener(func() {
+		rate, _ := le.fields.Rate.Get()
+		le.isDirty.Set(uint32(rate) != le.layer.Rate)
+	}))
+
 	return container.New(layout.NewFormLayout(),
 		checkLabel, le.checkRate, label, le.rateBox.Container)
 }
@@ -199,9 +198,12 @@ func (le *LayerEditor) newRateForm() *fyne.Container {
 func (le *LayerEditor) newHueForm() *fyne.Container {
 	label := widget.NewLabel(resources.HueShiftLabel.String())
 	checkLabel := widget.NewLabel(resources.DynamicLabel.String())
-	shift := le.model.GetCurrentLayer().HueShift
 
-	addDirty(le.isDirty, le.fields.HueShift, shift)
+	le.fields.HueShift.AddListener(binding.NewDataListener(func() {
+		shift, _ := le.fields.HueShift.Get()
+		le.isDirty.Set(int16(shift) != le.layer.HueShift)
+	}))
+
 	return container.New(layout.NewFormLayout(),
 		checkLabel, le.checkHue, label, le.hueBox.Container)
 }
@@ -209,9 +211,12 @@ func (le *LayerEditor) newHueForm() *fyne.Container {
 func (le *LayerEditor) newScanForm() *fyne.Container {
 	label := widget.NewLabel(resources.LengthLabel.String())
 	checkLabel := widget.NewLabel(resources.ScanLabel.String())
-	scan := le.model.GetCurrentLayer().Scan
 
-	addDirty(le.isDirty, le.fields.Scan, scan)
+	le.fields.Scan.AddListener(binding.NewDataListener(func() {
+		scan, _ := le.fields.Scan.Get()
+		le.isDirty.Set(uint16(scan) != le.layer.Scan)
+	}))
+
 	return container.New(layout.NewFormLayout(),
 		checkLabel, le.checkScan, label, le.scanBox.Container)
 }
