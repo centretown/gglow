@@ -1,24 +1,24 @@
 package ui
 
-type EntryBoundsFloat struct {
+type FloatEntryBounds struct {
 	MinVal, MaxVal, OnVal, OffVal float64
 }
 
-func NewEntryBoundsFloat(min, max, on, off float64) *EntryBoundsFloat {
+func NewFloatEntryBounds(min, max, on, off float64) *FloatEntryBounds {
 	if min > max {
 		min, max = max, min
 	}
-	eb := &EntryBoundsFloat{min, max, on, off}
+	eb := &FloatEntryBounds{min, max, on, off}
 	return eb
 }
 
-type EntryBoundsInt struct {
+type IntEntryBounds struct {
 	MinVal, MaxVal, OnVal, OffVal int
 }
 
-func NewEntryBoundsInt(min, max, on, off int) *EntryBoundsInt {
+func NewIntEntryBounds(min, max, on, off int) *IntEntryBounds {
 	if min > max {
 		min, max = max, min
 	}
-	return &EntryBoundsInt{min, max, on, off}
+	return &IntEntryBounds{min, max, on, off}
 }

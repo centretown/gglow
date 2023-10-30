@@ -27,11 +27,11 @@ func NewLightStripLayout(parent fyne.Window, p fyne.Preferences,
 	}
 
 	ll.columns.Set(p.Int(resources.StripColumns.String()))
-	columnsEntry := NewRangeIntBox(ll.columns, &EntryBoundsInt{1, 50, 0, 0})
+	columnsEntry := NewRangeIntBox(ll.columns, &IntEntryBounds{1, 50, 0, 0})
 	colItem := widget.NewFormItem(resources.ColumnsLabel.String(), columnsEntry.Container)
 
 	ll.rows.Set(p.Int(resources.StripRows.String()))
-	rowsEntry := NewRangeIntBox(ll.rows, &EntryBoundsInt{1, 20, 0, 0})
+	rowsEntry := NewRangeIntBox(ll.rows, &IntEntryBounds{1, 20, 0, 0})
 	rowsItem := widget.NewFormItem(resources.RowsLabel.String(), rowsEntry.Container)
 
 	frm := widget.NewForm(colItem, rowsItem)

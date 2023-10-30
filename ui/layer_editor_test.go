@@ -35,7 +35,7 @@ func test_revert_button_disabled(t *testing.T, e *LayerEditor, expected bool) {
 }
 
 func test_dirty(t *testing.T, e *LayerEditor, expected bool) {
-	b := e.IsDirty()
+	b := isDirty(e)
 	if b != expected {
 		t.Fatalf("dirty got %v expected %v", b, expected)
 	}
@@ -75,10 +75,15 @@ func testRate(t *testing.T, e *LayerEditor, expected int) {
 	}
 }
 
+func isDirty(le *LayerEditor) bool {
+	b, _ := le.isDirty.Get()
+	return b
+}
+
 func TestLayerEditor(t *testing.T) {
 	e := test_layer_editor_init(t)
 
-	if e.IsDirty() {
+	if isDirty(e) {
 		t.Fatal("Dirty")
 	}
 

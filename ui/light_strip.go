@@ -6,7 +6,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -106,8 +105,8 @@ func (lsr *lightStripRenderer) Layout(size fyne.Size) {
 	diameter := float32(math.Ceil(float64(cellSize / 2)))
 	circleSize := fyne.Size{Width: diameter, Height: diameter}
 
-	xOrigin := size.Width - cellSize*float32(cols) - theme.Padding()
-	// xOrigin := (size.Width - cellSize*float32(cols)) / 2
+	// xOrigin := size.Width - cellSize*float32(cols) - theme.Padding()
+	xOrigin := (size.Width - cellSize*float32(cols)) / 2
 	yOrigin := (size.Height - cellSize*float32(rows)) / 2
 
 	getPos := func(row, col int) (x, y float32) {

@@ -15,7 +15,7 @@ type RangeEntryFloat struct {
 	widget.Entry
 }
 
-func NewRangeEntryFloat(field binding.Float, bounds *EntryBoundsFloat) *RangeEntryFloat {
+func NewRangeEntryFloat(field binding.Float, bounds *FloatEntryBounds) *RangeEntryFloat {
 	e := &RangeEntryFloat{}
 	binder := binding.FloatToStringWithFormat(field, "%3f")
 	e.Bind(binder)

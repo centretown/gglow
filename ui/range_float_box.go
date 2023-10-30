@@ -15,7 +15,7 @@ type RangeFloatBox struct {
 	Entry    *RangeEntryFloat
 }
 
-func NewRangeFloatBox(field binding.Float, bounds *EntryBoundsFloat) *RangeFloatBox {
+func NewRangeFloatBox(field binding.Float, bounds *FloatEntryBounds) *RangeFloatBox {
 	buttonCheck := func(val float64) func() {
 		return func() {
 			f, _ := field.Get()

@@ -15,7 +15,7 @@ type RangeEntryInt struct {
 	widget.Entry
 }
 
-func NewRangeEntryInt(field binding.Int, bounds *EntryBoundsInt) *RangeEntryInt {
+func NewRangeEntryInt(field binding.Int, bounds *IntEntryBounds) *RangeEntryInt {
 	e := &RangeEntryInt{}
 	binder := binding.IntToString(field)
 	e.Bind(binder)
