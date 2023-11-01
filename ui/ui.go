@@ -19,8 +19,23 @@ type Ui struct {
 	model       *data.Model
 	sourceStrip binding.Untyped
 
-	mainContainer *fyne.Container
+	strip         *LightStrip
+	stripLayout   *LightStripLayout
 	stripPlayer   *LightStripPlayer
+	stripTools    *fyne.Container
+	playContainer *fyne.Container
+
+	effectSelect     *widget.Select
+	effectToolbar    *FrameTools
+	effectMenuButton *widget.Button
+
+	layerSelect      *widget.Select
+	layerToolbar     *LayerTools
+	layertMenuButton *widget.Button
+
+	layerEditor *LayerEditor
+
+	mainContainer *fyne.Container
 }
 
 func NewUi(app fyne.App, window fyne.Window, model *data.Model) *Ui {
@@ -38,40 +53,57 @@ func (ui *Ui) OnExit() {
 	ui.stripPlayer.OnExit()
 }
 
+func (ui *Ui) LayoutContent() *fyne.Container {
+	effectBox := container.NewBorder(nil, ui.effectToolbar, ui.effectMenuButton, nil, ui.effectSelect)
+	layerBox := container.NewBorder(nil, ui.layerToolbar, ui.layertMenuButton, nil, ui.layerSelect)
+	selectors := container.NewVBox(effectBox, layerBox)
+	editor := container.NewVBox(selectors, ui.layerEditor.Container)
+	// ui.mainContainer = container.NewBorder(editor, nil, nil, nil, ui.playContainer)
+	ui.mainContainer = container.NewBorder(nil, nil, editor, nil, ui.playContainer)
+	return ui.mainContainer
+}
+
 func (ui *Ui) BuildContent() *fyne.Container {
 
 	columns, rows := ui.getLightPreferences()
-	strip := NewLightStrip(columns*rows, rows)
-	ui.sourceStrip.Set(strip)
+	ui.strip = NewLightStrip(columns*rows, rows)
+	ui.sourceStrip.Set(ui.strip)
 
-	stripLayout := NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip)
-	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model.Frame, stripLayout)
-	stripTools := container.New(layout.NewCenterLayout(), ui.stripPlayer)
+	ui.stripLayout = NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip)
+	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model.Frame, ui.stripLayout)
+	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
-	effectSelect := NewEffectSelect(ui.model)
-	effectMenuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
-	effectBox := container.NewBorder(nil, nil, effectMenuButton, nil, effectSelect)
+	ui.effectSelect = NewEffectSelect(ui.model)
+	ui.effectToolbar = NewFrameTools(ui.model)
+	ui.effectMenuButton = widget.NewButtonWithIcon("", theme.MenuIcon(), func() {
+		if ui.effectToolbar.Hidden {
+			ui.effectToolbar.Show()
+		} else {
+			ui.effectToolbar.Hide()
+		}
+	})
 
-	layerSelect := NewLayerSelect(ui.model)
-	layertMenuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
-	layerBox := container.NewBorder(nil, nil, layertMenuButton, nil, layerSelect)
+	ui.layerSelect = NewLayerSelect(ui.model)
+	ui.layerToolbar = NewLayerTools(ui.model)
+	ui.layertMenuButton = widget.NewButtonWithIcon("", theme.MenuIcon(), func() {
+		if ui.layerToolbar.Hidden {
+			ui.layerToolbar.Show()
+		} else {
+			ui.layerToolbar.Hide()
+		}
+	})
 
-	selectors := container.NewVBox(effectBox, layerBox)
-
-	layerEditor := NewLayerEditor(ui.model, ui.window)
-	editor := container.NewBorder(selectors, nil, nil, nil, layerEditor.Container)
-
-	playContainer := container.NewBorder(widget.NewSeparator(), stripTools, nil, nil, strip)
+	ui.layerEditor = NewLayerEditor(ui.model, ui.window)
+	ui.playContainer = container.NewBorder(widget.NewSeparator(), ui.stripTools, nil, nil, ui.strip)
 	ui.sourceStrip.AddListener(binding.NewDataListener(func() {
-		i, _ := ui.sourceStrip.Get()
-		strip = i.(*LightStrip)
-		playContainer.Objects = []fyne.CanvasObject{stripTools, strip}
-		playContainer.Refresh()
+		strip, _ := ui.sourceStrip.Get()
+		ui.strip = strip.(*LightStrip)
+		ui.playContainer.Objects = []fyne.CanvasObject{ui.stripTools, ui.strip}
+		ui.playContainer.Refresh()
 		ui.stripPlayer.ResetStrip()
 	}))
 
-	ui.mainContainer = container.NewBorder(editor, nil, nil, nil, playContainer)
-	return ui.mainContainer
+	return ui.LayoutContent()
 }
 
 func (ui *Ui) getLightPreferences() (columns, rows int) {
@@ -79,7 +111,5 @@ func (ui *Ui) getLightPreferences() (columns, rows int) {
 		resources.StripColumnsDefault)
 	rows = ui.preferences.IntWithFallback(resources.StripRows.String(),
 		resources.StripRowsDefault)
-	// interval = ui.preferences.FloatWithFallback(resources.StripInterval.String(),
-	// 	resources.StripIntervalDefault)
 	return
 }

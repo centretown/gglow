@@ -63,39 +63,39 @@ func (fld *Fields) ToLayer(layer *glow.Layer) {
 	layer.End = uint16(i)
 }
 
-func (fld *Fields) IsDirty(layer *glow.Layer) bool {
-	var i int
+// func (fld *Fields) IsDirty(layer *glow.Layer) bool {
+// 	var i int
 
-	i, _ = fld.HueShift.Get()
-	if layer.HueShift != int16(i) {
-		return true
-	}
+// 	i, _ = fld.HueShift.Get()
+// 	if layer.HueShift != int16(i) {
+// 		return true
+// 	}
 
-	i, _ = fld.Scan.Get()
-	if layer.Scan != uint16(i) {
-		return true
-	}
+// 	i, _ = fld.Scan.Get()
+// 	if layer.Scan != uint16(i) {
+// 		return true
+// 	}
 
-	i, _ = fld.Rate.Get()
-	if layer.Rate != uint32(i) {
-		return true
-	}
+// 	i, _ = fld.Rate.Get()
+// 	if layer.Rate != uint32(i) {
+// 		return true
+// 	}
 
-	i, _ = fld.Origin.Get()
-	if layer.Grid.Origin != glow.Origin(i) {
-		return true
-	}
+// 	i, _ = fld.Origin.Get()
+// 	if layer.Grid.Origin != glow.Origin(i) {
+// 		return true
+// 	}
 
-	i, _ = fld.Orientation.Get()
-	if layer.Grid.Orientation != glow.Orientation(i) {
-		return true
-	}
+// 	i, _ = fld.Orientation.Get()
+// 	if layer.Grid.Orientation != glow.Orientation(i) {
+// 		return true
+// 	}
 
-	i, _ = fld.Begin.Get()
-	if layer.Begin != uint16(i) {
-		return true
-	}
+// 	i, _ = fld.Begin.Get()
+// 	if layer.Begin != uint16(i) {
+// 		return true
+// 	}
 
-	i, _ = fld.End.Get()
-	return layer.End != uint16(i)
-}
+// 	i, _ = fld.End.Get()
+// 	return layer.End != uint16(i)
+// }

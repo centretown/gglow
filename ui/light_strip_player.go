@@ -10,22 +10,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-type ButtonItem struct {
-	*widget.Button
-}
-
-func NewButtonItem(btn *widget.Button) (bi *ButtonItem) {
-	btn.Importance = widget.LowImportance
-	bi = &ButtonItem{
-		Button: btn,
-	}
-	return
-}
-
-func (bi *ButtonItem) ToolbarObject() fyne.CanvasObject {
-	return bi.Button
-}
-
 type LightStripPlayer struct {
 	*widget.Toolbar
 

@@ -22,7 +22,7 @@ type LayerEditor struct {
 	isDirty binding.Bool
 
 	bDynamic  bool
-	bScanner  bool
+	bScan     bool
 	bOverride bool
 
 	selectOrigin      *widget.Select
@@ -63,8 +63,12 @@ func NewLayerEditor(model *data.Model, window fyne.Window) *LayerEditor {
 		selectOrigin:      widget.NewSelect(resources.OriginLabels, func(s string) {}),
 		selectOrientation: widget.NewSelect(resources.OrientationLabels, func(s string) {}),
 
-		applyButton:  widget.NewButton(resources.ApplyLabel.String(), func() {}),
-		revertButton: widget.NewButton(resources.RevertLabel.String(), func() {}),
+		applyButton: widget.NewButtonWithIcon(resources.ApplyLabel.String(),
+			theme.ConfirmIcon(),
+			func() {}),
+		revertButton: widget.NewButtonWithIcon(resources.RevertLabel.String(),
+			theme.CancelIcon(),
+			func() {}),
 
 		dropDownOffset: theme.CaptionTextSize() + 2*(theme.InnerPadding()+theme.Padding()+theme.LineSpacing()),
 	}
@@ -140,7 +144,7 @@ func (le *LayerEditor) buildButtons() {
 
 func (le *LayerEditor) showDropDown(dropDown *widget.PopUp) func() {
 	f := func() {
-		le.isDirty.Set(le.fields.IsDirty(le.model.GetCurrentLayer()))
+		// le.isDirty.Set(le.fields.IsDirty(le.model.GetCurrentLayer()))
 		le.applyButton.OnTapped = le.apply(dropDown)
 		le.revertButton.OnTapped = le.revert()
 		dropDown.Resize(fyne.Size{Width: minStripWidth - 2*theme.Padding(),
@@ -176,18 +180,18 @@ func (le *LayerEditor) newScanForm() *fyne.Container {
 func (le *LayerEditor) newGridForm() *fyne.Container {
 	labelOrigin := widget.NewLabel(resources.OriginLabel.String())
 	le.selectOrigin.OnChanged = func(s string) {
-		current := le.model.GetCurrentLayer().Grid.Origin
+		current := le.layer.Grid.Origin
 		selected := le.selectOrigin.SelectedIndex()
-		if selected != int(current) {
+		if glow.Origin(selected) != current {
 			le.fields.Origin.Set(selected)
 			le.isDirty.Set(true)
 		}
 	}
 	labelOrientation := widget.NewLabel(resources.OrientationLabel.String())
 	le.selectOrientation.OnChanged = func(s string) {
-		current := le.model.GetCurrentLayer().Grid.Orientation
+		current := le.layer.Grid.Orientation
 		selected := le.selectOrientation.SelectedIndex()
-		if selected != int(current) {
+		if glow.Orientation(selected) != current {
 			le.fields.Orientation.Set(selected)
 			le.isDirty.Set(true)
 		}
@@ -209,9 +213,9 @@ func (le *LayerEditor) setFields() {
 	le.checkHue.SetChecked(le.bDynamic)
 	le.hueBox.Enable(le.bDynamic)
 
-	le.bScanner = (le.layer.Scan != uint16(le.scanBounds.OffVal))
-	le.checkScan.SetChecked(le.bScanner)
-	le.scanBox.Enable(le.bScanner)
+	le.bScan = (le.layer.Scan != uint16(le.scanBounds.OffVal))
+	le.checkScan.SetChecked(le.bScan)
+	le.scanBox.Enable(le.bScan)
 
 	le.bOverride = (le.layer.Rate != uint32(le.rateBounds.OffVal))
 	le.checkRate.SetChecked(le.bOverride)
@@ -221,6 +225,14 @@ func (le *LayerEditor) setFields() {
 func (le *LayerEditor) apply(dropDown *widget.PopUp) func() {
 	return func() {
 		dropDown.Hide()
+		dirty, _ := le.isDirty.Get()
+		if dirty {
+			le.fields.ToLayer(le.layer)
+			source := le.model.GetFrame()
+			frame := *source
+			le.model.Frame.Set(&frame)
+			le.isDirty.Set(false)
+		}
 	}
 }
 
