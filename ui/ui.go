@@ -25,17 +25,16 @@ type Ui struct {
 	stripTools    *fyne.Container
 	playContainer *fyne.Container
 
-	effectSelect     *widget.Select
-	effectToolbar    *FrameTools
-	effectMenuButton *widget.Button
+	effectSelect  *widget.Select
+	effectToolbar *FrameTools
 
-	layerSelect      *widget.Select
-	layerToolbar     *LayerTools
-	layertMenuButton *widget.Button
+	layerSelect  *widget.Select
+	layerToolbar *LayerTools
 
 	layerEditor *LayerEditor
 
 	mainContainer *fyne.Container
+	isMobile      bool
 }
 
 func NewUi(app fyne.App, window fyne.Window, model *data.Model) *Ui {
@@ -45,6 +44,7 @@ func NewUi(app fyne.App, window fyne.Window, model *data.Model) *Ui {
 		preferences: app.Preferences(),
 		model:       model,
 		sourceStrip: binding.NewUntyped(),
+		isMobile:    app.Driver().Device().IsMobile(),
 	}
 	return ui
 }
@@ -53,13 +53,43 @@ func (ui *Ui) OnExit() {
 	ui.stripPlayer.OnExit()
 }
 
-func (ui *Ui) LayoutContent() *fyne.Container {
-	effectBox := container.NewBorder(nil, ui.effectToolbar, ui.effectMenuButton, nil, ui.effectSelect)
-	layerBox := container.NewBorder(nil, ui.layerToolbar, ui.layertMenuButton, nil, ui.layerSelect)
-	selectors := container.NewVBox(effectBox, layerBox)
-	editor := container.NewVBox(selectors, ui.layerEditor.Container)
-	// ui.mainContainer = container.NewBorder(editor, nil, nil, nil, ui.playContainer)
-	ui.mainContainer = container.NewBorder(nil, nil, editor, nil, ui.playContainer)
+func (ui *Ui) layoutContent() *fyne.Container {
+	// sep := widget.NewSeparator()
+	// effectBox := container.NewBorder(ui.effectToolbar, sep, nil, nil, ui.effectSelect)
+
+	layerBox := container.NewBorder(ui.layerToolbar, nil, nil, nil, ui.layerSelect)
+	editor := container.NewBorder(layerBox, nil, nil, nil, ui.layerEditor.Container)
+
+	var sideBarContainer fyne.CanvasObject = editor
+	if ui.isMobile {
+		dropDown := widget.NewModalPopUp(editor, ui.window.Canvas())
+		toolbarItem := widget.NewToolbarAction(theme.MenuIcon(), func() {
+			if dropDown.Hidden {
+				dropDown.Show()
+			} else {
+				dropDown.Hide()
+			}
+		})
+		dropDown.Hide()
+		sideBarContainer = dropDown
+		tools := widget.NewToolbar(toolbarItem)
+		ui.mainContainer = container.NewBorder(nil, nil, tools, nil, ui.playContainer)
+		return ui.mainContainer
+	}
+
+	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {
+		if editor.Hidden {
+			editor.Show()
+		} else {
+			editor.Hide()
+		}
+	})
+	// editor.Hide()
+
+	tools := container.NewBorder(nil, nil, menuButton, nil, ui.effectSelect)
+	sidebar := container.NewBorder(nil, nil, nil, nil, sideBarContainer)
+	ui.mainContainer = container.NewBorder(tools, nil, sidebar, nil, ui.playContainer)
+
 	return ui.mainContainer
 }
 
@@ -75,25 +105,11 @@ func (ui *Ui) BuildContent() *fyne.Container {
 
 	ui.effectSelect = NewEffectSelect(ui.model)
 	ui.effectToolbar = NewFrameTools(ui.model)
-	ui.effectMenuButton = widget.NewButtonWithIcon("", theme.MenuIcon(), func() {
-		if ui.effectToolbar.Hidden {
-			ui.effectToolbar.Show()
-		} else {
-			ui.effectToolbar.Hide()
-		}
-	})
 
 	ui.layerSelect = NewLayerSelect(ui.model)
 	ui.layerToolbar = NewLayerTools(ui.model)
-	ui.layertMenuButton = widget.NewButtonWithIcon("", theme.MenuIcon(), func() {
-		if ui.layerToolbar.Hidden {
-			ui.layerToolbar.Show()
-		} else {
-			ui.layerToolbar.Hide()
-		}
-	})
+	ui.layerEditor = NewLayerEditor(ui.model, ui.window, ui.layerToolbar)
 
-	ui.layerEditor = NewLayerEditor(ui.model, ui.window)
 	ui.playContainer = container.NewBorder(widget.NewSeparator(), ui.stripTools, nil, nil, ui.strip)
 	ui.sourceStrip.AddListener(binding.NewDataListener(func() {
 		strip, _ := ui.sourceStrip.Get()
@@ -103,7 +119,7 @@ func (ui *Ui) BuildContent() *fyne.Container {
 		ui.stripPlayer.ResetStrip()
 	}))
 
-	return ui.LayoutContent()
+	return ui.layoutContent()
 }
 
 func (ui *Ui) getLightPreferences() (columns, rows int) {

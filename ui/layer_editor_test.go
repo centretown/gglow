@@ -16,7 +16,8 @@ func test_editor_setup(t *testing.T) (model *data.Model, e *LayerEditor, err err
 		t.Fatalf(err.Error())
 	}
 	model = data.NewModel()
-	e = NewLayerEditor(model, w)
+	tools := NewLayerTools(model)
+	e = NewLayerEditor(model, w, tools)
 	return
 }
 

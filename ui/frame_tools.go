@@ -37,7 +37,6 @@ func NewFrameTools(model *data.Model) *FrameTools {
 		ft.restoreFrame,
 		ft.newFrame,
 	)
-	ft.Hide()
 	return ft
 }
 

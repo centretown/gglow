@@ -15,10 +15,10 @@ func NewLayerSelect(model *data.Model) (sel *widget.Select) {
 	sel.OnChanged = func(s string) {
 		model.SetCurrentLayer(sel.SelectedIndex())
 	}
-	model.LayerSummaryList.AddListener(binding.NewDataListener(func() {
+	model.Layer.AddListener(binding.NewDataListener(func() {
 		summaries, _ := model.LayerSummaryList.Get()
 		sel.SetOptions(summaries)
-		sel.SetSelectedIndex(0)
+		sel.SetSelectedIndex(model.LayerIndex)
 	}))
 	return
 }

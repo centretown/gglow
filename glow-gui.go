@@ -14,6 +14,7 @@ import (
 
 func main() {
 	app := app.NewWithID(resources.AppID)
+
 	err := store.Setup()
 	if err != nil {
 		fmt.Println("store.Setup", err.Error())

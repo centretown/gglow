@@ -13,6 +13,7 @@ type Model struct {
 	Frame            binding.Untyped
 	LayerSummaryList binding.StringList
 	Layer            binding.Untyped
+	LayerIndex       int
 }
 
 func NewModel() *Model {
@@ -36,7 +37,7 @@ func (m *Model) onChangeFrame() {
 		summaries = append(summaries, Summarize(&layer, i+1))
 	}
 	m.LayerSummaryList.Set(summaries)
-	m.SetCurrentLayer(0)
+	m.SetCurrentLayer(m.LayerIndex)
 }
 
 func (m *Model) GetFrame() *glow.Frame {
@@ -53,11 +54,19 @@ func (m *Model) SetCurrentLayer(i int) {
 	frame := m.GetFrame()
 	var layer *glow.Layer
 	if i < len(frame.Layers) {
+		m.LayerIndex = i
 		layer = &frame.Layers[i]
 	} else {
+		m.LayerIndex = 0
 		layer = &glow.Layer{}
 	}
 	m.Layer.Set(layer)
+}
+
+func (m *Model) UpdateFrame() {
+	current := m.GetFrame()
+	frame := *current
+	m.Frame.Set(&frame)
 }
 
 func (m *Model) LoadFrame(frameName string) error {
@@ -75,6 +84,7 @@ func (m *Model) LoadFrame(frameName string) error {
 		return err
 	}
 
+	m.LayerIndex = 0
 	m.Frame.Set(frame)
 	return nil
 }

@@ -10,11 +10,11 @@ import (
 type LayerTools struct {
 	*widget.Toolbar
 	// editor      *LayerEditor
-	model       *data.Model
-	applyLayer  *ButtonItem
-	revertLayer *ButtonItem
-	insertLayer *ButtonItem
-	removeLayer *ButtonItem
+	model        *data.Model
+	ApplyButton  *ButtonItem
+	RevertButton *ButtonItem
+	InsertButton *ButtonItem
+	RemoveButton *ButtonItem
 }
 
 func NewLayerTools(model *data.Model) *LayerTools {
@@ -23,22 +23,21 @@ func NewLayerTools(model *data.Model) *LayerTools {
 		// editor: editor,
 	}
 
-	lt.applyLayer = NewButtonItem(
+	lt.ApplyButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.ConfirmIcon(), lt.apply))
-	lt.revertLayer = NewButtonItem(
+	lt.RevertButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.CancelIcon(), lt.revert))
-	lt.insertLayer = NewButtonItem(
+	lt.InsertButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.ContentAddIcon(), lt.remove))
-	lt.removeLayer = NewButtonItem(
+	lt.RemoveButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.ContentRemoveIcon(), lt.remove))
 
 	lt.Toolbar = widget.NewToolbar(
-		lt.applyLayer,
-		lt.revertLayer,
-		lt.insertLayer,
-		lt.removeLayer,
+		lt.ApplyButton,
+		lt.RevertButton,
+		lt.InsertButton,
+		lt.RemoveButton,
 	)
-	lt.Hide()
 	return lt
 }
 
