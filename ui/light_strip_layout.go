@@ -2,6 +2,7 @@ package ui
 
 import (
 	"glow-gui/resources"
+	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
@@ -15,15 +16,17 @@ type LightStripLayout struct {
 	sourceStrip binding.Untyped
 	columns     binding.Int
 	rows        binding.Int
+	background  color.Color
 }
 
 func NewLightStripLayout(parent fyne.Window, p fyne.Preferences,
-	sourceStrip binding.Untyped) *LightStripLayout {
+	sourceStrip binding.Untyped, background color.Color) *LightStripLayout {
 	ll := &LightStripLayout{
 		preferences: p,
 		sourceStrip: sourceStrip,
 		columns:     binding.NewInt(),
 		rows:        binding.NewInt(),
+		background:  background,
 	}
 
 	ll.columns.Set(p.Int(resources.StripColumns.String()))
@@ -48,7 +51,7 @@ func (ll *LightStripLayout) confirm() {
 	rows, _ := ll.rows.Get()
 	ll.preferences.SetInt(resources.StripColumns.String(), columns)
 	ll.preferences.SetInt(resources.StripRows.String(), rows)
-	ll.sourceStrip.Set(NewLightStrip(columns*rows, rows))
+	ll.sourceStrip.Set(NewLightStrip(columns*rows, rows, ll.background))
 }
 
 func (ll *LightStripLayout) revert() {

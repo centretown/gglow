@@ -15,7 +15,7 @@ var WindowSize = fyne.Size{Width: 480, Height: 480}
 type ImageID uint16
 
 const (
-	GooseNoirImage ImageID = iota
+	DarkGanderImage ImageID = iota
 )
 
 var imagePath = []string{
@@ -63,7 +63,7 @@ const (
 	IntervalLabel
 	LayersLabel
 	GridLabel
-	ChromaLabel
+	ColorsLabel
 	HueShiftLabel
 	ScanLengthLabel
 	BeginLabel
@@ -87,7 +87,7 @@ const (
 var entryLabels = []string{
 	"Glow", "Columns",
 	"Length", "Rows", "Interval", "Layers",
-	"Grid", "Color", "Hue Shift", "Scan Length",
+	"Grid", "Colors", "Hue Shift", "Scan Length",
 	"Begin", "End",
 	"Origin", "Orientation",
 	"Hue", "Scan",

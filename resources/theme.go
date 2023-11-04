@@ -53,6 +53,10 @@ var (
 type GlowTheme struct {
 }
 
+func (m GlowTheme) GetVariant() fyne.ThemeVariant {
+	return glowVariant
+}
+
 func NewGlowTheme(preferences fyne.Preferences) *GlowTheme {
 	glowScale = preferences.FloatWithFallback(GlowThemeScale.String(),
 		ScaleDefault)
@@ -67,13 +71,17 @@ func NewGlowTheme(preferences fyne.Preferences) *GlowTheme {
 	return &GlowTheme{}
 }
 
+const LightStripBackground fyne.ThemeColorName = "LightStripBackground"
+
 func (m GlowTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
-	// if name == theme.ColorNameBackground {
-	// 	if variant == theme.VariantLight {
-	// 		return color.White
-	// 	}
-	// 	return color.Black
-	// }
+	if name == LightStripBackground {
+		if variant == theme.VariantLight {
+			c := color.RGBA{32, 48, 96, 255}
+			return c
+		}
+		c := color.RGBA{8, 12, 24, 255}
+		return c
+	}
 	return theme.DefaultTheme().Color(name, glowVariant)
 }
 

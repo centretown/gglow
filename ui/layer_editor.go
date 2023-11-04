@@ -122,6 +122,9 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	}))
 	le.checkScan = widget.NewCheck("", checkRangeBox(le.scanBox, le.fields.Scan))
 
+	colorsLabel := widget.NewLabel(resources.ColorsLabel.String())
+	gradientLabel := widget.NewLabel(resources.GradientLabel.String())
+
 	huelabel := widget.NewLabel(resources.HueShiftLabel.String())
 	hueCheckLabel := widget.NewLabel(resources.DynamicLabel.String())
 	le.hueBox = NewRangeIntBox(le.fields.HueShift, le.hueBounds)
@@ -148,6 +151,8 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		scanCheckLabel, le.checkScan,
 		scanLabel, le.scanBox.Container,
 		sep, sep,
+		colorsLabel, sep,
+		gradientLabel, sep,
 		hueCheckLabel, le.checkHue,
 		huelabel, le.hueBox.Container,
 		sep, sep,

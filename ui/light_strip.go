@@ -26,6 +26,20 @@ type LightStrip struct {
 	rows       int
 }
 
+func NewLightStrip(length, rows int, background color.Color) *LightStrip {
+	strip := &LightStrip{
+		background: canvas.NewRectangle(background),
+		length:     length,
+		rows:       rows,
+	}
+
+	strip.colorOff = color.RGBA{48, 24, 16, 255}
+	strip.background.CornerRadius = 14
+	strip.buildLights()
+	strip.ExtendBaseWidget(strip)
+	return strip
+}
+
 func (strip *LightStrip) Length() uint16 {
 	return uint16(strip.length)
 }
@@ -44,20 +58,6 @@ func (strip *LightStrip) Set(i uint16, color color.RGBA) {
 	c := strip.lights[i]
 	c.FillColor = color
 	c.Refresh()
-}
-
-func NewLightStrip(length, rows int) *LightStrip {
-	strip := &LightStrip{
-		background: canvas.NewRectangle(color.RGBA{127, 127, 127, 255}),
-		length:     length,
-		rows:       rows,
-	}
-
-	strip.colorOff = color.RGBA{48, 24, 16, 255}
-	strip.background.CornerRadius = 14
-	strip.buildLights()
-	strip.ExtendBaseWidget(strip)
-	return strip
 }
 
 func (strip *LightStrip) TurnOff() {
@@ -97,6 +97,7 @@ func (strip *LightStrip) CreateRenderer() fyne.WidgetRenderer {
 }
 
 func (lsr *lightStripRenderer) Layout(size fyne.Size) {
+	lsr.strip.background.Resize(size)
 	lsr.strip.background.Refresh()
 
 	rows := int(lsr.strip.rows)
@@ -108,9 +109,9 @@ func (lsr *lightStripRenderer) Layout(size fyne.Size) {
 	diameter := float32(math.Ceil(float64(cellSize / 2)))
 	circleSize := fyne.Size{Width: diameter, Height: diameter}
 
-	pad := theme.Padding() + theme.InnerPadding()
+	pad := theme.InnerPadding()
 	xOrigin := (size.Width-cellSize*float32(cols))/2 + pad
-	yOrigin := (size.Height-cellSize*float32(rows))/2 + pad
+	yOrigin := (size.Height-cellSize*float32(rows))/2 + theme.Padding()
 
 	getPos := func(row, col int) (x, y float32) {
 		x = float32(col)*cellSize + xOrigin

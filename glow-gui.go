@@ -21,19 +21,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	icon, err := resources.GooseNoirImage.Load()
+	icon, err := resources.DarkGanderImage.Load()
 	if err == nil {
 		app.SetIcon(icon)
 	}
 
 	preferences := app.Preferences()
-	app.Settings().SetTheme(resources.NewGlowTheme(preferences))
+	theme := resources.NewGlowTheme(preferences)
+	app.Settings().SetTheme(theme)
 
 	window := app.NewWindow(resources.GlowLabel.String() + " " +
 		resources.EffectsLabel.String())
 
 	model := data.NewModel()
-	ui := ui.NewUi(app, window, model)
+	ui := ui.NewUi(app, window, model, theme)
 
 	window.SetContent(ui.BuildContent())
 	window.SetCloseIntercept(func() {

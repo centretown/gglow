@@ -18,6 +18,7 @@ type Ui struct {
 	app         fyne.App
 	preferences fyne.Preferences
 	model       *data.Model
+	theme       *resources.GlowTheme
 	sourceStrip binding.Untyped
 
 	strip         *LightStrip
@@ -41,11 +42,12 @@ type Ui struct {
 	isMobile      bool
 }
 
-func NewUi(app fyne.App, window fyne.Window, model *data.Model) *Ui {
+func NewUi(app fyne.App, window fyne.Window, model *data.Model, theme *resources.GlowTheme) *Ui {
 	ui := &Ui{
 		window:      window,
 		app:         app,
 		preferences: app.Preferences(),
+		theme:       theme,
 		model:       model,
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
@@ -99,10 +101,11 @@ func (ui *Ui) layoutContent() *fyne.Container {
 
 func (ui *Ui) BuildContent() *fyne.Container {
 	columns, rows := ui.getLightPreferences()
-	ui.strip = NewLightStrip(columns*rows, rows)
+	color := ui.theme.Color(resources.LightStripBackground, ui.theme.GetVariant())
+	ui.strip = NewLightStrip(columns*rows, rows, color)
 	ui.sourceStrip.Set(ui.strip)
 
-	ui.stripLayout = NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip)
+	ui.stripLayout = NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip, color)
 	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model.Frame, ui.stripLayout)
 	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
