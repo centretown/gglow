@@ -31,7 +31,9 @@ func main() {
 
 	window := app.NewWindow(resources.GlowLabel.String() + " " +
 		resources.EffectsLabel.String())
-	ui := ui.NewUi(app, window, data.NewModel())
+
+	model := data.NewModel()
+	ui := ui.NewUi(app, window, model)
 
 	window.SetContent(ui.BuildContent())
 	window.SetCloseIntercept(func() {
@@ -47,5 +49,11 @@ func main() {
 	if height > 0 && width > 0 {
 		window.Resize(fyne.Size{Width: float32(width), Height: float32(height)})
 	}
-	window.ShowAndRun()
+
+	window.Show()
+	effect := preferences.StringWithFallback(resources.Effect.String(), "")
+	if len(effect) > 0 {
+		model.LoadFrame(effect)
+	}
+	app.Run()
 }

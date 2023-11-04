@@ -18,7 +18,7 @@ const (
 )
 
 type LightStrip struct {
-	widget.DisableableWidget
+	widget.BaseWidget
 	background *canvas.Rectangle
 	colorOff   color.RGBA
 	lights     []*canvas.Circle
@@ -48,7 +48,7 @@ func (strip *LightStrip) Set(i uint16, color color.RGBA) {
 
 func NewLightStrip(length, rows int) *LightStrip {
 	strip := &LightStrip{
-		background: canvas.NewRectangle(color.RGBA{255, 255, 255, 255}),
+		background: canvas.NewRectangle(color.RGBA{127, 127, 127, 255}),
 		length:     length,
 		rows:       rows,
 	}
@@ -97,6 +97,8 @@ func (strip *LightStrip) CreateRenderer() fyne.WidgetRenderer {
 }
 
 func (lsr *lightStripRenderer) Layout(size fyne.Size) {
+	lsr.strip.background.Refresh()
+
 	rows := int(lsr.strip.rows)
 	cols := int(lsr.strip.length) / rows
 
@@ -106,9 +108,9 @@ func (lsr *lightStripRenderer) Layout(size fyne.Size) {
 	diameter := float32(math.Ceil(float64(cellSize / 2)))
 	circleSize := fyne.Size{Width: diameter, Height: diameter}
 
-	// xOrigin := size.Width - cellSize*float32(cols) - theme.Padding()
-	xOrigin := (size.Width-cellSize*float32(cols))/2 + theme.Padding() + theme.InnerPadding()
-	yOrigin := (size.Height - cellSize*float32(rows)) / 2
+	pad := theme.Padding() + theme.InnerPadding()
+	xOrigin := (size.Width-cellSize*float32(cols))/2 + pad
+	yOrigin := (size.Height-cellSize*float32(rows))/2 + pad
 
 	getPos := func(row, col int) (x, y float32) {
 		x = float32(col)*cellSize + xOrigin
@@ -121,7 +123,6 @@ func (lsr *lightStripRenderer) Layout(size fyne.Size) {
 		x, y := getPos(i/cols, i%cols)
 		light.Move(fyne.Position{X: x, Y: y})
 	}
-	lsr.strip.background.Refresh()
 }
 
 func (lsr *lightStripRenderer) MinSize() (size fyne.Size) {
@@ -132,7 +133,6 @@ func (lsr *lightStripRenderer) MinSize() (size fyne.Size) {
 
 func (lsr *lightStripRenderer) Refresh() {
 	lsr.Layout(lsr.strip.BaseWidget.Size())
-	// canvas.Refresh(&lsr.strip.BaseWidget)
 }
 
 func (lsr *lightStripRenderer) Objects() []fyne.CanvasObject {

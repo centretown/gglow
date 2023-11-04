@@ -2,9 +2,9 @@ package ui
 
 import (
 	"glow-gui/data"
-	"glow-gui/resources"
 	"glow-gui/store"
 
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -21,9 +21,14 @@ func NewEffectSelect(model *data.Model) *widget.Select {
 
 	options := store.LookUpList()
 	fs.Select = widget.NewSelect(options, fs.onChange)
-	fs.Select.PlaceHolder = resources.EffectsLabel.PlaceHolder() + "..."
+	// fs.Select.PlaceHolder = model.EffectName
 	// fs.Select.Alignment = fyne.TextAlignCenter
-
+	model.Frame.AddListener(binding.NewDataListener(func() {
+		selected := fs.Select.Selected
+		if selected != model.EffectName {
+			fs.Select.SetSelected(model.EffectName)
+		}
+	}))
 	return fs.Select
 }
 

@@ -12,21 +12,23 @@ type Settings int
 const (
 	StripColumns Settings = iota
 	StripRows
-	StripInterval
 	ContentWidth
 	ContentHeight
+	ContentSplit
 	GlowThemeVariant
 	GlowThemeScale
+	Effect
 )
 
 var settings = []string{
-	"StripColumns",
-	"StripRows",
-	"StripInterval",
-	"ContentWidth",
-	"ContentHeight",
-	"ThemeVariant",
-	"ThemeScale",
+	"strip_columns",
+	"strip_rows",
+	"content_width",
+	"content_height",
+	"content_split",
+	"theme_variant",
+	"theme_scale",
+	"effect",
 }
 
 func (s Settings) String() string {
@@ -34,11 +36,10 @@ func (s Settings) String() string {
 }
 
 const (
-	StripColumnsDefault  int               = 9
-	StripRowsDefault     int               = 4
-	StripIntervalDefault float64           = 32
-	VariantDefault       fyne.ThemeVariant = theme.VariantDark
-	ScaleDefault         float64           = 1
+	StripColumnsDefault int               = 9
+	StripRowsDefault    int               = 4
+	VariantDefault      fyne.ThemeVariant = theme.VariantDark
+	ScaleDefault        float64           = 1
 )
 
 var (

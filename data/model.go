@@ -10,6 +10,7 @@ import (
 )
 
 type Model struct {
+	EffectName       string
 	Frame            binding.Untyped
 	LayerSummaryList binding.StringList
 	Layer            binding.Untyped
@@ -77,6 +78,7 @@ func (m *Model) LoadFrame(frameName string) error {
 		return err
 	}
 
+	m.EffectName = frameName
 	frame := &glow.Frame{}
 	err = store.LoadFrameURI(uri, frame)
 	if err != nil {

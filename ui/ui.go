@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -32,6 +33,9 @@ type Ui struct {
 	layerToolbar *LayerTools
 
 	layerEditor *LayerEditor
+	editor      *fyne.Container
+	split       *container.Split
+	isSplit     bool
 
 	mainContainer *fyne.Container
 	isMobile      bool
@@ -51,50 +55,49 @@ func NewUi(app fyne.App, window fyne.Window, model *data.Model) *Ui {
 
 func (ui *Ui) OnExit() {
 	ui.stripPlayer.OnExit()
+	ui.preferences.SetString(resources.Effect.String(), ui.model.EffectName)
+	ui.preferences.SetBool(resources.ContentSplit.String(), ui.isSplit)
 }
 
 func (ui *Ui) layoutContent() *fyne.Container {
-	// sep := widget.NewSeparator()
-	// effectBox := container.NewBorder(ui.effectToolbar, sep, nil, nil, ui.effectSelect)
 
 	layerBox := container.NewBorder(ui.layerToolbar, nil, nil, nil, ui.layerSelect)
-	editor := container.NewBorder(layerBox, nil, nil, nil, ui.layerEditor.Container)
-
-	var sideBarContainer fyne.CanvasObject = editor
-	if ui.isMobile {
-		dropDown := widget.NewModalPopUp(editor, ui.window.Canvas())
-		toolbarItem := widget.NewToolbarAction(theme.MenuIcon(), func() {
-			if dropDown.Hidden {
-				dropDown.Show()
-			} else {
-				dropDown.Hide()
-			}
-		})
-		dropDown.Hide()
-		sideBarContainer = dropDown
-		tools := widget.NewToolbar(toolbarItem)
-		ui.mainContainer = container.NewBorder(nil, nil, tools, nil, ui.playContainer)
-		return ui.mainContainer
-	}
-
-	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {
-		if editor.Hidden {
-			editor.Show()
-		} else {
-			editor.Hide()
-		}
-	})
-	// editor.Hide()
-
+	ui.editor = container.NewBorder(layerBox, nil, nil, nil, ui.layerEditor.Container)
+	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
 	tools := container.NewBorder(nil, nil, menuButton, nil, ui.effectSelect)
-	sidebar := container.NewBorder(nil, nil, nil, nil, sideBarContainer)
-	ui.mainContainer = container.NewBorder(tools, nil, sidebar, nil, ui.playContainer)
 
+	if ui.isMobile {
+		dropDown := dialog.NewCustom("edit", "hide", ui.editor, ui.window)
+		menuButton.OnTapped = func() {
+			dropDown.Resize(ui.window.Canvas().Size())
+			dropDown.Show()
+		}
+		ui.mainContainer = container.NewBorder(tools, nil, nil, nil, ui.playContainer)
+	} else {
+
+		ui.isSplit = ui.preferences.BoolWithFallback(resources.ContentSplit.String(), true)
+		ui.split = container.NewHSplit(ui.editor, ui.playContainer)
+
+		showSplit := func(isSplit bool) {
+			if isSplit {
+				ui.mainContainer.Objects = []fyne.CanvasObject{tools, ui.split}
+			} else {
+				ui.mainContainer.Objects = []fyne.CanvasObject{tools, ui.playContainer}
+			}
+		}
+
+		ui.mainContainer = container.NewBorder(tools, nil, nil, nil, ui.playContainer)
+		showSplit(ui.isSplit)
+
+		menuButton.OnTapped = func() {
+			ui.isSplit = !ui.isSplit
+			showSplit(ui.isSplit)
+		}
+	}
 	return ui.mainContainer
 }
 
 func (ui *Ui) BuildContent() *fyne.Container {
-
 	columns, rows := ui.getLightPreferences()
 	ui.strip = NewLightStrip(columns*rows, rows)
 	ui.sourceStrip.Set(ui.strip)
