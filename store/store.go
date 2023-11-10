@@ -5,6 +5,7 @@ import (
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"io"
+	"os"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -13,31 +14,50 @@ import (
 )
 
 const (
-	scheme          = "file://"
-	max_buffer_size = 4096
+	scheme       = "file://"
+	BasePath     = "/home/dave/src/glow-gui/storage/effects/"
+	ExamplesPath = "/home/dave/src/glow-gui/storage/effects/examples/"
+	dots         = "..."
 )
 
-// var readbuf []byte = make([]byte, max_buffer_size)
-
-const (
-	FramePath   = "/home/dave/src/glow-gui/resources/frames/"
-	DerivedPath = "/home/dave/src/glow-gui/resources/frames/derived"
-)
-
-var (
-	FrameURI   fyne.ListableURI
-	DerivedURI fyne.ListableURI
-)
-
-var uri_lookup = make(map[string]fyne.URI)
-var lookUpList []string
-
-func LookUpList() []string {
-	return lookUpList
+type Store struct {
+	Current fyne.ListableURI
+	Derived fyne.ListableURI
+	uriMap  map[string]fyne.URI
+	keyList []string
+	stack   *Stack
 }
 
-func LookupURI(s string) (uri fyne.URI, err error) {
-	uri = uri_lookup[s]
+func NewStore() *Store {
+	path := scheme + BasePath
+	uri, err := storage.ParseURI(path)
+
+	if err != nil {
+		formatMessage(resources.MsgParseEffectPath, path, err)
+		os.Exit(1)
+	}
+
+	listable, err := storage.ListerForURI(uri)
+	if err != nil {
+		formatMessage(resources.MsgParseEffectPath, path, err)
+		os.Exit(1)
+	}
+
+	store := &Store{
+		uriMap: make(map[string]fyne.URI),
+		stack:  NewStack(listable),
+	}
+
+	store.makeLookupList()
+	return store
+}
+
+func (store *Store) LookUpList() []string {
+	return store.keyList
+}
+
+func (store *Store) LookupURI(s string) (uri fyne.URI, err error) {
+	uri = store.uriMap[s]
 	if uri == nil {
 		err = fmt.Errorf("LookupURI: %s not found", s)
 		return
@@ -45,97 +65,67 @@ func LookupURI(s string) (uri fyne.URI, err error) {
 	return
 }
 
-func Setup() (err error) {
-	var (
-		uri     fyne.URI
-		canList bool
-	)
+func formatMessage(id resources.MessageID,
+	path string, err error) error {
+	id.Log(path, err)
+	return fmt.Errorf("%s %s %s", id, path, err.Error())
+}
 
-	path := scheme + FramePath
+func (store *Store) IsFolder(path string) bool {
+	uri, ok := store.uriMap[path]
+	if ok {
+		ok, _ = storage.CanList(uri)
+	}
+	return ok
+}
 
-	formatMessage := func(id resources.MessageID, msg string, err error) error {
-		id.Log(path, err)
-		return fmt.Errorf("%s %s %s", id, msg, err.Error())
+func (store *Store) RefreshLookupList(key string) {
+
+	uri, ok := store.uriMap[key]
+	if !ok {
+		fyne.LogError("", fmt.Errorf("%s not found", key))
+		return
 	}
 
-	uri, err = storage.ParseURI(path)
+	listable, err := storage.ListerForURI(uri)
 	if err != nil {
-		err = formatMessage(resources.MsgParseEffectPath, path, err)
+		fyne.LogError("", fmt.Errorf("%s not listable", key))
 		return
 	}
 
-	canList, err = storage.CanList(uri)
-	if err != nil {
-		err = formatMessage(resources.MsgNoAccess, path, err)
-		return
+	if key != "..." {
+		store.stack.Push(listable)
+	}
+	store.makeLookupList()
+}
+
+func (store *Store) makeLookupList() (err error) {
+
+	store.uriMap = make(map[string]fyne.URI)
+
+	currentUri, isBase := store.stack.Pop()
+
+	if !isBase {
+		store.uriMap[dots] = store.Current
 	}
 
-	if !canList {
-		err = formatMessage(resources.MsgPathNotFolder, path, err)
-		return
+	store.Current = currentUri
+	uriList, err := store.Current.List()
+	store.keyList = make([]string, 0, len(uriList)+1)
+	if !isBase {
+		store.keyList = append(store.keyList, dots)
 	}
 
-	FrameURI, err = storage.ListerForURI(uri)
-	if err != nil {
-		err = formatMessage(resources.MsgNoList, path, err)
-		return
-	}
-
-	uriList, err := FrameURI.List()
-	if err != nil {
-		err = formatMessage(resources.MsgNoList, path, err)
-		return
-	}
-
-	count := 0
-	lookUpList = make([]string, len(uriList))
 	for _, uri := range uriList {
-		canList, err := storage.CanList(uri)
-		if err == nil && !canList {
-			s := makeTitle(uri)
-			uri_lookup[s] = uri
-			lookUpList[count] = s
-			count++
-		}
-	}
-
-	lookUpList = lookUpList[:count]
-	return
-}
-
-func makeTitle(uri fyne.URI) (s string) {
-	s = uri.Name()
-	i := strings.Index(s, uri.Extension())
-	if i > 0 {
-		s = s[:i]
-	}
-	s = strings.ReplaceAll(s, "_", " ")
-	return
-}
-
-func FrameListURI() fyne.ListableURI {
-	return FrameURI
-}
-
-func readFrame(rdr fyne.URIReadCloser, frame *glow.Frame) (err error) {
-	defer rdr.Close()
-
-	var b []byte
-
-	b, err = io.ReadAll(rdr)
-	if err != nil {
-		return
-	}
-
-	err = yaml.Unmarshal(b, frame)
-	if err != nil {
-		return
+		title := makeTitle(uri)
+		store.uriMap[title] = uri
+		store.keyList = append(store.keyList, title)
 	}
 
 	return
 }
 
-func LoadFrameURI(uri fyne.URI, frame *glow.Frame) (err error) {
+func (store *Store) LoadFrameURI(uri fyne.URI, frame *glow.Frame) (err error) {
 	var (
 		rdr fyne.URIReadCloser
 	)
@@ -144,29 +134,10 @@ func LoadFrameURI(uri fyne.URI, frame *glow.Frame) (err error) {
 		return
 	}
 
-	return readFrame(rdr, frame)
+	return store.readFrame(rdr, frame)
 }
 
-func loadFrame(fname string, frame *glow.Frame) (err error) {
-	var (
-		uri fyne.URI
-		rdr fyne.URIReadCloser
-	)
-
-	uri, err = storage.ParseURI(scheme + fname)
-	if err != nil {
-		return
-	}
-
-	rdr, err = storage.Reader(uri)
-	if err != nil {
-		return
-	}
-
-	return readFrame(rdr, frame)
-}
-
-func StoreFrame(fname string, frame *glow.Frame) (err error) {
+func (store *Store) StoreFrame(fname string, frame *glow.Frame) (err error) {
 	var (
 		uri fyne.URI
 		wrt fyne.URIWriteCloser
@@ -202,3 +173,50 @@ func StoreFrame(fname string, frame *glow.Frame) (err error) {
 
 	return
 }
+
+func (store *Store) FrameListURI() fyne.ListableURI {
+	return store.Current
+}
+
+func makeTitle(uri fyne.URI) (s string) {
+	s = uri.Name()
+	i := strings.Index(s, uri.Extension())
+	if i > 0 {
+		s = s[:i]
+	}
+	s = strings.ReplaceAll(s, "_", " ")
+	return
+}
+
+func (store *Store) readFrame(rdr fyne.URIReadCloser, frame *glow.Frame) (err error) {
+	defer rdr.Close()
+
+	var b []byte
+
+	b, err = io.ReadAll(rdr)
+	if err != nil {
+		return
+	}
+
+	err = yaml.Unmarshal(b, frame)
+	return
+}
+
+// func (store *Store) loadFrame(fname string, frame *glow.Frame) (err error) {
+// 	var (
+// 		uri fyne.URI
+// 		rdr fyne.URIReadCloser
+// 	)
+
+// 	uri, err = storage.ParseURI(scheme + fname)
+// 	if err != nil {
+// 		return
+// 	}
+
+// 	rdr, err = storage.Reader(uri)
+// 	if err != nil {
+// 		return
+// 	}
+
+// 	return store.readFrame(rdr, frame)
+// }

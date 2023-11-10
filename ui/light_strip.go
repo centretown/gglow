@@ -34,7 +34,6 @@ func NewLightStrip(length, rows int, background color.Color) *LightStrip {
 	}
 
 	strip.colorOff = color.RGBA{48, 24, 16, 255}
-	strip.background.CornerRadius = 14
 	strip.buildLights()
 	strip.ExtendBaseWidget(strip)
 	return strip

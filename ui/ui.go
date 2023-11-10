@@ -27,19 +27,20 @@ type Ui struct {
 	stripTools    *fyne.Container
 	playContainer *fyne.Container
 
-	effectSelect  *widget.Select
-	effectToolbar *FrameTools
+	effectSelect *widget.Select
 
-	layerSelect  *widget.Select
-	layerToolbar *LayerTools
+	toolbar *SharedTools
 
+	frameEditor *FrameEditor
 	layerEditor *LayerEditor
-	editor      *fyne.Container
-	split       *container.Split
-	isSplit     bool
+
+	editor  *fyne.Container
+	split   *container.Split
+	isSplit bool
 
 	mainContainer *fyne.Container
 	isMobile      bool
+	isDirty       binding.Bool
 }
 
 func NewUi(app fyne.App, window fyne.Window, model *data.Model, theme *resources.GlowTheme) *Ui {
@@ -49,6 +50,7 @@ func NewUi(app fyne.App, window fyne.Window, model *data.Model, theme *resources
 		preferences: app.Preferences(),
 		theme:       theme,
 		model:       model,
+		isDirty:     binding.NewBool(),
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
 	}
@@ -63,10 +65,12 @@ func (ui *Ui) OnExit() {
 
 func (ui *Ui) layoutContent() *fyne.Container {
 
-	layerBox := container.NewBorder(ui.layerToolbar, nil, nil, nil, ui.layerSelect)
-	ui.editor = container.NewBorder(layerBox, nil, nil, nil, ui.layerEditor.Container)
+	toolsLayout := container.New(layout.NewCenterLayout(), ui.toolbar)
+	ui.editor = container.NewBorder(ui.frameEditor.Container, toolsLayout, nil, nil,
+		ui.layerEditor.Container)
+
 	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
-	tools := container.NewBorder(nil, nil, menuButton, nil, ui.effectSelect)
+	selectorMenu := container.NewBorder(nil, nil, menuButton, nil, ui.effectSelect)
 
 	if ui.isMobile {
 		dropDown := dialog.NewCustom("edit", "hide", ui.editor, ui.window)
@@ -74,26 +78,26 @@ func (ui *Ui) layoutContent() *fyne.Container {
 			dropDown.Resize(ui.window.Canvas().Size())
 			dropDown.Show()
 		}
-		ui.mainContainer = container.NewBorder(tools, nil, nil, nil, ui.playContainer)
+		ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
 	} else {
 
 		ui.isSplit = ui.preferences.BoolWithFallback(resources.ContentSplit.String(), true)
 		ui.split = container.NewHSplit(ui.editor, ui.playContainer)
 
-		showSplit := func(isSplit bool) {
+		setSplit := func(isSplit bool) {
 			if isSplit {
-				ui.mainContainer.Objects = []fyne.CanvasObject{tools, ui.split}
+				ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.split}
 			} else {
-				ui.mainContainer.Objects = []fyne.CanvasObject{tools, ui.playContainer}
+				ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.playContainer}
 			}
 		}
 
-		ui.mainContainer = container.NewBorder(tools, nil, nil, nil, ui.playContainer)
-		showSplit(ui.isSplit)
+		ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
+		setSplit(ui.isSplit)
 
 		menuButton.OnTapped = func() {
 			ui.isSplit = !ui.isSplit
-			showSplit(ui.isSplit)
+			setSplit(ui.isSplit)
 		}
 	}
 	return ui.mainContainer
@@ -110,11 +114,11 @@ func (ui *Ui) BuildContent() *fyne.Container {
 	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
 	ui.effectSelect = NewEffectSelect(ui.model)
-	ui.effectToolbar = NewFrameTools(ui.model)
 
-	ui.layerSelect = NewLayerSelect(ui.model)
-	ui.layerToolbar = NewLayerTools(ui.model)
-	ui.layerEditor = NewLayerEditor(ui.model, ui.window, ui.layerToolbar)
+	ui.toolbar = NewSharedTools(ui.model, ui.isDirty)
+	ui.frameEditor = NewFrameEditor(ui.model, ui.isDirty, ui.window, ui.toolbar)
+	ui.layerEditor = NewLayerEditor(ui.model, ui.isDirty, ui.window, ui.toolbar)
+	ui.toolbar.Refresh()
 
 	ui.playContainer = container.NewBorder(widget.NewSeparator(), ui.stripTools, nil, nil, ui.strip)
 	ui.sourceStrip.AddListener(binding.NewDataListener(func() {

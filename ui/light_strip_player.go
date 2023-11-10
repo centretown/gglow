@@ -21,8 +21,7 @@ type LightStripPlayer struct {
 	stepButton      *widget.ToolbarAction
 	resetButton     *widget.ToolbarAction
 	stopButton      *widget.ToolbarAction
-
-	layoutButton *widget.ToolbarAction
+	layoutButton    *widget.ToolbarAction
 
 	stopChan     chan int
 	stepChan     chan int

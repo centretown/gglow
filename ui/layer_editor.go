@@ -4,22 +4,28 @@ import (
 	"glow-gui/data"
 	"glow-gui/glow"
 	"glow-gui/resources"
+	"image/color"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
+
+const MaxColorPatch = 5
 
 type LayerEditor struct {
 	*fyne.Container
 	model   *data.Model
 	layer   *glow.Layer
-	fields  *data.Fields
+	fields  *data.LayerFields
 	window  fyne.Window
 	isDirty binding.Bool
+
+	patches [MaxColorPatch]*ColorPatch
 
 	bDynamic  bool
 	bScan     bool
@@ -36,24 +42,25 @@ type LayerEditor struct {
 	hueBox  *RangeIntBox
 	rateBox *RangeIntBox
 
-	dropDownOffset float32
-	applyButton    *widget.Button
-	revertButton   *widget.Button
-	rateBounds     *IntEntryBounds
-	hueBounds      *IntEntryBounds
-	scanBounds     *IntEntryBounds
+	rateBounds *IntEntryBounds
+	hueBounds  *IntEntryBounds
+	scanBounds *IntEntryBounds
+
+	tools *LayerTools
 }
 
-func NewLayerEditor(model *data.Model, window fyne.Window, toolbar *LayerTools) *LayerEditor {
+func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
+	sharedTools *SharedTools) *LayerEditor {
+
 	le := &LayerEditor{
-		// Container: container.NewVBox(),
 		window: window,
 
 		model: model,
 		layer: model.GetCurrentLayer(),
 
-		fields:  data.NewFields(),
-		isDirty: binding.NewBool(),
+		fields:  data.NewLayerFields(),
+		isDirty: isDirty,
+		tools:   NewLayerTools(model),
 
 		rateBounds: &IntEntryBounds{MinVal: 16, MaxVal: 360, OnVal: 48, OffVal: 0},
 		hueBounds:  &IntEntryBounds{MinVal: -10, MaxVal: 10, OnVal: 1, OffVal: 0},
@@ -61,17 +68,13 @@ func NewLayerEditor(model *data.Model, window fyne.Window, toolbar *LayerTools) 
 
 		selectOrigin:      widget.NewSelect(resources.OriginLabels, func(s string) {}),
 		selectOrientation: widget.NewSelect(resources.OrientationLabels, func(s string) {}),
-
-		dropDownOffset: theme.CaptionTextSize() + 2*(theme.InnerPadding()+theme.Padding()+theme.LineSpacing()),
 	}
 
-	le.applyButton = toolbar.ApplyButton.Button
-	le.applyButton.OnTapped = le.apply
-	le.applyButton.Disable()
-
-	le.revertButton = toolbar.RevertButton.Button
-	le.revertButton.OnTapped = le.revert
-	le.revertButton.Disable()
+	for i := 0; i < MaxColorPatch; i++ {
+		patch := NewColorPatch()
+		patch.SetTapped(le.selectColor(patch))
+		le.patches[i] = patch
+	}
 
 	form := le.createForm()
 	scroll := container.NewVScroll(form)
@@ -79,17 +82,26 @@ func NewLayerEditor(model *data.Model, window fyne.Window, toolbar *LayerTools) 
 	le.Container = container.NewBorder(nil, nil, nil, nil, scroll)
 
 	le.model.Layer.AddListener(binding.NewDataListener(le.setFields))
-	le.isDirty.AddListener(binding.NewDataListener(func() {
-		b, _ := le.isDirty.Get()
-		if b {
-			le.applyButton.Enable()
-			le.revertButton.Enable()
-		} else {
-			le.applyButton.Disable()
-			le.revertButton.Disable()
-		}
-	}))
+
+	sharedTools.AddItems(widget.NewToolbarSeparator())
+	sharedTools.AddItems(le.tools.Items()...)
+	sharedTools.AddApply(le.apply)
+	sharedTools.AddRevert(le.revert)
 	return le
+}
+
+func (le *LayerEditor) selectColor(patch *ColorPatch) func() {
+	return func() {
+		picker := dialog.NewColorPicker("Color Picker", "color", func(c color.Color) {
+			if c != patch.GetColor() {
+				patch.SetColor(c)
+				le.isDirty.Set(true)
+			}
+		}, le.window)
+		picker.Advanced = true
+		picker.SetColor(patch.GetColor())
+		picker.Show()
+	}
 }
 
 func (le *LayerEditor) createForm() *fyne.Container {
@@ -123,7 +135,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.checkScan = widget.NewCheck("", checkRangeBox(le.scanBox, le.fields.Scan))
 
 	colorsLabel := widget.NewLabel(resources.ColorsLabel.String())
-	gradientLabel := widget.NewLabel(resources.GradientLabel.String())
+	// gradientLabel := widget.NewLabel(resources.GradientLabel.String())
 
 	huelabel := widget.NewLabel(resources.HueShiftLabel.String())
 	hueCheckLabel := widget.NewLabel(resources.DynamicLabel.String())
@@ -143,16 +155,20 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	}))
 	le.checkRate = widget.NewCheck("", checkRangeBox(le.rateBox, le.fields.Rate))
 
+	patchBox := container.NewHBox()
+	for _, patch := range le.patches {
+		patchBox.Add(patch)
+	}
+
 	sep := widget.NewSeparator()
 	frm := container.New(layout.NewFormLayout(),
+		sep, sep,
 		labelOrigin, le.selectOrigin,
 		labelOrientation, le.selectOrientation,
-		sep, sep,
 		scanCheckLabel, le.checkScan,
 		scanLabel, le.scanBox.Container,
 		sep, sep,
-		colorsLabel, sep,
-		gradientLabel, sep,
+		colorsLabel, patchBox,
 		hueCheckLabel, le.checkHue,
 		huelabel, le.hueBox.Container,
 		sep, sep,
@@ -169,16 +185,27 @@ func (le *LayerEditor) setFields() {
 	le.selectOrientation.SetSelectedIndex(int(le.layer.Grid.Orientation))
 
 	le.bDynamic = (le.layer.HueShift != int16(le.hueBounds.OffVal))
+	le.hueBox.Entry.SetText(strconv.FormatInt(int64(le.layer.HueShift), 10))
 	le.checkHue.SetChecked(le.bDynamic)
 	le.hueBox.Enable(le.bDynamic)
 
 	le.bScan = (le.layer.Scan != uint16(le.scanBounds.OffVal))
+	le.scanBox.Entry.SetText(strconv.FormatInt(int64(le.layer.Scan), 10))
 	le.checkScan.SetChecked(le.bScan)
 	le.scanBox.Enable(le.bScan)
 
 	le.bOverride = (le.layer.Rate != uint32(le.rateBounds.OffVal))
 	le.checkRate.SetChecked(le.bOverride)
+	le.rateBox.Entry.SetText(strconv.FormatInt(int64(le.layer.Rate), 10))
 	le.rateBox.Enable(le.bOverride)
+
+	for i, patch := range le.patches {
+		if i < len(le.layer.Chroma.Colors) {
+			patch.SetHSVColor(le.layer.Chroma.Colors[i])
+		} else {
+			patch.SetDisabled()
+		}
+	}
 }
 
 func (le *LayerEditor) apply() {
@@ -187,11 +214,9 @@ func (le *LayerEditor) apply() {
 		le.fields.ToLayer(le.layer)
 		le.model.UpdateFrame()
 		le.setFields()
-		le.isDirty.Set(false)
 	}
 }
 
 func (le *LayerEditor) revert() {
 	le.setFields()
-	le.isDirty.Set(false)
 }

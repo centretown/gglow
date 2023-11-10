@@ -5,35 +5,33 @@ import (
 	"glow-gui/store"
 	"testing"
 
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/test"
 )
 
 func test_editor_setup(t *testing.T) (model *data.Model, e *LayerEditor, err error) {
 	app := test.NewApp()
 	w := app.NewWindow("Editor")
-	err = store.Setup()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	model = data.NewModel()
-	tools := NewLayerTools(model)
-	e = NewLayerEditor(model, w, tools)
+	model = data.NewModel(store.NewStore())
+	isDirty := binding.NewBool()
+	toolBar := NewSharedTools(model, isDirty)
+	e = NewLayerEditor(model, isDirty, w, toolBar)
 	return
 }
 
-func test_apply_button_disabled(t *testing.T, e *LayerEditor, expected bool) {
-	b := e.applyButton.Disabled()
-	if b != expected {
-		t.Fatalf("apply button got %v expected %v", b, expected)
-	}
-}
+// func test_apply_button_disabled(t *testing.T, e *LayerEditor, expected bool) {
+// 	b := e.applyButton.Disabled()
+// 	if b != expected {
+// 		t.Fatalf("apply button got %v expected %v", b, expected)
+// 	}
+// }
 
-func test_revert_button_disabled(t *testing.T, e *LayerEditor, expected bool) {
-	b := e.revertButton.Disabled()
-	if b != expected {
-		t.Fatalf("revert button got %v expected %v", b, expected)
-	}
-}
+// func test_revert_button_disabled(t *testing.T, e *LayerEditor, expected bool) {
+// 	b := e.revertButton.Disabled()
+// 	if b != expected {
+// 		t.Fatalf("revert button got %v expected %v", b, expected)
+// 	}
+// }
 
 func test_dirty(t *testing.T, e *LayerEditor, expected bool) {
 	b := isDirty(e)
@@ -48,8 +46,8 @@ func test_layer_editor_init(t *testing.T) (e *LayerEditor) {
 		t.Fatalf(err.Error())
 	}
 
-	test_apply_button_disabled(t, e, true)
-	test_revert_button_disabled(t, e, true)
+	// test_apply_button_disabled(t, e, true)
+	// test_revert_button_disabled(t, e, true)
 	test_dirty(t, e, false)
 
 	return

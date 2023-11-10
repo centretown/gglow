@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 )
 
-type Fields struct {
+type LayerFields struct {
 	HueShift    binding.Int
 	Scan        binding.Int
 	Rate        binding.Int
@@ -14,10 +14,11 @@ type Fields struct {
 	Orientation binding.Int
 	Begin       binding.Int
 	End         binding.Int
+	Colors      binding.Untyped
 }
 
-func NewFields() *Fields {
-	fld := &Fields{
+func NewLayerFields() *LayerFields {
+	fld := &LayerFields{
 		HueShift:    binding.NewInt(),
 		Scan:        binding.NewInt(),
 		Rate:        binding.NewInt(),
@@ -25,11 +26,12 @@ func NewFields() *Fields {
 		Orientation: binding.NewInt(),
 		Begin:       binding.NewInt(),
 		End:         binding.NewInt(),
+		Colors:      binding.NewUntyped(),
 	}
 	return fld
 }
 
-func (fld *Fields) FromLayer(layer *glow.Layer) {
+func (fld *LayerFields) FromLayer(layer *glow.Layer) {
 	fld.HueShift.Set(int(layer.HueShift))
 	fld.Scan.Set(int(layer.Scan))
 	fld.Rate.Set(int(layer.Rate))
@@ -37,9 +39,10 @@ func (fld *Fields) FromLayer(layer *glow.Layer) {
 	fld.Orientation.Set(int(layer.Grid.Orientation))
 	fld.Begin.Set(int(layer.Begin))
 	fld.End.Set(int(layer.End))
+	fld.Colors.Set(&layer.Chroma.Colors)
 }
 
-func (fld *Fields) ToLayer(layer *glow.Layer) {
+func (fld *LayerFields) ToLayer(layer *glow.Layer) {
 	var i int
 	i, _ = fld.HueShift.Get()
 	layer.HueShift = int16(i)
@@ -61,6 +64,10 @@ func (fld *Fields) ToLayer(layer *glow.Layer) {
 
 	i, _ = fld.End.Get()
 	layer.End = uint16(i)
+
+	ci, _ := fld.Colors.Get()
+	colors := *ci.(*[]glow.HSV)
+	layer.Chroma.Colors = colors[:]
 }
 
 // func (fld *Fields) IsDirty(layer *glow.Layer) bool {

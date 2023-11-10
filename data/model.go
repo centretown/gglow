@@ -15,10 +15,12 @@ type Model struct {
 	LayerSummaryList binding.StringList
 	Layer            binding.Untyped
 	LayerIndex       int
+	Store            *store.Store
 }
 
-func NewModel() *Model {
+func NewModel(store *store.Store) *Model {
 	m := &Model{
+		Store:            store,
 		Frame:            binding.NewUntyped(),
 		LayerSummaryList: binding.NewStringList(),
 		Layer:            binding.NewUntyped(),
@@ -72,7 +74,7 @@ func (m *Model) UpdateFrame() {
 
 func (m *Model) LoadFrame(frameName string) error {
 	var uri fyne.URI
-	uri, err := store.LookupURI(frameName)
+	uri, err := m.Store.LookupURI(frameName)
 	if err != nil {
 		resources.MsgGetEffectLookup.Log(frameName, err)
 		return err
@@ -80,7 +82,7 @@ func (m *Model) LoadFrame(frameName string) error {
 
 	m.EffectName = frameName
 	frame := &glow.Frame{}
-	err = store.LoadFrameURI(uri, frame)
+	err = m.Store.LoadFrameURI(uri, frame)
 	if err != nil {
 		resources.MsgGetEffectLoad.Log(uri.Name(), err)
 		return err

@@ -95,7 +95,7 @@ var entryLabels = []string{
 	"Effects",
 	"Dynamic", "Static", "Gradient",
 	"Revert", "Apply",
-	"Rate", "Override",
+	"Interval (ms)", "Override",
 }
 
 func (id LabelID) String() string {

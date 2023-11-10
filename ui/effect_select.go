@@ -2,7 +2,6 @@ package ui
 
 import (
 	"glow-gui/data"
-	"glow-gui/store"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
@@ -19,7 +18,8 @@ func NewEffectSelect(model *data.Model) *widget.Select {
 		model: model,
 	}
 
-	options := store.LookUpList()
+	var options []string
+	options = append(options, model.Store.LookUpList()...)
 	fs.Select = widget.NewSelect(options, fs.onChange)
 	// fs.Select.PlaceHolder = model.EffectName
 	// fs.Select.Alignment = fyne.TextAlignCenter
@@ -33,9 +33,19 @@ func NewEffectSelect(model *data.Model) *widget.Select {
 }
 
 func (fs *EffectSelect) onChange(frameName string) {
-	err := fs.model.LoadFrame(frameName)
-	if err != nil {
-		//todo popup message
+	store := fs.model.Store
+	if store.IsFolder(frameName) {
+		store.RefreshLookupList(frameName)
+		var options = []string{}
+		options = append(options, fs.model.Store.LookUpList()...)
+		fs.updateList(options)
 		return
 	}
+
+	fs.model.LoadFrame(frameName)
+}
+
+func (fs *EffectSelect) updateList(options []string) {
+	fs.Select.Options = options
+	fs.Select.Refresh()
 }

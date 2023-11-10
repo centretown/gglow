@@ -43,15 +43,11 @@ const (
 )
 
 var (
-	// stripColumns  float64           = 9
-	// stripRows     float64           = 4
-	// stripInterval float64           = 32
 	glowVariant fyne.ThemeVariant = VariantDefault
 	glowScale   float64           = ScaleDefault
 )
 
-type GlowTheme struct {
-}
+type GlowTheme struct{}
 
 func (m GlowTheme) GetVariant() fyne.ThemeVariant {
 	return glowVariant
@@ -79,7 +75,7 @@ func (m GlowTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) co
 			c := color.RGBA{32, 48, 96, 255}
 			return c
 		}
-		c := color.RGBA{8, 12, 24, 255}
+		c := color.RGBA{24, 12, 8, 255}
 		return c
 	}
 	return theme.DefaultTheme().Color(name, glowVariant)

@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"glow-gui/data"
 	"glow-gui/resources"
 	"glow-gui/store"
 	"glow-gui/ui"
-	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -14,12 +12,6 @@ import (
 
 func main() {
 	app := app.NewWithID(resources.AppID)
-
-	err := store.Setup()
-	if err != nil {
-		fmt.Println("store.Setup", err.Error())
-		os.Exit(1)
-	}
 
 	icon, err := resources.DarkGanderImage.Load()
 	if err == nil {
@@ -33,7 +25,8 @@ func main() {
 	window := app.NewWindow(resources.GlowLabel.String() + " " +
 		resources.EffectsLabel.String())
 
-	model := data.NewModel()
+	store := store.NewStore()
+	model := data.NewModel(store)
 	ui := ui.NewUi(app, window, model, theme)
 
 	window.SetContent(ui.BuildContent())
