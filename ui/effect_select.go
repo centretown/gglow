@@ -36,9 +36,9 @@ func (fs *EffectSelect) onChange(frameName string) {
 	store := fs.model.Store
 	if store.IsFolder(frameName) {
 		store.RefreshLookupList(frameName)
-		var options = []string{}
-		options = append(options, fs.model.Store.LookUpList()...)
-		fs.updateList(options)
+		// var options = []string{}
+		// options = append(options, fs.model.Store.LookUpList()...)
+		fs.updateList(fs.model.Store.LookUpList())
 		return
 	}
 

@@ -48,6 +48,7 @@ func NewStore() *Store {
 		stack:  NewStack(listable),
 	}
 
+	store.stack.Push(listable)
 	store.makeLookupList()
 	return store
 }
@@ -93,7 +94,9 @@ func (store *Store) RefreshLookupList(key string) {
 		return
 	}
 
-	if key != "..." {
+	if key == "..." {
+		store.stack.Pop()
+	} else {
 		store.stack.Push(listable)
 	}
 	store.makeLookupList()
@@ -103,7 +106,7 @@ func (store *Store) makeLookupList() (err error) {
 
 	store.uriMap = make(map[string]fyne.URI)
 
-	currentUri, isBase := store.stack.Pop()
+	currentUri, isBase := store.stack.Current()
 
 	if !isBase {
 		store.uriMap[dots] = store.Current

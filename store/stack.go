@@ -21,14 +21,16 @@ func (stack *Stack) Push(element fyne.ListableURI) {
 	stack.elements = append(stack.elements, element)
 }
 
-func (stack *Stack) Pop() (fyne.ListableURI, bool) {
+func (stack *Stack) Current() (fyne.ListableURI, bool) {
 	length := len(stack.elements)
-	if length == 0 {
-		return stack.base, true
-	}
+	isBase := length < 2
+	return stack.elements[length-1], isBase
+}
 
-	length--
-	element := stack.elements[length]
-	stack.elements = stack.elements[:length]
-	return element, false
+func (stack *Stack) Pop() (fyne.ListableURI, bool) {
+	element, isBase := stack.Current()
+	if !isBase {
+		stack.elements = stack.elements[:len(stack.elements)-1]
+	}
+	return element, isBase
 }
