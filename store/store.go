@@ -40,13 +40,13 @@ func NewStore(preferences fyne.Preferences) *Store {
 
 	uri, err := storage.ParseURI(path)
 	if err != nil {
-		formatMessage(resources.MsgParseEffectPath, path, err)
+		fyne.LogError(resources.MsgParseEffectPath.Format(path), err)
 		os.Exit(1)
 	}
 
 	listable, err := storage.ListerForURI(uri)
 	if err != nil {
-		formatMessage(resources.MsgParseEffectPath, path, err)
+		fyne.LogError(resources.MsgPathNotFolder.Format(path), err)
 		os.Exit(1)
 	}
 
@@ -80,11 +80,11 @@ func (store *Store) OnExit() {
 	store.preferences.SetString(resources.EffectPath.String(), store.basePath)
 }
 
-func formatMessage(id resources.MessageID,
-	key string, err error) error {
-	id.Log(key, err)
-	return fmt.Errorf("%s %s %v", id, key, err)
-}
+// func formatMessage(id resources.MessageID,
+// 	key string, err error) error {
+// 	id.FormatMessage(key, err)
+// 	return fmt.Errorf("%s %s %v", id, key, err)
+// }
 
 func (store *Store) IsFolder(key string) bool {
 	uri, ok := store.uriMap[key]
@@ -155,26 +155,26 @@ func (store *Store) LoadFrame(key string, frame *glow.Frame) error {
 	uri, ok := store.uriMap[key]
 	if !ok {
 		err := fmt.Errorf("key not in URI map")
-		resources.MsgGetEffectLookup.Log(key, err)
+		fyne.LogError(resources.MsgGetEffectLookup.Format(key), err)
 		return err
 	}
 
 	rdr, err := storage.Reader(uri)
 	if err != nil {
-		resources.MsgGetFrame.Log(key, err)
+		fyne.LogError(resources.MsgGetFrame.Format(key), err)
 		return err
 	}
 	defer rdr.Close()
 
 	buffer, err := io.ReadAll(rdr)
 	if err != nil {
-		resources.MsgGetFrame.Log(key, err)
+		fyne.LogError(resources.MsgGetFrame.Format(key), err)
 		return err
 	}
 
 	err = yaml.Unmarshal(buffer, frame)
 	if err != nil {
-		resources.MsgGetFrame.Log(key, err)
+		fyne.LogError(resources.MsgGetFrame.Format(key), err)
 		return err
 	}
 

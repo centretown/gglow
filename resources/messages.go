@@ -2,8 +2,6 @@ package resources
 
 import (
 	"fmt"
-
-	"fyne.io/fyne/v2"
 )
 
 type MessageID int
@@ -53,6 +51,6 @@ func (id MessageID) String() string {
 	return invalidMessage
 }
 
-func (id MessageID) Log(tag string, err error) {
-	fyne.LogError(fmt.Sprintf("%s %s", id, tag), err)
+func (id MessageID) Format(tag string) string {
+	return fmt.Sprintf("%s %s", id, tag)
 }
