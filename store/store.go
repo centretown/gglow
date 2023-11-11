@@ -14,24 +14,31 @@ import (
 )
 
 const (
-	scheme       = "file://"
-	BasePath     = "/home/dave/src/glow-gui/storage/effects/"
-	ExamplesPath = "/home/dave/src/glow-gui/storage/effects/examples/"
-	dots         = "..."
+	scheme            = "file://"
+	DefaultEffectPath = "/home/dave/src/glow-gui/storage/effects/"
+	ExamplesPath      = "/home/dave/src/glow-gui/storage/effects/examples/"
+	dots              = ".."
 )
 
 type Store struct {
-	Current fyne.ListableURI
-	Derived fyne.ListableURI
-	uriMap  map[string]fyne.URI
-	keyList []string
-	stack   *Stack
+	Current     fyne.ListableURI
+	Derived     fyne.ListableURI
+	uriMap      map[string]fyne.URI
+	keyList     []string
+	folderList  []string
+	route       []string
+	stack       *Stack
+	preferences fyne.Preferences
+	basePath    string
 }
 
-func NewStore() *Store {
-	path := scheme + BasePath
-	uri, err := storage.ParseURI(path)
+func NewStore(preferences fyne.Preferences) *Store {
 
+	basePath := preferences.StringWithFallback(resources.EffectPath.String(),
+		DefaultEffectPath)
+	path := scheme + basePath
+
+	uri, err := storage.ParseURI(path)
 	if err != nil {
 		formatMessage(resources.MsgParseEffectPath, path, err)
 		os.Exit(1)
@@ -44,12 +51,23 @@ func NewStore() *Store {
 	}
 
 	store := &Store{
-		uriMap: make(map[string]fyne.URI),
-		stack:  NewStack(listable),
+		uriMap:      make(map[string]fyne.URI),
+		stack:       NewStack(listable),
+		preferences: preferences,
+		basePath:    basePath,
+		keyList:     make([]string, 0),
+		folderList:  make([]string, 0),
 	}
 
 	store.stack.Push(listable)
 	store.makeLookupList()
+	store.route = preferences.StringListWithFallback(resources.EffectRoute.String(),
+		[]string{makeTitle(listable)})
+
+	for _, s := range store.route[1:] {
+		store.RefreshLookupList(s)
+	}
+
 	return store
 }
 
@@ -57,23 +75,19 @@ func (store *Store) LookUpList() []string {
 	return store.keyList
 }
 
-func (store *Store) LookupURI(s string) (uri fyne.URI, err error) {
-	uri = store.uriMap[s]
-	if uri == nil {
-		err = fmt.Errorf("LookupURI: %s not found", s)
-		return
-	}
-	return
+func (store *Store) OnExit() {
+	store.preferences.SetStringList(resources.EffectRoute.String(), store.route)
+	store.preferences.SetString(resources.EffectPath.String(), store.basePath)
 }
 
 func formatMessage(id resources.MessageID,
-	path string, err error) error {
-	id.Log(path, err)
-	return fmt.Errorf("%s %s %s", id, path, err.Error())
+	key string, err error) error {
+	id.Log(key, err)
+	return fmt.Errorf("%s %s %v", id, key, err)
 }
 
-func (store *Store) IsFolder(path string) bool {
-	uri, ok := store.uriMap[path]
+func (store *Store) IsFolder(key string) bool {
+	uri, ok := store.uriMap[key]
 	if ok {
 		ok, _ = storage.CanList(uri)
 	}
@@ -84,38 +98,43 @@ func (store *Store) RefreshLookupList(key string) {
 
 	uri, ok := store.uriMap[key]
 	if !ok {
-		fyne.LogError("", fmt.Errorf("%s not found", key))
+		fyne.LogError("RefreshLookupList", fmt.Errorf("%s not found", key))
 		return
 	}
 
 	listable, err := storage.ListerForURI(uri)
 	if err != nil {
-		fyne.LogError("", fmt.Errorf("%s not listable", key))
+		fyne.LogError("RefreshLookupList",
+			fmt.Errorf("%s not listable %v", key, err))
 		return
 	}
 
-	if key == "..." {
+	if key == dots {
 		store.stack.Pop()
 	} else {
 		store.stack.Push(listable)
 	}
+
 	store.makeLookupList()
+}
+
+func (store *Store) FolderList() []string {
+	return store.folderList
 }
 
 func (store *Store) makeLookupList() (err error) {
 
 	store.uriMap = make(map[string]fyne.URI)
-
-	currentUri, isBase := store.stack.Current()
-
-	if !isBase {
+	currentUri, isRoot := store.stack.Current()
+	if !isRoot {
 		store.uriMap[dots] = store.Current
 	}
 
 	store.Current = currentUri
 	uriList, err := store.Current.List()
 	store.keyList = make([]string, 0, len(uriList)+1)
-	if !isBase {
+	store.folderList = make([]string, 0)
+	if !isRoot {
 		store.keyList = append(store.keyList, dots)
 	}
 
@@ -123,21 +142,49 @@ func (store *Store) makeLookupList() (err error) {
 		title := makeTitle(uri)
 		store.uriMap[title] = uri
 		store.keyList = append(store.keyList, title)
+		isList, _ := storage.CanList(uri)
+		if isList {
+			store.folderList = append(store.folderList, title)
+		}
 	}
-
 	return
 }
 
-func (store *Store) LoadFrameURI(uri fyne.URI, frame *glow.Frame) (err error) {
-	var (
-		rdr fyne.URIReadCloser
-	)
-	rdr, err = storage.Reader(uri)
-	if err != nil {
-		return
+func (store *Store) LoadFrame(key string, frame *glow.Frame) error {
+
+	uri, ok := store.uriMap[key]
+	if !ok {
+		err := fmt.Errorf("key not in URI map")
+		resources.MsgGetEffectLookup.Log(key, err)
+		return err
 	}
 
-	return store.readFrame(rdr, frame)
+	rdr, err := storage.Reader(uri)
+	if err != nil {
+		resources.MsgGetFrame.Log(key, err)
+		return err
+	}
+	defer rdr.Close()
+
+	buffer, err := io.ReadAll(rdr)
+	if err != nil {
+		resources.MsgGetFrame.Log(key, err)
+		return err
+	}
+
+	err = yaml.Unmarshal(buffer, frame)
+	if err != nil {
+		resources.MsgGetFrame.Log(key, err)
+		return err
+	}
+
+	// successfully loaded so update route
+	store.route = make([]string, 0)
+	for _, uri := range store.stack.Dump() {
+		store.route = append(store.route, makeTitle(uri))
+	}
+
+	return nil
 }
 
 func (store *Store) StoreFrame(fname string, frame *glow.Frame) (err error) {
@@ -190,36 +237,3 @@ func makeTitle(uri fyne.URI) (s string) {
 	s = strings.ReplaceAll(s, "_", " ")
 	return
 }
-
-func (store *Store) readFrame(rdr fyne.URIReadCloser, frame *glow.Frame) (err error) {
-	defer rdr.Close()
-
-	var b []byte
-
-	b, err = io.ReadAll(rdr)
-	if err != nil {
-		return
-	}
-
-	err = yaml.Unmarshal(b, frame)
-	return
-}
-
-// func (store *Store) loadFrame(fname string, frame *glow.Frame) (err error) {
-// 	var (
-// 		uri fyne.URI
-// 		rdr fyne.URIReadCloser
-// 	)
-
-// 	uri, err = storage.ParseURI(scheme + fname)
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	rdr, err = storage.Reader(uri)
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	return store.readFrame(rdr, frame)
-// }

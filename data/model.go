@@ -2,10 +2,8 @@ package data
 
 import (
 	"glow-gui/glow"
-	"glow-gui/resources"
 	"glow-gui/store"
 
-	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
 )
 
@@ -72,23 +70,14 @@ func (m *Model) UpdateFrame() {
 	m.Frame.Set(&frame)
 }
 
-func (m *Model) LoadFrame(frameName string) error {
-	var uri fyne.URI
-	uri, err := m.Store.LookupURI(frameName)
-	if err != nil {
-		resources.MsgGetEffectLookup.Log(frameName, err)
-		return err
-	}
-
-	m.EffectName = frameName
+func (m *Model) LoadFrame(key string) error {
 	frame := &glow.Frame{}
-	err = m.Store.LoadFrameURI(uri, frame)
+	err := m.Store.LoadFrame(key, frame)
 	if err != nil {
-		resources.MsgGetEffectLoad.Log(uri.Name(), err)
 		return err
 	}
-
 	m.LayerIndex = 0
+	m.EffectName = key
 	m.Frame.Set(frame)
 	return nil
 }

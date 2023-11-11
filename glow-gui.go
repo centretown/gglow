@@ -22,17 +22,17 @@ func main() {
 	theme := resources.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
 
-	window := app.NewWindow(resources.GlowLabel.String() + " " +
-		resources.EffectsLabel.String())
-
-	store := store.NewStore()
+	store := store.NewStore(preferences)
 	model := data.NewModel(store)
+
+	window := app.NewWindow(resources.GlowLabel.String())
 	ui := ui.NewUi(app, window, model, theme)
 
 	window.SetContent(ui.BuildContent())
 	window.SetCloseIntercept(func() {
+		store.OnExit()
 		ui.OnExit()
-		size := window.Content().Size()
+		size := window.Canvas().Size()
 		preferences.SetInt(resources.ContentWidth.String(), int(size.Width))
 		preferences.SetInt(resources.ContentHeight.String(), int(size.Height))
 		window.Close()
@@ -49,5 +49,6 @@ func main() {
 	if len(effect) > 0 {
 		model.LoadFrame(effect)
 	}
+
 	app.Run()
 }

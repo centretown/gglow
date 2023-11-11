@@ -5,13 +5,13 @@ import (
 )
 
 type Stack struct {
-	base     fyne.ListableURI
+	root     fyne.ListableURI
 	elements []fyne.ListableURI
 }
 
 func NewStack(base fyne.ListableURI) *Stack {
 	stack := &Stack{
-		base:     base,
+		root:     base,
 		elements: make([]fyne.ListableURI, 0, 8),
 	}
 	return stack
@@ -23,14 +23,18 @@ func (stack *Stack) Push(element fyne.ListableURI) {
 
 func (stack *Stack) Current() (fyne.ListableURI, bool) {
 	length := len(stack.elements)
-	isBase := length < 2
-	return stack.elements[length-1], isBase
+	isRoot := length < 2
+	return stack.elements[length-1], isRoot
 }
 
 func (stack *Stack) Pop() (fyne.ListableURI, bool) {
-	element, isBase := stack.Current()
-	if !isBase {
+	element, isRoot := stack.Current()
+	if !isRoot {
 		stack.elements = stack.elements[:len(stack.elements)-1]
 	}
-	return element, isBase
+	return element, isRoot
+}
+
+func (stack *Stack) Dump() []fyne.ListableURI {
+	return stack.elements
 }

@@ -12,7 +12,7 @@ import (
 func test_editor_setup(t *testing.T) (model *data.Model, e *LayerEditor, err error) {
 	app := test.NewApp()
 	w := app.NewWindow("Editor")
-	model = data.NewModel(store.NewStore())
+	model = data.NewModel(store.NewStore(app.Preferences()))
 	isDirty := binding.NewBool()
 	toolBar := NewSharedTools(model, isDirty)
 	e = NewLayerEditor(model, isDirty, w, toolBar)
