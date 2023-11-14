@@ -38,3 +38,11 @@ func (stack *Stack) Pop() (fyne.ListableURI, bool) {
 func (stack *Stack) Dump() []fyne.ListableURI {
 	return stack.elements
 }
+
+func (stack *Stack) Route() (route []string) {
+	route = make([]string, len(stack.elements))
+	for i, uri := range stack.Dump() {
+		route[i] = MakeTitle(uri)
+	}
+	return
+}

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"glow-gui/resources"
+	"glow-gui/settings"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -29,11 +30,11 @@ func NewLightStripLayout(parent fyne.Window, p fyne.Preferences,
 		background:  background,
 	}
 
-	ll.columns.Set(p.Int(resources.StripColumns.String()))
+	ll.columns.Set(p.Int(settings.StripColumns.String()))
 	columnsEntry := NewRangeIntBox(ll.columns, &IntEntryBounds{1, 50, 0, 0})
 	colItem := widget.NewFormItem(resources.ColumnsLabel.String(), columnsEntry.Container)
 
-	ll.rows.Set(p.Int(resources.StripRows.String()))
+	ll.rows.Set(p.Int(settings.StripRows.String()))
 	rowsEntry := NewRangeIntBox(ll.rows, &IntEntryBounds{1, 20, 0, 0})
 	rowsItem := widget.NewFormItem(resources.RowsLabel.String(), rowsEntry.Container)
 
@@ -49,15 +50,15 @@ func (ll *LightStripLayout) confirm() {
 	ll.Hide()
 	columns, _ := ll.columns.Get()
 	rows, _ := ll.rows.Get()
-	ll.preferences.SetInt(resources.StripColumns.String(), columns)
-	ll.preferences.SetInt(resources.StripRows.String(), rows)
+	ll.preferences.SetInt(settings.StripColumns.String(), columns)
+	ll.preferences.SetInt(settings.StripRows.String(), rows)
 	ll.sourceStrip.Set(NewLightStrip(columns*rows, rows, ll.background))
 }
 
 func (ll *LightStripLayout) revert() {
 	ll.Hide()
-	columns := ll.preferences.Int(resources.StripColumns.String())
-	rows := ll.preferences.Int(resources.StripRows.String())
+	columns := ll.preferences.Int(settings.StripColumns.String())
+	rows := ll.preferences.Int(settings.StripRows.String())
 	ll.columns.Set(columns)
 	ll.rows.Set(rows)
 }

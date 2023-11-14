@@ -18,7 +18,7 @@ func NewEffectSelect(model *data.Model) *widget.Select {
 		model: model,
 	}
 
-	fs.Select = widget.NewSelect(model.Store.LookUpList(), fs.onChange)
+	fs.Select = widget.NewSelect(model.Store.KeyList, fs.onChange)
 	model.Frame.AddListener(binding.NewDataListener(func() {
 		selected := fs.Select.Selected
 		if selected != model.EffectName {
@@ -28,18 +28,13 @@ func NewEffectSelect(model *data.Model) *widget.Select {
 	return fs.Select
 }
 
-func (fs *EffectSelect) onChange(frameName string) {
+func (fs *EffectSelect) onChange(name string) {
 	store := fs.model.Store
-	if store.IsFolder(frameName) {
-		store.RefreshLookupList(frameName)
-		fs.updateList(fs.model.Store.LookUpList())
+	if store.IsFolder(name) {
+		store.RefreshKeys(name)
+		fs.Select.Options = fs.model.Store.KeyList
+		fs.Select.Refresh()
 		return
 	}
-
-	fs.model.LoadFrame(frameName)
-}
-
-func (fs *EffectSelect) updateList(options []string) {
-	fs.Select.Options = options
-	fs.Select.Refresh()
+	fs.model.LoadFrame(name)
 }

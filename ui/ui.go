@@ -2,7 +2,7 @@ package ui
 
 import (
 	"glow-gui/data"
-	"glow-gui/resources"
+	"glow-gui/settings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -18,7 +18,7 @@ type Ui struct {
 	app         fyne.App
 	preferences fyne.Preferences
 	model       *data.Model
-	theme       *resources.GlowTheme
+	theme       *settings.GlowTheme
 	sourceStrip binding.Untyped
 
 	strip         *LightStrip
@@ -43,7 +43,7 @@ type Ui struct {
 	isDirty       binding.Bool
 }
 
-func NewUi(app fyne.App, window fyne.Window, model *data.Model, theme *resources.GlowTheme) *Ui {
+func NewUi(app fyne.App, window fyne.Window, model *data.Model, theme *settings.GlowTheme) *Ui {
 	ui := &Ui{
 		window:      window,
 		app:         app,
@@ -59,8 +59,8 @@ func NewUi(app fyne.App, window fyne.Window, model *data.Model, theme *resources
 
 func (ui *Ui) OnExit() {
 	ui.stripPlayer.OnExit()
-	ui.preferences.SetString(resources.Effect.String(), ui.model.EffectName)
-	ui.preferences.SetBool(resources.ContentSplit.String(), ui.isSplit)
+	ui.preferences.SetString(settings.Effect.String(), ui.model.EffectName)
+	ui.preferences.SetBool(settings.ContentSplit.String(), ui.isSplit)
 }
 
 func (ui *Ui) layoutContent() *fyne.Container {
@@ -81,7 +81,7 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
 	} else {
 
-		ui.isSplit = ui.preferences.BoolWithFallback(resources.ContentSplit.String(), true)
+		ui.isSplit = ui.preferences.BoolWithFallback(settings.ContentSplit.String(), true)
 		ui.split = container.NewHSplit(ui.editor, ui.playContainer)
 
 		setSplit := func(isSplit bool) {
@@ -105,7 +105,7 @@ func (ui *Ui) layoutContent() *fyne.Container {
 
 func (ui *Ui) BuildContent() *fyne.Container {
 	columns, rows := ui.getLightPreferences()
-	color := ui.theme.Color(resources.LightStripBackground, ui.theme.GetVariant())
+	color := ui.theme.Color(settings.LightStripBackground, ui.theme.GetVariant())
 	ui.strip = NewLightStrip(columns*rows, rows, color)
 	ui.sourceStrip.Set(ui.strip)
 
@@ -133,9 +133,9 @@ func (ui *Ui) BuildContent() *fyne.Container {
 }
 
 func (ui *Ui) getLightPreferences() (columns, rows int) {
-	columns = ui.preferences.IntWithFallback(resources.StripColumns.String(),
-		resources.StripColumnsDefault)
-	rows = ui.preferences.IntWithFallback(resources.StripRows.String(),
-		resources.StripRowsDefault)
+	columns = ui.preferences.IntWithFallback(settings.StripColumns.String(),
+		settings.StripColumnsDefault)
+	rows = ui.preferences.IntWithFallback(settings.StripRows.String(),
+		settings.StripRowsDefault)
 	return
 }

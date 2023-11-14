@@ -62,9 +62,9 @@ func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 		isDirty: isDirty,
 		tools:   NewLayerTools(model),
 
-		rateBounds: &IntEntryBounds{MinVal: 16, MaxVal: 360, OnVal: 48, OffVal: 0},
-		hueBounds:  &IntEntryBounds{MinVal: -10, MaxVal: 10, OnVal: 1, OffVal: 0},
-		scanBounds: &IntEntryBounds{MinVal: 1, MaxVal: 10, OnVal: 1, OffVal: 0},
+		rateBounds: RateBounds,
+		hueBounds:  HueBounds,
+		scanBounds: ScanBounds,
 
 		selectOrigin:      widget.NewSelect(resources.OriginLabels, func(s string) {}),
 		selectOrientation: widget.NewSelect(resources.OrientationLabels, func(s string) {}),
@@ -83,7 +83,7 @@ func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 
 	le.model.Layer.AddListener(binding.NewDataListener(le.setFields))
 
-	sharedTools.AddItems(widget.NewToolbarSeparator())
+	// sharedTools.AddItems(widget.NewToolbarSeparator())
 	sharedTools.AddItems(le.tools.Items()...)
 	sharedTools.AddApply(le.apply)
 	sharedTools.AddRevert(le.revert)

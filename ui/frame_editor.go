@@ -31,7 +31,7 @@ func NewFrameEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 		model:       model,
 		isDirty:     isDirty,
 		layerSelect: NewLayerSelect(model),
-		rateBounds:  &IntEntryBounds{MinVal: 16, MaxVal: 360, OnVal: 48, OffVal: 0},
+		rateBounds:  RateBounds,
 		fields:      data.NewFrameFields(),
 		frame:       &glow.Frame{},
 	}
@@ -49,7 +49,7 @@ func NewFrameEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 	fe.model.Frame.AddListener(binding.NewDataListener(fe.setFields))
 
 	fe.tools = NewFrameTools(model, window)
-	sharedTools.AddItems(widget.NewToolbarSeparator())
+	// sharedTools.AddItems(widget.NewToolbarSeparator())
 	sharedTools.AddItems(fe.tools.Items()...)
 	sharedTools.AddApply(fe.apply)
 	sharedTools.AddRevert(fe.revert)

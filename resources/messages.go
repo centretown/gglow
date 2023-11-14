@@ -18,9 +18,13 @@ const (
 	MsgSetLayerList
 	MsgSetupStore
 	MsgParseEffectPath
-	MsgNoAccess
 	MsgPathNotFolder
 	MsgNoList
+	MsgDuplicate
+	MsgRequired
+	MsgNotWritable
+	MsgFirstAlpha
+	MsgAlphaNumeric
 )
 
 var invalidMessage = "unknown Message ID"
@@ -39,9 +43,13 @@ var messages = []string{
 
 	"unable to setup storage",
 	"unable to parse effect path",
-	"unable to access",
 	"effect path not a folder",
 	"unable to list folder",
+	"name already used",
+	"name required",
+	"name not writeable",
+	"first must be letter",
+	"must be letter or number",
 }
 
 func (id MessageID) String() string {

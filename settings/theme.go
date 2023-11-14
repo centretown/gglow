@@ -1,43 +1,12 @@
-package resources
+package settings
 
 import (
+	"glow-gui/resources"
 	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 )
-
-type Settings int
-
-const (
-	StripColumns Settings = iota
-	StripRows
-	ContentWidth
-	ContentHeight
-	ContentSplit
-	GlowThemeVariant
-	GlowThemeScale
-	Effect
-	EffectPath
-	EffectRoute
-)
-
-var settings = []string{
-	"strip_columns",
-	"strip_rows",
-	"content_width",
-	"content_height",
-	"content_split",
-	"theme_variant",
-	"theme_scale",
-	"effect",
-	"effect_path",
-	"effect_route",
-}
-
-func (s Settings) String() string {
-	return settings[s]
-}
 
 const (
 	StripColumnsDefault int               = 9
@@ -63,9 +32,9 @@ func NewGlowTheme(preferences fyne.Preferences) *GlowTheme {
 	glowVariant = fyne.ThemeVariant(preferences.IntWithFallback(GlowThemeVariant.String(),
 		int(VariantDefault)))
 	if glowVariant == theme.VariantDark {
-		LoadIcons("dark")
+		resources.LoadIcons("dark")
 	} else {
-		LoadIcons("light")
+		resources.LoadIcons("light")
 	}
 
 	return &GlowTheme{}
