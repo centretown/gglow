@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"unicode"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/storage"
@@ -171,121 +172,151 @@ func (store *Store) LoadFrame(key string, frame *glow.Frame) error {
 	return nil
 }
 
-func (store *Store) StoreFrame(fname string, frame *glow.Frame) (err error) {
-	var (
-		uri   fyne.URI
-		wrt   fyne.URIWriteCloser
-		buf   []byte
-		count int
-	)
+func ValidateEffectName(title string) error {
+	title = strings.TrimSpace(title)
 
-	buf, err = yaml.Marshal(frame)
-	if err != nil {
-		return
+	if len(title) < 1 {
+		return fmt.Errorf(resources.MsgRequired.String())
 	}
 
-	uri, err = storage.ParseURI(scheme + fname)
-	if err != nil {
-		return
+	if title == "NULL" {
+		return fmt.Errorf(resources.MsgRequired.String())
 	}
 
-	wrt, err = storage.Writer(uri)
-	if err != nil {
-		return
-	}
-	defer wrt.Close()
-
-	count, err = wrt.Write(buf)
-	if err != nil {
-		return
-	}
-
-	if count == 0 {
-		err = fmt.Errorf("StoreFrame: zero bytes written")
-	}
-
-	return
-}
-
-func (store *Store) ValidateNewEffectName(s string) (err error) {
-	s = strings.TrimSpace(s)
-
-	if len(s) < 1 {
-		err = fmt.Errorf(resources.MsgRequired.String())
-		return
-	}
-
-	isAlpha := func(c rune) bool {
-		return (c >= 'A' && c <= 'Z') ||
-			(c >= 'a' && c <= 'z')
-	}
-
-	isNumeric := func(c rune) bool {
-		return (c >= '0' && c <= '9')
-	}
-
-	isAlphaNumeric := func(c rune) bool {
-		return isAlpha(c) || isNumeric(c)
-	}
-
-	for i, c := range s {
-		if i == 0 && !isAlpha(c) {
-			err = fmt.Errorf(resources.MsgFirstAlpha.String())
-			return
+	for i, c := range title {
+		if i == 0 && !unicode.IsUpper(c) {
+			return fmt.Errorf(resources.MsgFirstUpper.String())
 		}
-
-		if c != ' ' && !isAlphaNumeric(c) {
-			err = fmt.Errorf(resources.MsgAlphaNumeric.String())
-			return
+		if !(c == ' ' || unicode.IsLetter(c) || unicode.IsDigit(c)) {
+			return fmt.Errorf(resources.MsgAlphaNumeric.String())
 		}
 	}
-
-	_, ok := store.uriMap[s]
-	if ok {
-		err = fmt.Errorf(resources.MsgDuplicate.String())
-		return
-	}
-
-	return
+	return nil
 }
 
-func (store *Store) CreateNewEffect(title string, frame *glow.Frame) (err error) {
-	err = store.ValidateNewEffectName(title)
+func (store *Store) IsDuplicate(title string) error {
+	_, found := store.uriMap[title]
+	if found {
+		return fmt.Errorf(resources.MsgDuplicate.String())
+	}
+	return nil
+}
+
+func ValidateFolderName(title string) error {
+	title = strings.TrimSpace(title)
+
+	if len(title) < 1 {
+		return fmt.Errorf(resources.MsgRequired.String())
+	}
+
+	if title == "NULL" {
+		return fmt.Errorf(resources.MsgRequired.String())
+	}
+
+	for _, c := range title {
+		if !(c == '_' || unicode.IsLetter(c) || unicode.IsDigit(c)) {
+			return fmt.Errorf(resources.MsgAlphaNumeric.String())
+		}
+	}
+	return nil
+}
+
+func (store *Store) ValidateNewFolderName(title string) error {
+	err := ValidateFolderName(title)
 	if err != nil {
-		return
+		return err
+	}
+
+	err = store.IsDuplicate(title)
+	return err
+}
+
+func (store *Store) ValidateNewEffectName(title string) error {
+	err := ValidateEffectName(title)
+	if err != nil {
+		return err
+	}
+	err = store.IsDuplicate(title)
+	return err
+}
+
+func (store *Store) CreateNewEffect(title string, frame *glow.Frame) error {
+	err := store.IsDuplicate(title)
+	if err != nil {
+		return err
+	}
+	return store.WriteEffect(title, frame)
+}
+
+func (store *Store) CreateNewFolder(title string) error {
+	err := store.IsDuplicate(title)
+	if err != nil {
+		return err
+	}
+	return store.WriteFolder(title)
+}
+
+func (store *Store) WriteFolder(title string) error {
+	title = strings.TrimSpace(title)
+	err := ValidateFolderName(title)
+	if err != nil {
+		return err
+	}
+
+	path := scheme + store.Current.Path() + "/" + title
+	fmt.Println(path)
+	uri, err := storage.ParseURI(path)
+	if err != nil {
+		return err
+	}
+
+	err = storage.CreateListable(uri)
+	return err
+}
+
+func (store *Store) WriteEffect(title string, frame *glow.Frame) error {
+	title = strings.TrimSpace(title)
+
+	err := ValidateEffectName(title)
+	if err != nil {
+		return err
 	}
 
 	path := scheme + store.Current.Path() + "/" + MakeFileName(title)
 	fmt.Println(path)
 	uri, err := storage.ParseURI(path)
 	if err != nil {
-		return
+		return err
 	}
 
 	writable, err := storage.CanWrite(uri)
 	if err != nil {
-		return
+		return err
 	}
 
 	if !writable {
 		err = fmt.Errorf(resources.MsgNotWritable.String())
-		return
+		return err
 	}
 
 	wrt, err := storage.Writer(uri)
 	if err != nil {
-		return
+		return err
 	}
 	defer wrt.Close()
 
 	buf, err := yaml.Marshal(frame)
+	if err != nil {
+		return err
+	}
+
 	n, err := wrt.Write(buf)
 	if err != nil {
-		return
+		return err
 	}
 
 	store.makeLookupList()
 
 	fmt.Println("bytes written", n)
-	return
+	return nil
 }

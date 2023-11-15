@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"glow-gui/data"
 	"glow-gui/glow"
 
@@ -55,21 +54,24 @@ func (ef *EffectDialog) apply() {
 	frame.Interval = uint32(RateBounds.OnVal)
 	err := ef.model.Store.CreateNewEffect(title, frame)
 	if err != nil {
-		fmt.Println(title)
-		fmt.Println(err)
+		fyne.LogError(title, err)
 	}
 	ef.CustomDialog.Hide()
 }
 
-func (ef *EffectDialog) validateFileName(s string) (err error) {
-	err = ef.model.Store.ValidateNewEffectName(s)
+func (ef *EffectDialog) validateFileName(s string) error {
+	err := ef.model.Store.ValidateNewEffectName(s)
 	if err != nil {
 		ef.applyButton.Disable()
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	ef.title.Set(s)
 	ef.applyButton.Enable()
-	return
+	return err
+}
+
+func (ef *EffectDialog) Start() {
+	ef.title.Set("")
+	ef.CustomDialog.Show()
 }

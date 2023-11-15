@@ -25,7 +25,7 @@ type LayerEditor struct {
 	window  fyne.Window
 	isDirty binding.Bool
 
-	patches [MaxColorPatch]*ColorPatch
+	patches []*ColorPatch
 
 	bDynamic  bool
 	bScan     bool
@@ -70,11 +70,7 @@ func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 		selectOrientation: widget.NewSelect(resources.OrientationLabels, func(s string) {}),
 	}
 
-	for i := 0; i < MaxColorPatch; i++ {
-		patch := NewColorPatch()
-		patch.SetTapped(le.selectColor(patch))
-		le.patches[i] = patch
-	}
+	le.createPatches()
 
 	form := le.createForm()
 	scroll := container.NewVScroll(form)
@@ -83,12 +79,29 @@ func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 
 	le.model.Layer.AddListener(binding.NewDataListener(le.setFields))
 
-	// sharedTools.AddItems(widget.NewToolbarSeparator())
 	sharedTools.AddItems(le.tools.Items()...)
 	sharedTools.AddApply(le.apply)
 	sharedTools.AddRevert(le.revert)
 	return le
 }
+
+func (le *LayerEditor) createPatches() {
+	le.patches = make([]*ColorPatch, MaxColorPatch)
+	for i := 0; i < MaxColorPatch; i++ {
+		patch := NewColorPatch()
+		patch.SetTapped(le.selectColor(patch))
+		le.patches[i] = patch
+	}
+}
+
+// func (le *LayerEditor) firstDisabledPatch() *ColorPatch {
+// 	for _, p := range le.patches {
+// 		if p.disabled {
+// 			return p
+// 		}
+// 	}
+// 	return nil
+// }
 
 func (le *LayerEditor) selectColor(patch *ColorPatch) func() {
 	return func() {
@@ -199,11 +212,12 @@ func (le *LayerEditor) setFields() {
 	le.rateBox.Entry.SetText(strconv.FormatInt(int64(le.layer.Rate), 10))
 	le.rateBox.Enable(le.bOverride)
 
-	for i, patch := range le.patches {
-		if i < len(le.layer.Chroma.Colors) {
-			patch.SetHSVColor(le.layer.Chroma.Colors[i])
+	// list 22
+	for i, p := range le.patches {
+		if i < len(le.fields.Colors) {
+			p.SetHSVColor(le.fields.Colors[i])
 		} else {
-			patch.SetDisabled()
+			p.SetDisabled()
 		}
 	}
 }
@@ -211,6 +225,7 @@ func (le *LayerEditor) setFields() {
 func (le *LayerEditor) apply() {
 	dirty, _ := le.isDirty.Get()
 	if dirty {
+		le.setColors()
 		le.fields.ToLayer(le.layer)
 		le.model.UpdateFrame()
 		le.setFields()
@@ -219,4 +234,22 @@ func (le *LayerEditor) apply() {
 
 func (le *LayerEditor) revert() {
 	le.setFields()
+}
+
+func (le *LayerEditor) setColors() {
+	count := 0
+	colorLen := len(le.fields.Colors)
+	for _, p := range le.patches {
+		if p.Disabled() {
+			continue
+		}
+
+		if colorLen > count {
+			le.fields.Colors[count] = p.GetHSV()
+			count++
+		} else {
+			le.fields.Colors = append(le.fields.Colors, p.GetHSV())
+		}
+	}
+
 }

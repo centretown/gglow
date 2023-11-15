@@ -14,7 +14,7 @@ type LayerFields struct {
 	Orientation binding.Int
 	Begin       binding.Int
 	End         binding.Int
-	Colors      binding.Untyped
+	Colors      []glow.HSV
 }
 
 func NewLayerFields() *LayerFields {
@@ -26,7 +26,6 @@ func NewLayerFields() *LayerFields {
 		Orientation: binding.NewInt(),
 		Begin:       binding.NewInt(),
 		End:         binding.NewInt(),
-		Colors:      binding.NewUntyped(),
 	}
 	return fld
 }
@@ -39,7 +38,8 @@ func (fld *LayerFields) FromLayer(layer *glow.Layer) {
 	fld.Orientation.Set(int(layer.Grid.Orientation))
 	fld.Begin.Set(int(layer.Begin))
 	fld.End.Set(int(layer.End))
-	fld.Colors.Set(&layer.Chroma.Colors)
+	fld.Colors = make([]glow.HSV, len(layer.Chroma.Colors))
+	copy(fld.Colors, layer.Chroma.Colors)
 }
 
 func (fld *LayerFields) ToLayer(layer *glow.Layer) {
@@ -65,9 +65,8 @@ func (fld *LayerFields) ToLayer(layer *glow.Layer) {
 	i, _ = fld.End.Get()
 	layer.End = uint16(i)
 
-	ci, _ := fld.Colors.Get()
-	colors := *ci.(*[]glow.HSV)
-	layer.Chroma.Colors = colors[:]
+	layer.Chroma.Colors = make([]glow.HSV, len(fld.Colors))
+	copy(layer.Chroma.Colors, fld.Colors)
 }
 
 // func (fld *Fields) IsDirty(layer *glow.Layer) bool {

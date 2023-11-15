@@ -45,6 +45,14 @@ func (cp *ColorPatch) Disabled() bool {
 	return cp.disabled
 }
 
+func (cp *ColorPatch) GetHSV() glow.HSV {
+	var hsv glow.HSV
+	r, g, b, a := cp.rectangle.FillColor.RGBA()
+	c := color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
+	hsv.FromRGB(c)
+	return hsv
+}
+
 func (cp *ColorPatch) GetColor() color.Color {
 	return cp.rectangle.FillColor
 }

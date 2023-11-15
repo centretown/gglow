@@ -23,7 +23,7 @@ const (
 	MsgDuplicate
 	MsgRequired
 	MsgNotWritable
-	MsgFirstAlpha
+	MsgFirstUpper
 	MsgAlphaNumeric
 )
 
@@ -48,7 +48,7 @@ var messages = []string{
 	"name already used",
 	"name required",
 	"name not writeable",
-	"first must be letter",
+	"uppercase letter required",
 	"must be letter or number",
 }
 
