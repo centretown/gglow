@@ -6,10 +6,10 @@ import (
 )
 
 type Chroma struct {
-	Length      uint16 `yaml:"length" json:"length"`
-	HueShift    int16  `yaml:"hue_shift" json:"hue_shift"`
-	Colors      []HSV  `yaml:"colors" json:"colors"`
-	segmentSize uint16
+	Length   uint16 `yaml:"length" json:"length"`
+	HueShift int16  `yaml:"hue_shift" json:"hue_shift"`
+	Colors   []HSV  `yaml:"colors" json:"colors"`
+	// segmentSize uint16
 	quick_color color.RGBA
 }
 
@@ -37,25 +37,21 @@ func (chroma *Chroma) Validate() error {
 	}
 
 	chroma.quick_color = chroma.Colors[0].ToRGB()
-	size := uint16(len(chroma.Colors) - 1)
-	if size < 2 {
-		chroma.segmentSize = chroma.Length
-	} else {
-		chroma.segmentSize = chroma.Length / size
-	}
 	return nil
 }
 
 func (chroma *Chroma) Map(index uint16) color.RGBA {
-	size := uint16(len(chroma.Colors))
-	if size < 2 || index == 0 {
+	segmentCount := uint16(len(chroma.Colors)) - 1
+	if segmentCount == 0 || index == 0 {
 		return chroma.quick_color
 	}
-	colorIndex := index / chroma.segmentSize
-	offset := index % chroma.segmentSize
+
+	colorIndex := index * segmentCount / chroma.Length
+	segmentSize := chroma.Length / segmentCount
+	offset := index % segmentSize
 	first := chroma.Colors[colorIndex]
 	last := chroma.Colors[colorIndex+1]
-	result := first.ToGradient(last, offset, chroma.segmentSize)
+	result := first.ToGradient(last, offset, segmentSize)
 	return result.ToRGB()
 }
 
@@ -75,8 +71,6 @@ func (chroma *Chroma) UpdateColors() {
 		} else if hsv.Hue < 0 {
 			hsv.Hue = 360 + hsv.Hue
 		}
-
-		// fmt.Println(i, "hue update", hsv.Hue, chroma.HueShift)
 	}
 
 	chroma.quick_color = chroma.Colors[0].ToRGB()

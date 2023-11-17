@@ -30,7 +30,38 @@ func testChromaBase(t *testing.T, chroma *Chroma,
 	}
 }
 
+func testChromaColors(t *testing.T) {
+
+	var chroma Chroma
+	type colorList []HSV
+	colorsLists := []colorList{
+		{{180, 1, 1}},
+		{{180, 1, 1}, {160, 1, 1}},
+		{{180, 1, 1}, {160, 1, 1}, {140, 1, 1}},
+		{{180, 1, 1}, {160, 1, 1}, {140, 1, 1}, {120, 1, 1}},
+		{{180, 1, 1}, {160, 1, 1}, {140, 1, 1}, {120, 1, 1}, {100, 1, 1}},
+	}
+
+	colorMap := func(index uint16) {
+		t.Log(index)
+		c := chroma.Map(index)
+		t.Log(c)
+	}
+
+	for i, list := range colorsLists {
+		chroma.Colors = list
+		t.Log("index", i, list)
+		chroma.SetupLength(100, -1)
+		colorMap(0)
+		colorMap(33)
+		colorMap(50)
+		colorMap(99)
+	}
+
+}
+
 func TestChroma(t *testing.T) {
 	var chroma Chroma
 	testChromaBase(t, &chroma, 10, HSV{0, 1, 1}, HSV{180, 1, 1}, 1)
+	testChromaColors(t)
 }

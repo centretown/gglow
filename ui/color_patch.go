@@ -15,19 +15,23 @@ type ColorPatch struct {
 	tapped    func() `json:"-"`
 	rectangle *canvas.Rectangle
 	disabled  bool
+	colorHSV  glow.HSV
 }
 
 func NewColorPatch() (patch *ColorPatch) {
-	patch = NewColorPatchWithColor(theme.DisabledColor(), nil)
+	var hsv glow.HSV
+	hsv.FromColor(theme.DisabledColor())
+	patch = NewColorPatchWithColor(hsv, nil)
 	patch.disabled = true
 	return
 }
 
-func NewColorPatchWithColor(color color.Color, tapped func()) *ColorPatch {
+func NewColorPatchWithColor(hsv glow.HSV, tapped func()) *ColorPatch {
 	cp := &ColorPatch{
-		rectangle: canvas.NewRectangle(color),
+		rectangle: canvas.NewRectangle(hsv.ToRGB()),
 		tapped:    tapped,
 	}
+	cp.colorHSV = hsv
 	cp.ExtendBaseWidget(cp)
 	return cp
 }
@@ -36,8 +40,8 @@ func (cp *ColorPatch) SetTapped(tapped func()) {
 	cp.tapped = tapped
 }
 
-func (cp *ColorPatch) SetDisabled() {
-	cp.disabled = true
+func (cp *ColorPatch) SetDisabled(b bool) {
+	cp.disabled = b
 	cp.setFill(theme.DisabledColor())
 }
 
@@ -45,24 +49,33 @@ func (cp *ColorPatch) Disabled() bool {
 	return cp.disabled
 }
 
-func (cp *ColorPatch) GetHSV() glow.HSV {
-	var hsv glow.HSV
-	r, g, b, a := cp.rectangle.FillColor.RGBA()
-	c := color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
-	hsv.FromRGB(c)
-	return hsv
+func (cp *ColorPatch) GetHSVColor() glow.HSV {
+	return cp.colorHSV
 }
 
 func (cp *ColorPatch) GetColor() color.Color {
 	return cp.rectangle.FillColor
 }
 
+func (cp *ColorPatch) Copy(source *ColorPatch) {
+	cp.disabled = source.disabled
+	cp.colorHSV = source.colorHSV
+	if cp.disabled {
+		cp.SetDisabled(true)
+	} else {
+		cp.setFill(cp.colorHSV.ToRGB())
+	}
+}
+
 func (cp *ColorPatch) SetHSVColor(hsv glow.HSV) {
-	cp.SetColor(hsv.ToRGB())
+	cp.disabled = false
+	cp.colorHSV = hsv
+	cp.setFill(hsv.ToRGB())
 }
 
 func (cp *ColorPatch) SetColor(color color.Color) {
 	cp.disabled = false
+	cp.colorHSV.FromColor(color)
 	cp.setFill(color)
 }
 

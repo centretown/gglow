@@ -4,18 +4,14 @@ import (
 	"glow-gui/data"
 	"glow-gui/glow"
 	"glow-gui/resources"
-	"image/color"
 	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
-
-const MaxColorPatch = 5
 
 type LayerEditor struct {
 	*fyne.Container
@@ -86,34 +82,18 @@ func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 }
 
 func (le *LayerEditor) createPatches() {
-	le.patches = make([]*ColorPatch, MaxColorPatch)
-	for i := 0; i < MaxColorPatch; i++ {
+	le.patches = make([]*ColorPatch, data.MaxLayerColors)
+	for i := 0; i < data.MaxLayerColors; i++ {
 		patch := NewColorPatch()
 		patch.SetTapped(le.selectColor(patch))
 		le.patches[i] = patch
 	}
 }
 
-// func (le *LayerEditor) firstDisabledPatch() *ColorPatch {
-// 	for _, p := range le.patches {
-// 		if p.disabled {
-// 			return p
-// 		}
-// 	}
-// 	return nil
-// }
-
 func (le *LayerEditor) selectColor(patch *ColorPatch) func() {
 	return func() {
-		picker := dialog.NewColorPicker("Color Picker", "color", func(c color.Color) {
-			if c != patch.GetColor() {
-				patch.SetColor(c)
-				le.isDirty.Set(true)
-			}
-		}, le.window)
-		picker.Advanced = true
-		picker.SetColor(patch.GetColor())
-		picker.Show()
+		ce := NewColorPatchEditor(patch, le.isDirty, le.window)
+		ce.Show()
 	}
 }
 
@@ -212,12 +192,11 @@ func (le *LayerEditor) setFields() {
 	le.rateBox.Entry.SetText(strconv.FormatInt(int64(le.layer.Rate), 10))
 	le.rateBox.Enable(le.bOverride)
 
-	// list 22
 	for i, p := range le.patches {
 		if i < len(le.fields.Colors) {
 			p.SetHSVColor(le.fields.Colors[i])
 		} else {
-			p.SetDisabled()
+			p.SetDisabled(true)
 		}
 	}
 }
@@ -237,19 +216,11 @@ func (le *LayerEditor) revert() {
 }
 
 func (le *LayerEditor) setColors() {
-	count := 0
-	colorLen := len(le.fields.Colors)
+	var colors []glow.HSV = make([]glow.HSV, 0)
 	for _, p := range le.patches {
-		if p.Disabled() {
-			continue
-		}
-
-		if colorLen > count {
-			le.fields.Colors[count] = p.GetHSV()
-			count++
-		} else {
-			le.fields.Colors = append(le.fields.Colors, p.GetHSV())
+		if !p.Disabled() {
+			colors = append(colors, p.GetHSVColor())
 		}
 	}
-
+	le.fields.Colors = colors
 }

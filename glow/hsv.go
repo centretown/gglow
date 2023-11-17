@@ -24,6 +24,17 @@ type HSV struct {
 	Value      float32 `yaml:"value" json:"value"`
 }
 
+func (hsv *HSV) FromColor(c color.Color) {
+	r, g, b, a := c.RGBA()
+	rgba := color.RGBA{
+		uint8(r),
+		uint8(g),
+		uint8(b),
+		uint8(a),
+	}
+	hsv.FromRGB(rgba)
+}
+
 func (hsv *HSV) FromRGB(color color.RGBA) {
 	var red float32 = float32(color.R) / 255.0
 	var green float32 = float32(color.G) / 255.0

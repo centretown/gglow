@@ -6,6 +6,8 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 )
 
+const MaxLayerColors = 5
+
 type LayerFields struct {
 	HueShift    binding.Int
 	Scan        binding.Int
