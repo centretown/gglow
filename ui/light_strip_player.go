@@ -101,6 +101,7 @@ func (sb *LightStripPlayer) OnExit() {
 }
 
 func (sb *LightStripPlayer) Stop() {
+	sb.pause()
 	sb.stopSpinner()
 	strip := sb.getStrip()
 	strip.TurnOff()

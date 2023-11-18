@@ -1,7 +1,6 @@
 package glow
 
 import (
-	"encoding/json"
 	"image/color"
 	"math"
 
@@ -119,27 +118,6 @@ func (hsv *HSV) ToGradient(target HSV, index uint16, length uint16) HSV {
 	saturation := hsv.Saturation + (target.Saturation-hsv.Saturation)*ratio
 	value := hsv.Value + (target.Value-hsv.Value)*ratio
 	return HSV{hue, saturation, value}
-}
-
-func (hsv *HSV) MarshalJSON() ([]byte, error) {
-	type alias HSV
-	var mod alias = alias(*hsv)
-	mod.Saturation *= 100
-	mod.Value *= 100
-	return json.Marshal(&mod)
-}
-
-func (hsv *HSV) UnmarshalJSON(d []byte) (err error) {
-	type alias HSV
-	var mod alias
-	err = json.Unmarshal(d, &mod)
-	if err != nil {
-		return err
-	}
-	mod.Saturation /= 100
-	mod.Value /= 100
-	*hsv = HSV(mod)
-	return err
 }
 
 func (hsv HSV) MarshalYAML() (interface{}, error) {

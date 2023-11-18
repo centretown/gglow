@@ -17,7 +17,7 @@ type RangeEntryFloat struct {
 
 func NewRangeEntryFloat(field binding.Float, bounds *FloatEntryBounds) *RangeEntryFloat {
 	e := &RangeEntryFloat{}
-	binder := binding.FloatToStringWithFormat(field, "%3f")
+	binder := binding.FloatToStringWithFormat(field, "%4.0f")
 	e.Bind(binder)
 
 	validateRange := func(s string) error {

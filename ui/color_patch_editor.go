@@ -23,7 +23,7 @@ type ColorPatchEditor struct {
 	hue          binding.Float
 	saturation   binding.Float
 	value        binding.Float
-	disabled     binding.Bool
+	unused       binding.Bool
 	disableCheck *widget.Check
 }
 
@@ -33,39 +33,41 @@ func NewColorPatchEditor(source *ColorPatch,
 
 	pe := &ColorPatchEditor{
 		source:  source,
-		patch:   NewColorPatchWithColor(source.GetHSVColor(), func() {}),
+		patch:   NewColorPatchWithColor(isDirty, source.GetHSVColor(), func() {}),
 		isDirty: isDirty,
 		window:  window,
 
 		hue:        binding.NewFloat(),
 		saturation: binding.NewFloat(),
 		value:      binding.NewFloat(),
-		disabled:   binding.NewBool(),
+		unused:     binding.NewBool(),
 	}
 
-	hueLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(pe.hue, "%.0f"))
-	hueSlider := widget.NewSliderWithData(0, 360, pe.hue)
-	hueBox := container.NewBorder(nil, nil, widget.NewLabel("H"), hueLabel, hueSlider)
+	hueLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(pe.hue, "%3.0f"))
+	hueSlider := NewButtonSlide(pe.hue, HueBounds)
+	hueBox := container.NewBorder(nil, nil, widget.NewLabel("H"), hueLabel,
+		container.NewBorder(nil, nil, nil, nil, hueSlider.Container))
 
-	saturationLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(pe.saturation, "%.0f"))
-	saturationSlider := widget.NewSliderWithData(0, 100, pe.saturation)
-	saturationBox := container.NewBorder(nil, nil, widget.NewLabel("S"), saturationLabel, saturationSlider)
+	saturationLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(pe.saturation, "%3.0f"))
+	saturationSlider := NewButtonSlide(pe.saturation, SaturationBounds)
+	saturationBox := container.NewBorder(nil, nil, widget.NewLabel("S"), saturationLabel,
+		saturationSlider.Container)
 
-	valueLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(pe.value, "%.0f"))
-	valueSlider := widget.NewSliderWithData(0, 100, pe.value)
-	valueBox := container.NewBorder(nil, nil, widget.NewLabel("V"), valueLabel, valueSlider)
+	valueLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(pe.value, "%3.0f"))
+	valueSlider := NewButtonSlide(pe.value, ValueBounds)
+	valueBox := container.NewBorder(nil, nil, widget.NewLabel("V"), valueLabel,
+		valueSlider.Container)
 
-	// pe.patch.SetTapped(pe.selectColorPicker(pe.patch))
-	pickerButton := widget.NewButtonWithIcon("Color Picker", theme.MoreHorizontalIcon(),
+	pickerButton := widget.NewButtonWithIcon("Picker", theme.MoreHorizontalIcon(),
 		pe.selectColorPicker(pe.patch))
-	pe.disableCheck = widget.NewCheckWithData("Disable", pe.disabled)
+	pe.disableCheck = widget.NewCheckWithData("Unuse", pe.unused)
 
 	pe.setFields()
 
-	pe.disabled.AddListener(binding.NewDataListener(
+	pe.unused.AddListener(binding.NewDataListener(
 		func() {
-			disable, _ := pe.disabled.Get()
-			pe.patch.SetDisabled(disable)
+			disable, _ := pe.unused.Get()
+			pe.patch.SetUnused(disable)
 			if disable {
 				pickerButton.Disable()
 				pe.isDirty.Set(true)
@@ -74,9 +76,14 @@ func NewColorPatchEditor(source *ColorPatch,
 				pe.isDirty.Set(false)
 			}
 		}))
-	pe.hue.AddListener(binding.NewDataListener(pe.setColor))
-	pe.saturation.AddListener(binding.NewDataListener(pe.setColor))
-	pe.value.AddListener(binding.NewDataListener(pe.setColor))
+	pe.hue.AddListener(binding.NewDataListener(func() {
+		// if hueEntry.Hidden {
+		// 	hueEntry.Show()
+		// }
+		pe.setColor()
+	}))
+	pe.saturation.AddListener(binding.NewDataListener(pe.setSaturation))
+	pe.value.AddListener(binding.NewDataListener(pe.setValue))
 
 	revertButton := widget.NewButtonWithIcon("Cancel", theme.CancelIcon(), func() {
 		pe.CustomDialog.Hide()
@@ -88,20 +95,29 @@ func NewColorPatchEditor(source *ColorPatch,
 		hueBox,
 		saturationBox,
 		valueBox,
-		pickerButton,
 		widget.NewSeparator())
 
-	pe.CustomDialog = dialog.NewCustomWithoutButtons("color", vbox, window)
-	pe.CustomDialog.SetButtons([]fyne.CanvasObject{revertButton, pe.applyButton})
+	pe.CustomDialog = dialog.NewCustomWithoutButtons("", vbox, window)
+	pe.CustomDialog.SetButtons([]fyne.CanvasObject{revertButton, pe.applyButton, pickerButton})
 	return pe
 }
 
 func (pe *ColorPatchEditor) setFields() {
-	pe.disabled.Set(pe.patch.disabled)
-	pe.disableCheck.SetChecked(pe.patch.disabled)
+	pe.unused.Set(pe.patch.unused)
+	pe.disableCheck.SetChecked(pe.patch.unused)
 	pe.hue.Set(float64(pe.patch.colorHSV.Hue))
 	pe.saturation.Set(float64(pe.patch.colorHSV.Saturation) * 100)
 	pe.value.Set(float64(pe.patch.colorHSV.Value * 100))
+}
+
+func (pe *ColorPatchEditor) setHue() {
+	pe.setColor()
+}
+func (pe *ColorPatchEditor) setSaturation() {
+	pe.setColor()
+}
+func (pe *ColorPatchEditor) setValue() {
+	pe.setColor()
 }
 
 func (pe *ColorPatchEditor) setColor() {
@@ -117,7 +133,7 @@ func (pe *ColorPatchEditor) setColor() {
 }
 
 func (pe *ColorPatchEditor) apply() {
-	pe.source.Copy(pe.patch)
+	pe.source.CopyPatch(pe.patch)
 	pe.CustomDialog.Hide()
 }
 

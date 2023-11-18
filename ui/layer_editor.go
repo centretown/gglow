@@ -59,7 +59,7 @@ func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 		tools:   NewLayerTools(model),
 
 		rateBounds: RateBounds,
-		hueBounds:  HueBounds,
+		hueBounds:  HueShiftBounds,
 		scanBounds: ScanBounds,
 
 		selectOrigin:      widget.NewSelect(resources.OriginLabels, func(s string) {}),
@@ -84,7 +84,7 @@ func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 func (le *LayerEditor) createPatches() {
 	le.patches = make([]*ColorPatch, data.MaxLayerColors)
 	for i := 0; i < data.MaxLayerColors; i++ {
-		patch := NewColorPatch()
+		patch := NewColorPatch(le.isDirty)
 		patch.SetTapped(le.selectColor(patch))
 		le.patches[i] = patch
 	}
@@ -196,7 +196,7 @@ func (le *LayerEditor) setFields() {
 		if i < len(le.fields.Colors) {
 			p.SetHSVColor(le.fields.Colors[i])
 		} else {
-			p.SetDisabled(true)
+			p.SetUnused(true)
 		}
 	}
 }
@@ -218,7 +218,7 @@ func (le *LayerEditor) revert() {
 func (le *LayerEditor) setColors() {
 	var colors []glow.HSV = make([]glow.HSV, 0)
 	for _, p := range le.patches {
-		if !p.Disabled() {
+		if !p.Unused() {
 			colors = append(colors, p.GetHSVColor())
 		}
 	}

@@ -24,7 +24,10 @@ func NewIntEntryBounds(min, max, on, off int) *IntEntryBounds {
 }
 
 var (
-	RateBounds = &IntEntryBounds{MinVal: 16, MaxVal: 360, OnVal: 48, OffVal: 0}
-	HueBounds  = &IntEntryBounds{MinVal: -10, MaxVal: 10, OnVal: 1, OffVal: 0}
-	ScanBounds = &IntEntryBounds{MinVal: 1, MaxVal: 10, OnVal: 1, OffVal: 0}
+	RateBounds       = &IntEntryBounds{MinVal: 16, MaxVal: 360, OnVal: 48, OffVal: 0}
+	HueShiftBounds   = &IntEntryBounds{MinVal: -10, MaxVal: 10, OnVal: 1, OffVal: 0}
+	ScanBounds       = &IntEntryBounds{MinVal: 1, MaxVal: 10, OnVal: 1, OffVal: 0}
+	HueBounds        = &FloatEntryBounds{MinVal: 0, MaxVal: 360, OnVal: 180, OffVal: 0}
+	SaturationBounds = &FloatEntryBounds{MinVal: 0, MaxVal: 100, OnVal: 50, OffVal: 0}
+	ValueBounds      = &FloatEntryBounds{MinVal: 0, MaxVal: 100, OnVal: 50, OffVal: 0}
 )

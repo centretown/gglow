@@ -25,20 +25,10 @@ func NewRangeIntBox(field binding.Int, bounds *IntEntryBounds) *RangeIntBox {
 		Field:  field,
 	}
 
-	rb.Decrease = widget.NewButtonWithIcon("", theme.MoveDownIcon(), rb.buttonCheck(-1))
-	rb.Increase = widget.NewButtonWithIcon("", theme.MoveUpIcon(), rb.buttonCheck(1))
+	rb.Decrease = widget.NewButtonWithIcon("", theme.MoveDownIcon(), IncrementInt(-1, field, bounds))
+	rb.Increase = widget.NewButtonWithIcon("", theme.MoveUpIcon(), IncrementInt(1, field, bounds))
 	rb.Container = container.NewHBox(rb.Decrease, rb.Entry, rb.Increase)
 	return rb
-}
-
-func (rb *RangeIntBox) buttonCheck(inc int) func() {
-	return func() {
-		f, _ := rb.Field.Get()
-		f += inc
-		if f >= rb.Bounds.MinVal && f <= rb.Bounds.MaxVal {
-			rb.Field.Set(f)
-		}
-	}
 }
 
 func (rb *RangeIntBox) Enable(b bool) {

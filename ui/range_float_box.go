@@ -17,13 +17,7 @@ type RangeFloatBox struct {
 
 func NewRangeFloatBox(field binding.Float, bounds *FloatEntryBounds) *RangeFloatBox {
 	buttonCheck := func(val float64) func() {
-		return func() {
-			f, _ := field.Get()
-			f += val
-			if f >= bounds.MinVal && f <= bounds.MaxVal {
-				field.Set(f)
-			}
-		}
+		return IncrementFloat(val, field, bounds)
 	}
 
 	rb := &RangeFloatBox{
