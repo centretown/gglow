@@ -15,11 +15,10 @@ import (
 
 type LayerEditor struct {
 	*fyne.Container
-	model   *data.Model
-	layer   *glow.Layer
-	fields  *data.LayerFields
-	window  fyne.Window
-	isDirty binding.Bool
+	model  *data.Model
+	layer  *glow.Layer
+	fields *data.LayerFields
+	window fyne.Window
 
 	patches []*ColorPatch
 
@@ -45,7 +44,7 @@ type LayerEditor struct {
 	tools *LayerTools
 }
 
-func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
+func NewLayerEditor(model *data.Model, window fyne.Window,
 	sharedTools *SharedTools) *LayerEditor {
 
 	le := &LayerEditor{
@@ -54,9 +53,8 @@ func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 		model: model,
 		layer: model.GetCurrentLayer(),
 
-		fields:  data.NewLayerFields(),
-		isDirty: isDirty,
-		tools:   NewLayerTools(model),
+		fields: data.NewLayerFields(),
+		tools:  NewLayerTools(model),
 
 		rateBounds: RateBounds,
 		hueBounds:  HueShiftBounds,
@@ -84,7 +82,7 @@ func NewLayerEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 func (le *LayerEditor) createPatches() {
 	le.patches = make([]*ColorPatch, data.MaxLayerColors)
 	for i := 0; i < data.MaxLayerColors; i++ {
-		patch := NewColorPatch(le.isDirty)
+		patch := NewColorPatch(le.model.IsDirty)
 		patch.SetTapped(le.selectColor(patch))
 		le.patches[i] = patch
 	}
@@ -92,7 +90,7 @@ func (le *LayerEditor) createPatches() {
 
 func (le *LayerEditor) selectColor(patch *ColorPatch) func() {
 	return func() {
-		ce := NewColorPatchEditor(patch, le.isDirty, le.window)
+		ce := NewColorPatchEditor(patch, le.model.IsDirty, le.window)
 		ce.Show()
 	}
 }
@@ -104,7 +102,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrigin.SelectedIndex()
 		if glow.Origin(selected) != current {
 			le.fields.Origin.Set(selected)
-			le.isDirty.Set(true)
+			le.model.IsDirty.Set(true)
 		}
 	}
 
@@ -114,7 +112,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrientation.SelectedIndex()
 		if glow.Orientation(selected) != current {
 			le.fields.Orientation.Set(selected)
-			le.isDirty.Set(true)
+			le.model.IsDirty.Set(true)
 		}
 	}
 
@@ -123,7 +121,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.scanBox = NewRangeIntBox(le.fields.Scan, le.scanBounds)
 	le.fields.Scan.AddListener(binding.NewDataListener(func() {
 		scan, _ := le.fields.Scan.Get()
-		le.isDirty.Set(uint16(scan) != le.layer.Scan)
+		le.model.IsDirty.Set(uint16(scan) != le.layer.Scan)
 	}))
 	le.checkScan = widget.NewCheck("", checkRangeBox(le.scanBox, le.fields.Scan))
 
@@ -135,7 +133,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.hueBox = NewRangeIntBox(le.fields.HueShift, le.hueBounds)
 	le.fields.HueShift.AddListener(binding.NewDataListener(func() {
 		shift, _ := le.fields.HueShift.Get()
-		le.isDirty.Set(int16(shift) != le.layer.HueShift)
+		le.model.IsDirty.Set(int16(shift) != le.layer.HueShift)
 	}))
 	le.checkHue = widget.NewCheck("", checkRangeBox(le.hueBox, le.fields.HueShift))
 
@@ -144,7 +142,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.rateBox = NewRangeIntBox(le.fields.Rate, le.rateBounds)
 	le.fields.Rate.AddListener(binding.NewDataListener(func() {
 		rate, _ := le.fields.Rate.Get()
-		le.isDirty.Set(uint32(rate) != le.layer.Rate)
+		le.model.IsDirty.Set(uint32(rate) != le.layer.Rate)
 	}))
 	le.checkRate = widget.NewCheck("", checkRangeBox(le.rateBox, le.fields.Rate))
 
@@ -202,7 +200,7 @@ func (le *LayerEditor) setFields() {
 }
 
 func (le *LayerEditor) apply() {
-	dirty, _ := le.isDirty.Get()
+	dirty, _ := le.model.IsDirty.Get()
 	if dirty {
 		le.setColors()
 		le.fields.ToLayer(le.layer)

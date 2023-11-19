@@ -13,14 +13,14 @@ type SharedTools struct {
 	applyButton  *ButtonItem
 	revertButton *ButtonItem
 	isDirty      binding.Bool
-	apply_funcs  []func()
-	revert_funcs []func()
+	apply_funcs  []func() `json:"-"`
+	revert_funcs []func() `json:"-"`
 }
 
-func NewSharedTools(model *data.Model, isDirty binding.Bool) *SharedTools {
+func NewSharedTools(model *data.Model) *SharedTools {
 	tl := &SharedTools{
 		Toolbar: widget.NewToolbar(),
-		isDirty: isDirty,
+		isDirty: model.IsDirty,
 	}
 	tl.applyButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.ConfirmIcon(), tl.apply))
@@ -29,8 +29,8 @@ func NewSharedTools(model *data.Model, isDirty binding.Bool) *SharedTools {
 		widget.NewButtonWithIcon("", theme.ContentUndoIcon(), tl.revert))
 	tl.revertButton.Disable()
 
-	isDirty.AddListener(binding.NewDataListener(func() {
-		b, _ := isDirty.Get()
+	tl.isDirty.AddListener(binding.NewDataListener(func() {
+		b, _ := tl.isDirty.Get()
 		if b {
 			tl.applyButton.Enable()
 			tl.revertButton.Enable()

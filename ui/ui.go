@@ -41,7 +41,6 @@ type Ui struct {
 
 	mainContainer *fyne.Container
 	isMobile      bool
-	isDirty       binding.Bool
 }
 
 func NewUi(app fyne.App, window fyne.Window, model *data.Model, theme *settings.GlowTheme) *Ui {
@@ -51,7 +50,6 @@ func NewUi(app fyne.App, window fyne.Window, model *data.Model, theme *settings.
 		preferences: app.Preferences(),
 		theme:       theme,
 		model:       model,
-		isDirty:     binding.NewBool(),
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
 	}
@@ -116,9 +114,9 @@ func (ui *Ui) BuildContent() *fyne.Container {
 
 	ui.effectSelect = NewEffectSelect(ui.model)
 
-	ui.toolbar = NewSharedTools(ui.model, ui.isDirty)
-	ui.frameEditor = NewFrameEditor(ui.model, ui.isDirty, ui.window, ui.toolbar)
-	ui.layerEditor = NewLayerEditor(ui.model, ui.isDirty, ui.window, ui.toolbar)
+	ui.toolbar = NewSharedTools(ui.model)
+	ui.frameEditor = NewFrameEditor(ui.model, ui.window, ui.toolbar)
+	ui.layerEditor = NewLayerEditor(ui.model, ui.window, ui.toolbar)
 	ui.toolbar.Refresh()
 
 	ui.playContainer = container.NewBorder(widget.NewSeparator(), ui.stripTools, nil, nil, ui.strip)

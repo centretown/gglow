@@ -14,6 +14,7 @@ type Model struct {
 	Layer            binding.Untyped
 	LayerIndex       int
 	Store            *store.Store
+	IsDirty          binding.Bool
 }
 
 func NewModel(store *store.Store) *Model {
@@ -22,6 +23,7 @@ func NewModel(store *store.Store) *Model {
 		Frame:            binding.NewUntyped(),
 		LayerSummaryList: binding.NewStringList(),
 		Layer:            binding.NewUntyped(),
+		IsDirty:          binding.NewBool(),
 	}
 
 	m.Frame.Set(&glow.Frame{})

@@ -22,14 +22,13 @@ type FrameEditor struct {
 	rateBounds  *IntEntryBounds
 	rateBox     *RangeIntBox
 	tools       *FrameTools
-	isDirty     binding.Bool
 }
 
-func NewFrameEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
+func NewFrameEditor(model *data.Model, window fyne.Window,
 	sharedTools *SharedTools) *FrameEditor {
+
 	fe := &FrameEditor{
 		model:       model,
-		isDirty:     isDirty,
 		layerSelect: NewLayerSelect(model),
 		rateBounds:  RateBounds,
 		fields:      data.NewFrameFields(),
@@ -41,14 +40,14 @@ func NewFrameEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 	fe.rateBox = NewRangeIntBox(fe.fields.Interval, fe.rateBounds)
 	fe.fields.Interval.AddListener(binding.NewDataListener(func() {
 		interval, _ := fe.fields.Interval.Get()
-		fe.isDirty.Set(uint32(interval) != fe.frame.Interval)
+		fe.model.IsDirty.Set(uint32(interval) != fe.frame.Interval)
 	}))
 
 	frm := container.New(layout.NewFormLayout(), ratelabel, fe.rateBox.Container)
 	fe.Container = container.NewBorder(nil, fe.layerSelect, nil, nil, frm)
 	fe.model.Frame.AddListener(binding.NewDataListener(fe.setFields))
 
-	fe.tools = NewFrameTools(model, window, isDirty)
+	fe.tools = NewFrameTools(model, window)
 	// sharedTools.AddItems(widget.NewToolbarSeparator())
 	sharedTools.AddItems(fe.tools.Items()...)
 	sharedTools.AddApply(fe.apply)
@@ -64,7 +63,7 @@ func (fe *FrameEditor) setFields() {
 }
 
 func (fe *FrameEditor) apply() {
-	dirty, _ := fe.isDirty.Get()
+	dirty, _ := fe.model.IsDirty.Get()
 	if dirty {
 		fe.fields.ToFrame(fe.frame)
 		fe.model.UpdateFrame()

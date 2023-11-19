@@ -25,7 +25,7 @@ type FrameTools struct {
 	model   *data.Model
 }
 
-func NewFrameTools(model *data.Model, window fyne.Window, isDirty binding.Bool) *FrameTools {
+func NewFrameTools(model *data.Model, window fyne.Window) *FrameTools {
 	ft := &FrameTools{
 		window: window,
 		model:  model,
@@ -60,8 +60,8 @@ func NewFrameTools(model *data.Model, window fyne.Window, isDirty binding.Bool) 
 	)
 
 	ft.popUp = widget.NewPopUp(ft.toolBar, window.Canvas())
-	isDirty.AddListener(binding.NewDataListener(func() {
-		b, _ := isDirty.Get()
+	model.IsDirty.AddListener(binding.NewDataListener(func() {
+		b, _ := model.IsDirty.Get()
 		if b {
 			ft.saveFrame.Button.Enable()
 		}

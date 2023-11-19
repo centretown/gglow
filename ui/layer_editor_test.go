@@ -5,7 +5,6 @@ import (
 	"glow-gui/store"
 	"testing"
 
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/test"
 )
 
@@ -13,9 +12,8 @@ func test_editor_setup(t *testing.T) (model *data.Model, e *LayerEditor, err err
 	app := test.NewApp()
 	w := app.NewWindow("Editor")
 	model = data.NewModel(store.NewStore(app.Preferences()))
-	isDirty := binding.NewBool()
-	toolBar := NewSharedTools(model, isDirty)
-	e = NewLayerEditor(model, isDirty, w, toolBar)
+	toolBar := NewSharedTools(model)
+	e = NewLayerEditor(model, w, toolBar)
 	return
 }
 
@@ -75,7 +73,7 @@ func testRate(t *testing.T, e *LayerEditor, expected int) {
 }
 
 func isDirty(le *LayerEditor) bool {
-	b, _ := le.isDirty.Get()
+	b, _ := le.model.IsDirty.Get()
 	return b
 }
 
