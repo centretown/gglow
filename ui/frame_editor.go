@@ -48,7 +48,7 @@ func NewFrameEditor(model *data.Model, isDirty binding.Bool, window fyne.Window,
 	fe.Container = container.NewBorder(nil, fe.layerSelect, nil, nil, frm)
 	fe.model.Frame.AddListener(binding.NewDataListener(fe.setFields))
 
-	fe.tools = NewFrameTools(model, window)
+	fe.tools = NewFrameTools(model, window, isDirty)
 	// sharedTools.AddItems(widget.NewToolbarSeparator())
 	sharedTools.AddItems(fe.tools.Items()...)
 	sharedTools.AddApply(fe.apply)

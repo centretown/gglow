@@ -3,7 +3,6 @@ package resources
 import (
 	"glow-gui/glow"
 	"path"
-	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
@@ -32,111 +31,6 @@ func (id ImageID) Load() (res fyne.Resource, err error) {
 	res, err = fyne.LoadResourceFromPath(id.String())
 	AppImage = res
 	return
-}
-
-// type ContentID uint16
-
-// const (
-// 	FrameContent ContentID = iota
-// 	LayerContent
-// 	ChromaContent
-// 	ContentCount
-// )
-
-// var contentLabels = []string{"Frames", "Layers", "Colors"}
-
-// func (id ContentID) String() string {
-// 	return contentLabels[id]
-// }
-
-// func ContentLabels() []string {
-// 	return contentLabels
-// }
-
-type LabelID uint16
-
-const (
-	GlowLabel LabelID = iota
-	ColumnsLabel
-	LengthLabel
-	RowsLabel
-	IntervalLabel
-	LayersLabel
-	GridLabel
-	ColorsLabel
-	HueShiftLabel
-	ScanLengthLabel
-	BeginLabel
-	EndLabel
-	OriginLabel
-	OrientationLabel
-	HueLabel
-	ScanLabel
-	SaturationLabel
-	ValueLabel
-	EffectsLabel
-	DynamicLabel
-	StaticLabel
-	GradientLabel
-	RevertLabel
-	ApplyLabel
-	RateLabel
-	OverrideLabel
-)
-
-var entryLabels = []string{
-	"Glow", "Columns",
-	"Length", "Rows", "Interval", "Layers",
-	"Grid", "Colors", "Hue Shift", "Scan Length",
-	"Begin", "End",
-	"Origin", "Orientation",
-	"Hue", "Scan",
-	"Saturation", "Value",
-	"Effects",
-	"Dynamic", "Static", "Gradient",
-	"Revert", "Apply",
-	"Interval (ms)", "Override",
-}
-
-func (id LabelID) String() string {
-	return entryLabels[id]
-}
-
-func (id LabelID) PlaceHolder() string {
-	return strings.ToLower(entryLabels[id])
-}
-
-type OrientationID glow.Orientation
-
-var OrientationLabels = []string{
-	"Level",
-	"Upright",
-	"Tilted",
-}
-
-func (id OrientationID) String() string {
-	return OrientationLabels[id]
-}
-
-func (id OrientationID) PlaceHolder() string {
-	return strings.ToLower(OrientationLabels[id])
-}
-
-type OriginID glow.Origin
-
-var OriginLabels = []string{
-	"Top Left",
-	"Top Right",
-	"Bottom Left",
-	"Bottom Right",
-}
-
-func (id OriginID) String() string {
-	return OriginLabels[id]
-}
-
-func (id OriginID) PlaceHolder() string {
-	return strings.ToLower(OriginLabels[id])
 }
 
 type AppIconID int

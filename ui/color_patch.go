@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"glow-gui/glow"
+	"glow-gui/resources"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -29,22 +30,25 @@ type ColorPatch struct {
 	tapped     func() `json:"-"`
 	rectangle  *canvas.Rectangle
 	background *canvas.Rectangle
-	unused     bool
 	colorHSV   glow.HSV
 
 	hovered, focused bool
-	isDirty          binding.Bool
+	unused           bool
+
+	Editing bool
+
+	isDirty binding.Bool
 }
 
 func NewColorPatch(isDirty binding.Bool) (patch *ColorPatch) {
 	var hsv glow.HSV
 	hsv.FromColor(theme.DisabledColor())
-	patch = NewColorPatchWithColor(isDirty, hsv, nil)
+	patch = NewColorPatchWithColor(hsv, isDirty, nil)
 	patch.unused = true
 	return
 }
 
-func NewColorPatchWithColor(isDirty binding.Bool, hsv glow.HSV, tapped func()) *ColorPatch {
+func NewColorPatchWithColor(hsv glow.HSV, isDirty binding.Bool, tapped func()) *ColorPatch {
 	cp := &ColorPatch{
 		background: canvas.NewRectangle(theme.ButtonColor()),
 		rectangle:  canvas.NewRectangle(hsv.ToRGB()),
@@ -98,17 +102,15 @@ func (cp *ColorPatch) paste(s string) {
 
 // Shortcutable
 func (cp *ColorPatch) TypedShortcut(sc fyne.Shortcut) {
-	switch sc.ShortcutName() {
-	case "Copy":
-		p, ok := sc.(*fyne.ShortcutCopy)
-		if ok {
-			p.Clipboard.SetContent(cp.copy())
-		}
-	case "Paste":
-		p, ok := sc.(*fyne.ShortcutPaste)
-		if ok {
-			cp.paste(p.Clipboard.Content())
-		}
+	switch p := sc.(type) {
+	case *fyne.ShortcutCopy:
+		p.Clipboard.SetContent(cp.copy())
+	case *fyne.ShortcutPaste:
+		cp.paste(p.Clipboard.Content())
+	case *fyne.ShortcutCut:
+		p.Clipboard.SetContent(cp.copy())
+		cp.SetUnused(true)
+	default:
 	}
 }
 
@@ -137,7 +139,6 @@ func (cp *ColorPatch) MouseDown(*desktop.MouseEvent) {
 // Draggable
 func (cp *ColorPatch) Dragged(d *fyne.DragEvent) {
 	// pos := d.Position
-
 }
 
 func (cp *ColorPatch) DragEnd() {
@@ -152,7 +153,6 @@ func (cp *ColorPatch) TypedKey(ev *fyne.KeyEvent) {
 	switch ev.Name {
 	case fyne.KeySpace:
 		cp.Tapped(nil)
-	case fyne.KeyC:
 	}
 }
 
@@ -173,6 +173,7 @@ func (cp *ColorPatch) SetTapped(tapped func()) {
 func (cp *ColorPatch) SetUnused(b bool) {
 	cp.unused = b
 	cp.setFill(theme.DisabledColor())
+	cp.isDirty.Set(true)
 }
 
 func (cp *ColorPatch) Unused() bool {
@@ -220,26 +221,49 @@ func (cp *ColorPatch) Tapped(_ *fyne.PointEvent) {
 	}
 }
 
-func (cp *ColorPatch) TappedSecondary(_ *fyne.PointEvent) {
+func (cp *ColorPatch) EditCut() {
+	cp.TypedShortcut(&fyne.ShortcutCut{Clipboard: Clipboard()})
+}
+func (cp *ColorPatch) EditCopy() {
+	cp.TypedShortcut(&fyne.ShortcutCopy{Clipboard: Clipboard()})
+}
+func (cp *ColorPatch) EditPaste() {
+	cp.TypedShortcut(&fyne.ShortcutPaste{Clipboard: Clipboard()})
+}
+
+func (cp *ColorPatch) TappedSecondary(pointEvent *fyne.PointEvent) {
 	cp.requestFocus()
-	clipboard := fyne.CurrentApp().Driver().AllWindows()[0].Clipboard()
-
-	copyItem := fyne.NewMenuItem("Copy", func() {
-		cp.TypedShortcut(&fyne.ShortcutCopy{Clipboard: clipboard})
+	cutItem := fyne.NewMenuItem(resources.CutLabel.String(), func() {
+		cp.EditCut()
 	})
-	pasteItem := fyne.NewMenuItem("Paste", func() {
-		cp.TypedShortcut(&fyne.ShortcutPaste{Clipboard: clipboard})
+	copyItem := fyne.NewMenuItem(resources.CopyLabel.String(), func() {
+		cp.EditCopy()
 	})
 
-	unuseItem := fyne.NewMenuItem("Unuse", func() {
-		cp.SetUnused(true)
+	pasteItem := fyne.NewMenuItem(resources.PasteLabel.String(), func() {
+		cp.EditPaste()
 	})
 
-	menu := fyne.NewMenu("", copyItem, pasteItem, unuseItem)
-	c := fyne.CurrentApp().Driver().CanvasForObject(cp)
-	popUp := widget.NewPopUpMenu(menu, c)
-	pos := fyne.CurrentApp().Driver().AbsolutePositionForObject(cp)
-	popUp.ShowAtPosition(pos.Add(fyne.Delta{DX: 0, DY: cp.Size().Height}))
+	menu := &fyne.Menu{}
+	switch {
+	case cp.Editing:
+		menu.Items = []*fyne.MenuItem{cutItem, copyItem, pasteItem}
+	default:
+		menu.Items = []*fyne.MenuItem{cutItem, copyItem, pasteItem,
+			fyne.NewMenuItem(resources.EditLabel.String(), func() {
+				cp.Tapped(nil)
+			})}
+	}
+
+	popUp := widget.NewPopUpMenu(menu, CanvasForObject(cp))
+	var popUpPosition fyne.Position
+	if pointEvent != nil {
+		// popUpPosition = pointEvent.Position.AddXY(0, theme.Padding())
+		popUpPosition = pointEvent.Position
+	} else {
+		popUpPosition = fyne.Position{X: cp.Size().Width / 2, Y: cp.Size().Height}
+	}
+	popUp.ShowAtRelativePosition(popUpPosition, cp)
 
 }
 

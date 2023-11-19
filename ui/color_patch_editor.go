@@ -2,6 +2,7 @@ package ui
 
 import (
 	"glow-gui/glow"
+	"glow-gui/resources"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -24,7 +25,7 @@ type ColorPatchEditor struct {
 	saturation   binding.Float
 	value        binding.Float
 	unused       binding.Bool
-	disableCheck *widget.Check
+	removeButton *widget.Button
 }
 
 func NewColorPatchEditor(source *ColorPatch,
@@ -33,7 +34,7 @@ func NewColorPatchEditor(source *ColorPatch,
 
 	pe := &ColorPatchEditor{
 		source:  source,
-		patch:   NewColorPatchWithColor(isDirty, source.GetHSVColor(), func() {}),
+		patch:   NewColorPatchWithColor(source.GetHSVColor(), isDirty, func() {}),
 		isDirty: isDirty,
 		window:  window,
 
@@ -42,6 +43,8 @@ func NewColorPatchEditor(source *ColorPatch,
 		value:      binding.NewFloat(),
 		unused:     binding.NewBool(),
 	}
+
+	pe.patch.Editing = true
 
 	hueLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(pe.hue, "%3.0f"))
 	hueSlider := NewButtonSlide(pe.hue, HueBounds)
@@ -58,30 +61,13 @@ func NewColorPatchEditor(source *ColorPatch,
 	valueBox := container.NewBorder(nil, nil, widget.NewLabel("V"), valueLabel,
 		valueSlider.Container)
 
-	pickerButton := widget.NewButtonWithIcon("Picker", theme.MoreHorizontalIcon(),
+	pickerButton := widget.NewButtonWithIcon(resources.PickerLabel.String(), theme.MoreHorizontalIcon(),
 		pe.selectColorPicker(pe.patch))
-	pe.disableCheck = widget.NewCheckWithData("Unuse", pe.unused)
-
 	pe.setFields()
+	pe.removeButton = widget.NewButtonWithIcon(resources.CutLabel.String(), theme.ContentCutIcon(),
+		pe.remove)
 
-	pe.unused.AddListener(binding.NewDataListener(
-		func() {
-			disable, _ := pe.unused.Get()
-			pe.patch.SetUnused(disable)
-			if disable {
-				pickerButton.Disable()
-				pe.isDirty.Set(true)
-			} else {
-				pe.patch.SetHSVColor(pe.source.GetHSVColor())
-				pe.isDirty.Set(false)
-			}
-		}))
-	pe.hue.AddListener(binding.NewDataListener(func() {
-		// if hueEntry.Hidden {
-		// 	hueEntry.Show()
-		// }
-		pe.setColor()
-	}))
+	pe.hue.AddListener(binding.NewDataListener(pe.setHue))
 	pe.saturation.AddListener(binding.NewDataListener(pe.setSaturation))
 	pe.value.AddListener(binding.NewDataListener(pe.setValue))
 
@@ -90,46 +76,52 @@ func NewColorPatchEditor(source *ColorPatch,
 	})
 
 	pe.applyButton = widget.NewButtonWithIcon("Apply", theme.ConfirmIcon(), pe.apply)
-	vbox := container.NewVBox(pe.disableCheck,
+	vbox := container.NewVBox(
 		pe.patch,
 		hueBox,
 		saturationBox,
 		valueBox,
-		widget.NewSeparator())
+		widget.NewSeparator(), pickerButton)
 
 	pe.CustomDialog = dialog.NewCustomWithoutButtons("", vbox, window)
-	pe.CustomDialog.SetButtons([]fyne.CanvasObject{revertButton, pe.applyButton, pickerButton})
+	pe.CustomDialog.SetButtons([]fyne.CanvasObject{revertButton, pe.applyButton, pe.removeButton})
 	return pe
 }
 
 func (pe *ColorPatchEditor) setFields() {
 	pe.unused.Set(pe.patch.unused)
-	pe.disableCheck.SetChecked(pe.patch.unused)
 	pe.hue.Set(float64(pe.patch.colorHSV.Hue))
 	pe.saturation.Set(float64(pe.patch.colorHSV.Saturation) * 100)
 	pe.value.Set(float64(pe.patch.colorHSV.Value * 100))
 }
 
 func (pe *ColorPatchEditor) setHue() {
-	pe.setColor()
+	h, _ := pe.hue.Get()
+	hsv := pe.patch.GetHSVColor()
+	hsv.Hue = float32(h)
+	pe.setColor(hsv)
 }
 func (pe *ColorPatchEditor) setSaturation() {
-	pe.setColor()
+	s, _ := pe.saturation.Get()
+	hsv := pe.patch.GetHSVColor()
+	hsv.Saturation = float32(s / 100)
+	pe.setColor(hsv)
 }
 func (pe *ColorPatchEditor) setValue() {
-	pe.setColor()
+	v, _ := pe.value.Get()
+	hsv := pe.patch.GetHSVColor()
+	hsv.Value = float32(v / 100)
+	pe.setColor(hsv)
 }
 
-func (pe *ColorPatchEditor) setColor() {
-	h, _ := pe.hue.Get()
-	s, _ := pe.saturation.Get()
-	v, _ := pe.value.Get()
-	hsv := glow.HSV{
-		Hue:        float32(h),
-		Saturation: float32(s / 100),
-		Value:      float32(v / 100)}
+func (pe *ColorPatchEditor) setColor(hsv glow.HSV) {
 	pe.patch.SetHSVColor(hsv)
 	pe.isDirty.Set(true)
+}
+
+func (pe *ColorPatchEditor) remove() {
+	pe.patch.EditCut()
+	pe.apply()
 }
 
 func (pe *ColorPatchEditor) apply() {

@@ -283,7 +283,6 @@ func (store *Store) WriteEffect(title string, frame *glow.Frame) error {
 	}
 
 	path := scheme + store.Current.Path() + "/" + MakeFileName(title)
-	fmt.Println(path)
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		return err
@@ -310,13 +309,13 @@ func (store *Store) WriteEffect(title string, frame *glow.Frame) error {
 		return err
 	}
 
-	n, err := wrt.Write(buf)
+	_, err = wrt.Write(buf)
 	if err != nil {
 		return err
 	}
 
 	store.makeLookupList()
 
-	fmt.Println("bytes written", n)
+	// fmt.Println(n, "bytes written to", title)
 	return nil
 }

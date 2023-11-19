@@ -2,6 +2,7 @@ package ui
 
 import (
 	"glow-gui/data"
+	"glow-gui/resources"
 	"glow-gui/settings"
 
 	"fyne.io/fyne/v2"
@@ -73,7 +74,7 @@ func (ui *Ui) layoutContent() *fyne.Container {
 	selectorMenu := container.NewBorder(nil, nil, menuButton, nil, ui.effectSelect)
 
 	if ui.isMobile {
-		dropDown := dialog.NewCustom("edit", "hide", ui.editor, ui.window)
+		dropDown := dialog.NewCustom(resources.EditLabel.String(), "hide", ui.editor, ui.window)
 		menuButton.OnTapped = func() {
 			dropDown.Resize(ui.window.Canvas().Size())
 			dropDown.Show()

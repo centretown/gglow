@@ -4,6 +4,7 @@ import (
 	"glow-gui/data"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -21,21 +22,25 @@ type FrameTools struct {
 	toolBar *widget.Toolbar
 	popUp   *widget.PopUp
 	window  fyne.Window
+	model   *data.Model
 }
 
-func NewFrameTools(model *data.Model, window fyne.Window) *FrameTools {
+func NewFrameTools(model *data.Model, window fyne.Window, isDirty binding.Bool) *FrameTools {
 	ft := &FrameTools{
 		window: window,
+		model:  model,
 	}
 
 	ft.createDialog = NewEffectDialog(window, model)
 	ft.folderDialog = NewFolderDialog(window, model)
 
 	ft.frameMenu = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.FileIcon(), ft.menu))
+		widget.NewButtonWithIcon("", theme.DocumentIcon(), ft.menu))
 
 	ft.saveFrame = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), ft.save))
+	ft.saveFrame.Button.Disable()
+
 	ft.newFolder = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.FolderNewIcon(), func() {
 			ft.popUp.Hide()
@@ -55,6 +60,12 @@ func NewFrameTools(model *data.Model, window fyne.Window) *FrameTools {
 	)
 
 	ft.popUp = widget.NewPopUp(ft.toolBar, window.Canvas())
+	isDirty.AddListener(binding.NewDataListener(func() {
+		b, _ := isDirty.Get()
+		if b {
+			ft.saveFrame.Button.Enable()
+		}
+	}))
 
 	return ft
 }
@@ -63,15 +74,14 @@ func (ft *FrameTools) Items() (items []widget.ToolbarItem) {
 	items = []widget.ToolbarItem{
 		ft.saveFrame,
 		ft.frameMenu,
-		// ft.newFrame,
-		// ft.saveFrame,
-		// ft.deleteFrame,
 	}
 	return
 }
 
 func (ft *FrameTools) save() {
+	ft.model.Store.WriteEffect(ft.model.EffectName, ft.model.GetFrame())
 	ft.popUp.Hide()
+	ft.saveFrame.Button.Disable()
 }
 
 func (ft *FrameTools) delete() {

@@ -25,8 +25,10 @@ func NewRangeIntBox(field binding.Int, bounds *IntEntryBounds) *RangeIntBox {
 		Field:  field,
 	}
 
-	rb.Decrease = widget.NewButtonWithIcon("", theme.MoveDownIcon(), IncrementInt(-1, field, bounds))
-	rb.Increase = widget.NewButtonWithIcon("", theme.MoveUpIcon(), IncrementInt(1, field, bounds))
+	rb.Decrease = widget.NewButtonWithIcon("", theme.MoveDownIcon(),
+		IncrementInt(-1, field, bounds))
+	rb.Increase = widget.NewButtonWithIcon("", theme.MoveUpIcon(),
+		IncrementInt(1, field, bounds))
 	rb.Container = container.NewHBox(rb.Decrease, rb.Entry, rb.Increase)
 	return rb
 }
