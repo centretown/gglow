@@ -44,7 +44,6 @@ func (frame *Frame) Setup(length, rows uint16) error {
 
 func (frame *Frame) SetInterval(interval uint32) {
 	frame.Interval = interval
-	frame.Interval = interval
 }
 
 func (frame *Frame) Spin(light Light) {

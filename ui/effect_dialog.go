@@ -21,7 +21,7 @@ type EffectDialog struct {
 	applyButton *widget.Button
 }
 
-func NewEffectDialog(window fyne.Window, model *data.Model) (ef *EffectDialog) {
+func NewEffectDialog(model *data.Model, window fyne.Window) (ef *EffectDialog) {
 	ef = &EffectDialog{
 		model: model,
 		title: binding.NewString(),
@@ -52,7 +52,7 @@ func (ef *EffectDialog) apply() {
 	title, _ := ef.title.Get()
 	frame := &glow.Frame{}
 	frame.Interval = uint32(RateBounds.OnVal)
-	err := ef.model.Store.CreateNewEffect(title, frame)
+	err := ef.model.CreateNewEffect(title, frame)
 	if err != nil {
 		fyne.LogError(title, err)
 	}
@@ -60,7 +60,7 @@ func (ef *EffectDialog) apply() {
 }
 
 func (ef *EffectDialog) validateFileName(s string) error {
-	err := ef.model.Store.ValidateNewEffectName(s)
+	err := ef.model.ValidateNewEffectName(s)
 	if err != nil {
 		ef.applyButton.Disable()
 		return err

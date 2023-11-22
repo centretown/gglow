@@ -59,7 +59,7 @@ func NewLightStripPlayer(sourceStrip binding.Untyped, sourceFrame binding.Untype
 	sb.resetButton = widget.NewToolbarAction(theme.MediaReplayIcon(), sb.Reset)
 	sb.stopButton = widget.NewToolbarAction(theme.MediaStopIcon(), sb.Stop)
 
-	sb.layoutButton = widget.NewToolbarAction(theme.ZoomFitIcon(), func() {
+	sb.layoutButton = widget.NewToolbarAction(theme.SettingsIcon(), func() {
 		lightStripLayout.CustomDialog.Show()
 	})
 

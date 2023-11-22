@@ -53,20 +53,23 @@ func NewUi(app fyne.App, window fyne.Window, model *data.Model, theme *settings.
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
 	}
+
+	window.SetContent(ui.BuildContent())
+	model.WindowHasContent = true
 	return ui
 }
 
 func (ui *Ui) OnExit() {
 	ui.stripPlayer.OnExit()
-	ui.preferences.SetString(settings.Effect.String(), ui.model.EffectName)
+	ui.preferences.SetString(settings.Effect.String(), ui.model.EffectName())
 	ui.preferences.SetBool(settings.ContentSplit.String(), ui.isSplit)
 }
 
 func (ui *Ui) layoutContent() *fyne.Container {
 
 	toolsLayout := container.New(layout.NewCenterLayout(), ui.toolbar)
-	ui.editor = container.NewBorder(ui.frameEditor.Container, toolsLayout, nil, nil,
-		ui.layerEditor.Container)
+	ui.editor = container.NewBorder(toolsLayout, nil, nil, nil,
+		container.NewBorder(ui.frameEditor.Container, nil, nil, nil, ui.layerEditor.Container))
 
 	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
 	selectorMenu := container.NewBorder(nil, nil, menuButton, nil, ui.effectSelect)
@@ -99,6 +102,7 @@ func (ui *Ui) layoutContent() *fyne.Container {
 			setSplit(ui.isSplit)
 		}
 	}
+
 	return ui.mainContainer
 }
 
@@ -119,7 +123,8 @@ func (ui *Ui) BuildContent() *fyne.Container {
 	ui.layerEditor = NewLayerEditor(ui.model, ui.window, ui.toolbar)
 	ui.toolbar.Refresh()
 
-	ui.playContainer = container.NewBorder(widget.NewSeparator(), ui.stripTools, nil, nil, ui.strip)
+	ui.playContainer = container.NewBorder(ui.stripTools, nil, nil, nil, ui.strip)
+
 	ui.sourceStrip.AddListener(binding.NewDataListener(func() {
 		strip, _ := ui.sourceStrip.Get()
 		ui.strip = strip.(*LightStrip)

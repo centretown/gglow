@@ -8,9 +8,9 @@ import (
 	"io"
 	"os"
 	"strings"
-	"unicode"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/storage"
 	"gopkg.in/yaml.v3"
 )
@@ -22,9 +22,17 @@ const (
 	dots              = ".."
 )
 
+func defaultFrame() (frame *glow.Frame) {
+	frame = &glow.Frame{}
+	frame.Interval = 48
+	frame.Layers = append(frame.Layers, glow.Layer{})
+	return
+}
+
 type Store struct {
+	EffectName string
+	Frame      binding.Untyped
 	Current    fyne.ListableURI
-	Derived    fyne.ListableURI
 	KeyList    []string
 	FolderList []string
 
@@ -33,6 +41,10 @@ type Store struct {
 	stack       *Stack
 	preferences fyne.Preferences
 	rootPath    string
+
+	history     *History
+	HasPrevious binding.Bool
+	IsDirty     binding.Bool
 }
 
 func NewStore(preferences fyne.Preferences) *Store {
@@ -53,43 +65,65 @@ func NewStore(preferences fyne.Preferences) *Store {
 		os.Exit(1)
 	}
 
-	store := &Store{
+	st := &Store{
+		KeyList:     make([]string, 0),
+		FolderList:  make([]string, 0),
+		Frame:       binding.NewUntyped(),
+		IsDirty:     binding.NewBool(),
+		HasPrevious: binding.NewBool(),
+
 		preferences: preferences,
 		uriMap:      make(map[string]fyne.URI),
 		stack:       NewStack(rootURI),
 		rootPath:    rootPath,
-		KeyList:     make([]string, 0),
-		FolderList:  make([]string, 0),
+		history:     NewHistory(),
 	}
 
-	store.stack.Push(rootURI)
-	store.makeLookupList()
-	store.route = preferences.StringListWithFallback(settings.EffectRoute.String(),
+	st.stack.Push(rootURI)
+	st.makeLookupList()
+	st.route = preferences.StringListWithFallback(settings.EffectRoute.String(),
 		[]string{MakeTitle(rootURI)})
 
-	for _, s := range store.route[1:] {
-		store.RefreshKeys(s)
+	for _, s := range st.route[1:] {
+		st.RefreshKeys(s)
 	}
 
-	return store
+	effect := preferences.StringWithFallback(settings.Effect.String(), "")
+	if len(effect) > 0 {
+		st.ReadEffect(effect)
+	} else {
+		st.Frame.Set(defaultFrame())
+	}
+
+	st.IsDirty.AddListener(binding.NewDataListener(func() {
+		isDirty, _ := st.IsDirty.Get()
+		if isDirty {
+			frame, _ := st.Frame.Get()
+			st.history.Add(st.route, st.EffectName, frame.(*glow.Frame))
+			fmt.Println("ADD", st.EffectName)
+		}
+
+		st.HasPrevious.Set(st.CanUndo(st.EffectName))
+	}))
+	return st
 }
 
-func (store *Store) OnExit() {
-	store.preferences.SetStringList(settings.EffectRoute.String(), store.route)
-	store.preferences.SetString(settings.EffectPath.String(), store.rootPath)
+func (st *Store) OnExit() {
+	st.preferences.SetStringList(settings.EffectRoute.String(), st.route)
+	st.preferences.SetString(settings.EffectPath.String(), st.rootPath)
 }
 
-func (store *Store) IsFolder(key string) bool {
-	uri, ok := store.uriMap[key]
+func (st *Store) IsFolder(key string) bool {
+	uri, ok := st.uriMap[key]
 	if ok {
 		ok, _ = storage.CanList(uri)
 	}
 	return ok
 }
 
-func (store *Store) RefreshKeys(key string) {
+func (st *Store) RefreshKeys(key string) {
 
-	uri, ok := store.uriMap[key]
+	uri, ok := st.uriMap[key]
 	if !ok {
 		err := fmt.Errorf(resources.MsgGetEffectLookup.Format(key))
 		fyne.LogError("RefreshKeys", err)
@@ -103,167 +137,75 @@ func (store *Store) RefreshKeys(key string) {
 	}
 
 	if key == dots {
-		store.stack.Pop()
+		st.stack.Pop()
 	} else {
-		store.stack.Push(listable)
+		st.stack.Push(listable)
 	}
 
-	store.makeLookupList()
+	st.makeLookupList()
 }
 
-func (store *Store) makeLookupList() (err error) {
+func (st *Store) makeLookupList() (err error) {
 
-	store.uriMap = make(map[string]fyne.URI)
-	currentUri, isRoot := store.stack.Current()
+	st.uriMap = make(map[string]fyne.URI)
+	currentUri, isRoot := st.stack.Current()
 	if !isRoot {
-		store.uriMap[dots] = store.Current
+		st.uriMap[dots] = st.Current
 	}
-	store.Current = currentUri
+	st.Current = currentUri
 
-	uriList, err := store.Current.List()
-	store.KeyList = make([]string, 0, len(uriList)+1)
-	store.FolderList = make([]string, 0)
+	uriList, err := st.Current.List()
+	st.KeyList = make([]string, 0, len(uriList)+1)
+	st.FolderList = make([]string, 0)
 	if !isRoot {
-		store.KeyList = append(store.KeyList, dots)
-		store.FolderList = append(store.FolderList, dots)
+		st.KeyList = append(st.KeyList, dots)
+		st.FolderList = append(st.FolderList, dots)
 	}
 
 	for _, uri := range uriList {
 		title := MakeTitle(uri)
-		store.uriMap[title] = uri
-		store.KeyList = append(store.KeyList, title)
+		st.uriMap[title] = uri
+		st.KeyList = append(st.KeyList, title)
 		isList, _ := storage.CanList(uri)
 		if isList {
-			store.FolderList = append(store.FolderList, title)
+			st.FolderList = append(st.FolderList, title)
 		}
 	}
 	return
 }
 
-func (store *Store) LoadFrame(key string, frame *glow.Frame) error {
-
-	uri, ok := store.uriMap[key]
-	if !ok {
-		err := fmt.Errorf(resources.MsgGetEffectLookup.Format(key))
-		fyne.LogError("LoadFrame", err)
-		return err
-	}
-
-	rdr, err := storage.Reader(uri)
-	if err != nil {
-		fyne.LogError(resources.MsgGetFrame.Format(key), err)
-		return err
-	}
-	defer rdr.Close()
-
-	buffer, err := io.ReadAll(rdr)
-	if err != nil {
-		fyne.LogError(resources.MsgGetFrame.Format(key), err)
-		return err
-	}
-
-	err = yaml.Unmarshal(buffer, frame)
-	if err != nil {
-		fyne.LogError(resources.MsgGetFrame.Format(key), err)
-		return err
-	}
-
-	store.route = store.stack.Route()
-	return nil
-}
-
-func ValidateEffectName(title string) error {
-	title = strings.TrimSpace(title)
-
-	if len(title) < 1 {
-		return fmt.Errorf(resources.MsgRequired.String())
-	}
-
-	if title == "NULL" {
-		return fmt.Errorf(resources.MsgRequired.String())
-	}
-
-	for i, c := range title {
-		if i == 0 && !unicode.IsUpper(c) {
-			return fmt.Errorf(resources.MsgFirstUpper.String())
-		}
-		if !(c == ' ' || unicode.IsLetter(c) || unicode.IsDigit(c)) {
-			return fmt.Errorf(resources.MsgAlphaNumeric.String())
-		}
-	}
-	return nil
-}
-
-func (store *Store) IsDuplicate(title string) error {
-	_, found := store.uriMap[title]
+func (st *Store) IsDuplicate(title string) error {
+	_, found := st.uriMap[title]
 	if found {
 		return fmt.Errorf(resources.MsgDuplicate.String())
 	}
 	return nil
 }
 
-func ValidateFolderName(title string) error {
-	title = strings.TrimSpace(title)
-
-	if len(title) < 1 {
-		return fmt.Errorf(resources.MsgRequired.String())
-	}
-
-	if title == "NULL" {
-		return fmt.Errorf(resources.MsgRequired.String())
-	}
-
-	for _, c := range title {
-		if !(c == '_' || unicode.IsLetter(c) || unicode.IsDigit(c)) {
-			return fmt.Errorf(resources.MsgAlphaNumeric.String())
-		}
-	}
-	return nil
-}
-
-func (store *Store) ValidateNewFolderName(title string) error {
-	err := ValidateFolderName(title)
+func (st *Store) CreateNewEffect(title string, frame *glow.Frame) error {
+	err := st.IsDuplicate(title)
 	if err != nil {
 		return err
 	}
-
-	err = store.IsDuplicate(title)
-	return err
+	return st.WriteEffect(title, frame)
 }
 
-func (store *Store) ValidateNewEffectName(title string) error {
-	err := ValidateEffectName(title)
+func (st *Store) CreateNewFolder(title string) error {
+	err := st.IsDuplicate(title)
 	if err != nil {
 		return err
 	}
-	err = store.IsDuplicate(title)
-	return err
+	return st.WriteFolder(title)
 }
 
-func (store *Store) CreateNewEffect(title string, frame *glow.Frame) error {
-	err := store.IsDuplicate(title)
-	if err != nil {
-		return err
-	}
-	return store.WriteEffect(title, frame)
-}
-
-func (store *Store) CreateNewFolder(title string) error {
-	err := store.IsDuplicate(title)
-	if err != nil {
-		return err
-	}
-	return store.WriteFolder(title)
-}
-
-func (store *Store) WriteFolder(title string) error {
+func (st *Store) WriteFolder(title string) error {
 	title = strings.TrimSpace(title)
 	err := ValidateFolderName(title)
 	if err != nil {
 		return err
 	}
 
-	path := scheme + store.Current.Path() + "/" + title
+	path := scheme + st.Current.Path() + "/" + title
 	fmt.Println(path)
 	uri, err := storage.ParseURI(path)
 	if err != nil {
@@ -274,7 +216,44 @@ func (store *Store) WriteFolder(title string) error {
 	return err
 }
 
-func (store *Store) WriteEffect(title string, frame *glow.Frame) error {
+func (st *Store) ReadEffect(title string) error {
+
+	frame := &glow.Frame{}
+
+	uri, ok := st.uriMap[title]
+	if !ok {
+		err := fmt.Errorf(resources.MsgGetEffectLookup.Format(title))
+		fyne.LogError("ReadEffect", err)
+		return err
+	}
+
+	rdr, err := storage.Reader(uri)
+	if err != nil {
+		fyne.LogError(resources.MsgGetFrame.Format(title), err)
+		return err
+	}
+	defer rdr.Close()
+
+	buffer, err := io.ReadAll(rdr)
+	if err != nil {
+		fyne.LogError(resources.MsgGetFrame.Format(title), err)
+		return err
+	}
+
+	err = yaml.Unmarshal(buffer, frame)
+	if err != nil {
+		fyne.LogError(resources.MsgGetFrame.Format(title), err)
+		return err
+	}
+
+	st.Frame.Set(frame)
+	st.EffectName = title
+	st.route = st.stack.Route()
+	st.IsDirty.Set(false)
+	return nil
+}
+
+func (st *Store) WriteEffect(title string, frame *glow.Frame) error {
 	title = strings.TrimSpace(title)
 
 	err := ValidateEffectName(title)
@@ -282,7 +261,7 @@ func (store *Store) WriteEffect(title string, frame *glow.Frame) error {
 		return err
 	}
 
-	path := scheme + store.Current.Path() + "/" + MakeFileName(title)
+	path := scheme + st.Current.Path() + "/" + MakeFileName(title)
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		return err
@@ -314,8 +293,22 @@ func (store *Store) WriteEffect(title string, frame *glow.Frame) error {
 		return err
 	}
 
-	store.makeLookupList()
+	st.makeLookupList()
+	st.IsDirty.Set(false)
+	st.HasPrevious.Set(st.CanUndo(st.EffectName))
 
-	// fmt.Println(n, "bytes written to", title)
-	return nil
+	return err
+}
+
+func (st *Store) CanUndo(title string) bool {
+	return st.history.HasPrevious(st.route, title)
+}
+
+func (st *Store) Undo(title string) (frame *glow.Frame, err error) {
+	frame, err = st.history.Previous(st.route, title)
+	if err != nil {
+		return
+	}
+	st.IsDirty.Set(true)
+	return
 }

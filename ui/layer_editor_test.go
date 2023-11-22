@@ -73,8 +73,7 @@ func testRate(t *testing.T, e *LayerEditor, expected int) {
 }
 
 func isDirty(le *LayerEditor) bool {
-	b, _ := le.model.IsDirty.Get()
-	return b
+	return le.model.IsDirty()
 }
 
 func TestLayerEditor(t *testing.T) {

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"glow-gui/data"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"image/color"
@@ -15,11 +16,12 @@ import (
 
 type ColorPatchEditor struct {
 	*dialog.CustomDialog
+	model  *data.Model
+	window fyne.Window
+
 	source      *ColorPatch
 	patch       *ColorPatch
 	applyButton *widget.Button
-	isDirty     binding.Bool
-	window      fyne.Window
 
 	hue          binding.Float
 	saturation   binding.Float
@@ -29,14 +31,14 @@ type ColorPatchEditor struct {
 }
 
 func NewColorPatchEditor(source *ColorPatch,
-	isDirty binding.Bool,
+	model *data.Model,
 	window fyne.Window) *ColorPatchEditor {
 
 	pe := &ColorPatchEditor{
-		source:  source,
-		patch:   NewColorPatchWithColor(source.GetHSVColor(), isDirty, func() {}),
-		isDirty: isDirty,
-		window:  window,
+		source: source,
+		patch:  NewColorPatchWithColor(source.GetHSVColor(), model, func() {}),
+		model:  model,
+		window: window,
 
 		hue:        binding.NewFloat(),
 		saturation: binding.NewFloat(),
@@ -116,7 +118,7 @@ func (pe *ColorPatchEditor) setValue() {
 
 func (pe *ColorPatchEditor) setColor(hsv glow.HSV) {
 	pe.patch.SetHSVColor(hsv)
-	pe.isDirty.Set(true)
+	pe.model.SetDirty()
 }
 
 func (pe *ColorPatchEditor) remove() {
@@ -134,7 +136,7 @@ func (le *ColorPatchEditor) selectColorPicker(patch *ColorPatch) func() {
 		picker := dialog.NewColorPicker("Color Picker", "color", func(c color.Color) {
 			if c != patch.GetColor() {
 				patch.SetColor(c)
-				le.isDirty.Set(true)
+				le.model.SetDirty()
 			}
 		}, le.window)
 		picker.Advanced = true

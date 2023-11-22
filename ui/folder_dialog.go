@@ -20,7 +20,7 @@ type FolderDialog struct {
 	applyButton *widget.Button
 }
 
-func NewFolderDialog(window fyne.Window, model *data.Model) *FolderDialog {
+func NewFolderDialog(model *data.Model, window fyne.Window) *FolderDialog {
 	fd := &FolderDialog{
 		model: model,
 		title: binding.NewString(),
@@ -48,7 +48,7 @@ func NewFolderDialog(window fyne.Window, model *data.Model) *FolderDialog {
 
 func (fd *FolderDialog) apply() {
 	title, _ := fd.title.Get()
-	err := fd.model.Store.CreateNewFolder(title)
+	err := fd.model.CreateNewFolder(title)
 	if err != nil {
 		fyne.LogError(title, err)
 	}
@@ -56,7 +56,7 @@ func (fd *FolderDialog) apply() {
 }
 
 func (fd *FolderDialog) validateFolderName(s string) error {
-	err := fd.model.Store.ValidateNewFolderName(s)
+	err := fd.model.ValidateNewFolderName(s)
 	if err != nil {
 		fd.applyButton.Disable()
 		return err

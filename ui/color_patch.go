@@ -3,13 +3,13 @@ package ui
 import (
 	"encoding/json"
 	"fmt"
+	"glow-gui/data"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -36,24 +36,23 @@ type ColorPatch struct {
 	unused           bool
 
 	Editing bool
-
-	isDirty binding.Bool
+	model   *data.Model
 }
 
-func NewColorPatch(isDirty binding.Bool) (patch *ColorPatch) {
+func NewColorPatch(model *data.Model) (patch *ColorPatch) {
 	var hsv glow.HSV
 	hsv.FromColor(theme.DisabledColor())
-	patch = NewColorPatchWithColor(hsv, isDirty, nil)
+	patch = NewColorPatchWithColor(hsv, model, nil)
 	patch.unused = true
 	return
 }
 
-func NewColorPatchWithColor(hsv glow.HSV, isDirty binding.Bool, tapped func()) *ColorPatch {
+func NewColorPatchWithColor(hsv glow.HSV, model *data.Model, tapped func()) *ColorPatch {
 	cp := &ColorPatch{
 		background: canvas.NewRectangle(theme.ButtonColor()),
 		rectangle:  canvas.NewRectangle(hsv.ToRGB()),
 		tapped:     tapped,
-		isDirty:    isDirty,
+		model:      model,
 	}
 	cp.colorHSV = hsv
 	cp.ExtendBaseWidget(cp)
@@ -96,7 +95,7 @@ func (cp *ColorPatch) paste(s string) {
 	if err != nil {
 		return
 	}
-	cp.isDirty.Set(true)
+	cp.model.SetDirty()
 	cp.SetHSVColor(hsv)
 }
 
@@ -173,7 +172,7 @@ func (cp *ColorPatch) SetTapped(tapped func()) {
 func (cp *ColorPatch) SetUnused(b bool) {
 	cp.unused = b
 	cp.setFill(theme.DisabledColor())
-	cp.isDirty.Set(true)
+	cp.model.SetDirty()
 }
 
 func (cp *ColorPatch) Unused() bool {

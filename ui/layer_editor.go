@@ -75,14 +75,13 @@ func NewLayerEditor(model *data.Model, window fyne.Window,
 
 	sharedTools.AddItems(le.tools.Items()...)
 	sharedTools.AddApply(le.apply)
-	sharedTools.AddRevert(le.revert)
 	return le
 }
 
 func (le *LayerEditor) createPatches() {
 	le.patches = make([]*ColorPatch, data.MaxLayerColors)
 	for i := 0; i < data.MaxLayerColors; i++ {
-		patch := NewColorPatch(le.model.IsDirty)
+		patch := NewColorPatch(le.model)
 		patch.SetTapped(le.selectColor(patch))
 		le.patches[i] = patch
 	}
@@ -90,7 +89,7 @@ func (le *LayerEditor) createPatches() {
 
 func (le *LayerEditor) selectColor(patch *ColorPatch) func() {
 	return func() {
-		ce := NewColorPatchEditor(patch, le.model.IsDirty, le.window)
+		ce := NewColorPatchEditor(patch, le.model, le.window)
 		ce.Show()
 	}
 }
@@ -102,7 +101,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrigin.SelectedIndex()
 		if glow.Origin(selected) != current {
 			le.fields.Origin.Set(selected)
-			le.model.IsDirty.Set(true)
+			le.model.SetDirty()
 		}
 	}
 
@@ -112,7 +111,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrientation.SelectedIndex()
 		if glow.Orientation(selected) != current {
 			le.fields.Orientation.Set(selected)
-			le.model.IsDirty.Set(true)
+			le.model.SetDirty()
 		}
 	}
 
@@ -121,7 +120,9 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.scanBox = NewRangeIntBox(le.fields.Scan, le.scanBounds)
 	le.fields.Scan.AddListener(binding.NewDataListener(func() {
 		scan, _ := le.fields.Scan.Get()
-		le.model.IsDirty.Set(uint16(scan) != le.layer.Scan)
+		if uint16(scan) != le.layer.Scan {
+			le.model.SetDirty()
+		}
 	}))
 	le.checkScan = widget.NewCheck("", checkRangeBox(le.scanBox, le.fields.Scan))
 
@@ -133,7 +134,9 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.hueBox = NewRangeIntBox(le.fields.HueShift, le.hueBounds)
 	le.fields.HueShift.AddListener(binding.NewDataListener(func() {
 		shift, _ := le.fields.HueShift.Get()
-		le.model.IsDirty.Set(int16(shift) != le.layer.HueShift)
+		if int16(shift) != le.layer.HueShift {
+			le.model.SetDirty()
+		}
 	}))
 	le.checkHue = widget.NewCheck("", checkRangeBox(le.hueBox, le.fields.HueShift))
 
@@ -142,7 +145,9 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.rateBox = NewRangeIntBox(le.fields.Rate, le.rateBounds)
 	le.fields.Rate.AddListener(binding.NewDataListener(func() {
 		rate, _ := le.fields.Rate.Get()
-		le.model.IsDirty.Set(uint32(rate) != le.layer.Rate)
+		if uint32(rate) != le.layer.Rate {
+			le.model.SetDirty()
+		}
 	}))
 	le.checkRate = widget.NewCheck("", checkRangeBox(le.rateBox, le.fields.Rate))
 
@@ -200,17 +205,8 @@ func (le *LayerEditor) setFields() {
 }
 
 func (le *LayerEditor) apply() {
-	dirty, _ := le.model.IsDirty.Get()
-	if dirty {
-		le.setColors()
-		le.fields.ToLayer(le.layer)
-		le.model.UpdateFrame()
-		le.setFields()
-	}
-}
-
-func (le *LayerEditor) revert() {
-	le.setFields()
+	le.setColors()
+	le.fields.ToLayer(le.layer)
 }
 
 func (le *LayerEditor) setColors() {

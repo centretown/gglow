@@ -38,20 +38,21 @@ func NewFrameEditor(model *data.Model, window fyne.Window,
 	fe.layerSelect = NewLayerSelect(fe.model)
 	ratelabel := widget.NewLabel(resources.RateLabel.String())
 	fe.rateBox = NewRangeIntBox(fe.fields.Interval, fe.rateBounds)
-	fe.fields.Interval.AddListener(binding.NewDataListener(func() {
-		interval, _ := fe.fields.Interval.Get()
-		fe.model.IsDirty.Set(uint32(interval) != fe.frame.Interval)
-	}))
-
 	frm := container.New(layout.NewFormLayout(), ratelabel, fe.rateBox.Container)
 	fe.Container = container.NewBorder(nil, fe.layerSelect, nil, nil, frm)
-	fe.model.Frame.AddListener(binding.NewDataListener(fe.setFields))
 
 	fe.tools = NewFrameTools(model, window)
-	// sharedTools.AddItems(widget.NewToolbarSeparator())
 	sharedTools.AddItems(fe.tools.Items()...)
 	sharedTools.AddApply(fe.apply)
-	sharedTools.AddRevert(fe.revert)
+
+	fe.fields.Interval.AddListener(binding.NewDataListener(func() {
+		interval, _ := fe.fields.Interval.Get()
+		if uint32(interval) != fe.frame.Interval {
+			fe.model.SetDirty()
+		}
+	}))
+
+	fe.model.AddFrameListener(binding.NewDataListener(fe.setFields))
 
 	return fe
 }
@@ -63,14 +64,5 @@ func (fe *FrameEditor) setFields() {
 }
 
 func (fe *FrameEditor) apply() {
-	dirty, _ := fe.model.IsDirty.Get()
-	if dirty {
-		fe.fields.ToFrame(fe.frame)
-		fe.model.UpdateFrame()
-		fe.setFields()
-	}
-}
-
-func (fe *FrameEditor) revert() {
-	fe.setFields()
+	fe.fields.ToFrame(fe.frame)
 }

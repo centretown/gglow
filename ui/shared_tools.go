@@ -10,37 +10,42 @@ import (
 
 type SharedTools struct {
 	*widget.Toolbar
-	applyButton  *ButtonItem
-	revertButton *ButtonItem
-	isDirty      binding.Bool
-	apply_funcs  []func() `json:"-"`
-	revert_funcs []func() `json:"-"`
+	saveButton  *ButtonItem
+	undoButton  *ButtonItem
+	model       *data.Model
+	apply_funcs []func() `json:"-"`
 }
 
 func NewSharedTools(model *data.Model) *SharedTools {
 	tl := &SharedTools{
 		Toolbar: widget.NewToolbar(),
-		isDirty: model.IsDirty,
+		model:   model,
 	}
-	tl.applyButton = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.ConfirmIcon(), tl.apply))
-	tl.applyButton.Disable()
-	tl.revertButton = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.ContentUndoIcon(), tl.revert))
-	tl.revertButton.Disable()
 
-	tl.isDirty.AddListener(binding.NewDataListener(func() {
-		b, _ := tl.isDirty.Get()
-		if b {
-			tl.applyButton.Enable()
-			tl.revertButton.Enable()
+	tl.saveButton = NewButtonItem(
+		widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), tl.apply))
+	// tl.saveButton.Disable()
+	tl.undoButton = NewButtonItem(
+		widget.NewButtonWithIcon("", theme.ContentUndoIcon(), tl.undo))
+	// tl.undoButton.Disable()
+
+	tl.model.AddDirtyListener(binding.NewDataListener(func() {
+		if tl.model.IsDirty() {
+			tl.saveButton.Enable()
 		} else {
-			tl.applyButton.Disable()
-			tl.revertButton.Disable()
+			tl.saveButton.Disable()
 		}
 	}))
 
-	tl.AddItems(tl.applyButton, tl.revertButton)
+	tl.model.AddUndoListener(binding.NewDataListener(func() {
+		if tl.model.CanUndo() {
+			tl.undoButton.Enable()
+		} else {
+			tl.undoButton.Disable()
+		}
+	}))
+
+	tl.AddItems(tl.saveButton, tl.undoButton)
 	return tl
 }
 
@@ -52,20 +57,14 @@ func (tl *SharedTools) AddApply(f func()) {
 	tl.apply_funcs = append(tl.apply_funcs, f)
 }
 
-func (tl *SharedTools) AddRevert(f func()) {
-	tl.revert_funcs = append(tl.revert_funcs, f)
-}
-
 func (tl *SharedTools) apply() {
 	for _, f := range tl.apply_funcs {
 		f()
 	}
-	tl.isDirty.Set(false)
+
+	tl.model.WriteEffect()
 }
 
-func (tl *SharedTools) revert() {
-	for _, f := range tl.revert_funcs {
-		f()
-	}
-	tl.isDirty.Set(false)
+func (tl *SharedTools) undo() {
+	tl.model.UndoEffect()
 }

@@ -1,35 +1,142 @@
 package data
 
 import (
+	"fmt"
 	"glow-gui/glow"
 	"glow-gui/store"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
 )
 
 type Model struct {
-	EffectName       string
+	store            *store.Store
 	Frame            binding.Untyped
-	LayerSummaryList binding.StringList
-	Layer            binding.Untyped
 	LayerIndex       int
-	Store            *store.Store
-	IsDirty          binding.Bool
+	Layer            binding.Untyped
+	LayerSummaryList binding.StringList
+	isDirty          binding.Bool
+	canUndo          binding.Bool
+	WindowHasContent bool
 }
 
 func NewModel(store *store.Store) *Model {
 	m := &Model{
-		Store:            store,
-		Frame:            binding.NewUntyped(),
+		store:            store,
+		Frame:            store.Frame,
 		LayerSummaryList: binding.NewStringList(),
 		Layer:            binding.NewUntyped(),
-		IsDirty:          binding.NewBool(),
+		isDirty:          store.IsDirty,
+		canUndo:          store.HasPrevious,
 	}
 
-	m.Frame.Set(&glow.Frame{})
-	m.Layer.Set(&glow.Layer{})
+	m.Layer.Set(m.GetFrame().Layers[0])
 	m.Frame.AddListener(binding.NewDataListener(m.onChangeFrame))
 	return m
+}
+
+func (m *Model) EffectName() string {
+	return m.store.EffectName
+}
+
+func (m *Model) IsFolder(title string) bool {
+	return m.store.IsFolder(title)
+}
+
+func (m *Model) CreateNewEffect(title string, frame *glow.Frame) (err error) {
+	return m.store.CreateNewEffect(title, frame)
+}
+
+func (m *Model) CreateNewFolder(title string) (err error) {
+	return m.store.CreateNewFolder(title)
+}
+
+func (m *Model) RefreshKeys(title string) []string {
+	m.store.RefreshKeys(title)
+	return m.KeyList()
+}
+
+func (m *Model) ValidateNewFolderName(title string) (err error) {
+	return m.store.ValidateNewFolderName(title)
+}
+
+func (m *Model) ValidateNewEffectName(title string) (err error) {
+	return m.store.ValidateNewEffectName(title)
+}
+
+func (m *Model) KeyList() []string {
+	return m.store.KeyList
+}
+
+func (m *Model) WriteEffect() (err error) {
+	frame := m.GetFrame()
+	err = m.store.WriteEffect(m.EffectName(), frame)
+	current := *frame
+	m.Frame.Set(&current)
+	return
+}
+
+func (m *Model) ReadEffect(title string) (err error) {
+	err = m.store.ReadEffect(title)
+	if err != nil {
+		fyne.LogError("ReadEffect", err)
+		return
+	}
+
+	m.LayerIndex = 0
+	m.Layer.Set(m.GetFrame().Layers[m.LayerIndex])
+	// fmt.Println("Model ReadEffect", title)
+	return
+}
+
+func (m *Model) UndoEffect() {
+	if !m.store.CanUndo(m.EffectName()) {
+		fyne.LogError("UndoEffect",
+			fmt.Errorf("%s has no history", m.EffectName()))
+		return
+	}
+
+	frame, err := m.store.Undo(m.EffectName())
+	if err != nil {
+		fyne.LogError("UndoEffect", err)
+		return
+	}
+
+	// fmt.Println(m.EffectName)
+	err = m.Frame.Set(frame)
+	if err != nil {
+		fyne.LogError("UndoEffect", err)
+		return
+	}
+	// fmt.Println("UndoEffect", frame.Interval, m.EffectName)
+}
+
+func (m *Model) AddFrameListener(listener binding.DataListener) {
+	m.Frame.AddListener(listener)
+}
+
+func (m *Model) AddDirtyListener(listener binding.DataListener) {
+	m.isDirty.AddListener(listener)
+}
+
+func (m *Model) SetDirty() {
+	if m.WindowHasContent {
+		m.isDirty.Set(true)
+	}
+}
+
+func (m *Model) IsDirty() bool {
+	b, _ := m.isDirty.Get()
+	return b
+}
+
+func (m *Model) AddUndoListener(listener binding.DataListener) {
+	m.canUndo.AddListener(listener)
+}
+
+func (m *Model) CanUndo() bool {
+	b, _ := m.canUndo.Get()
+	return b
 }
 
 func (m *Model) onChangeFrame() {
@@ -64,22 +171,4 @@ func (m *Model) SetCurrentLayer(i int) {
 		layer = &glow.Layer{}
 	}
 	m.Layer.Set(layer)
-}
-
-func (m *Model) UpdateFrame() {
-	current := m.GetFrame()
-	frame := *current
-	m.Frame.Set(&frame)
-}
-
-func (m *Model) LoadFrame(key string) error {
-	frame := &glow.Frame{}
-	err := m.Store.LoadFrame(key, frame)
-	if err != nil {
-		return err
-	}
-	m.LayerIndex = 0
-	m.EffectName = key
-	m.Frame.Set(frame)
-	return nil
 }

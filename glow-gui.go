@@ -29,7 +29,6 @@ func main() {
 	window := app.NewWindow(resources.GlowLabel.String())
 	ui := ui.NewUi(app, window, model, theme)
 
-	window.SetContent(ui.BuildContent())
 	window.SetCloseIntercept(func() {
 		store.OnExit()
 		ui.OnExit()
@@ -45,11 +44,5 @@ func main() {
 		window.Resize(fyne.Size{Width: float32(width), Height: float32(height)})
 	}
 
-	window.Show()
-	effect := preferences.StringWithFallback(settings.Effect.String(), "")
-	if len(effect) > 0 {
-		model.LoadFrame(effect)
-	}
-
-	app.Run()
+	window.ShowAndRun()
 }

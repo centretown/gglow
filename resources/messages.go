@@ -25,6 +25,8 @@ const (
 	MsgNotWritable
 	MsgFirstUpper
 	MsgAlphaNumeric
+	MsgNotFound
+	MsgListEmpty
 )
 
 var invalidMessage = "unknown Message ID"
@@ -50,6 +52,8 @@ var messages = []string{
 	"name not writeable",
 	"uppercase letter required",
 	"must be letter or number",
+
+	"not found", "list empty",
 }
 
 func (id MessageID) String() string {

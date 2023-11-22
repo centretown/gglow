@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"glow-gui/data"
 
 	"fyne.io/fyne/v2/data/binding"
@@ -10,31 +11,34 @@ import (
 type EffectSelect struct {
 	*widget.Select
 	model *data.Model
+	auto  bool
 }
 
 func NewEffectSelect(model *data.Model) *widget.Select {
-
 	fs := &EffectSelect{
 		model: model,
 	}
-
-	fs.Select = widget.NewSelect(model.Store.KeyList, fs.onChange)
-	model.Frame.AddListener(binding.NewDataListener(func() {
+	fs.Select = widget.NewSelect(model.KeyList(), fs.onChange)
+	model.AddFrameListener(binding.NewDataListener(func() {
 		selected := fs.Select.Selected
-		if selected != model.EffectName {
-			fs.Select.SetSelected(model.EffectName)
+		if selected != model.EffectName() {
+			fs.auto = true
+			fs.Select.SetSelected(model.EffectName())
 		}
 	}))
 	return fs.Select
 }
 
-func (fs *EffectSelect) onChange(name string) {
-	store := fs.model.Store
-	if store.IsFolder(name) {
-		store.RefreshKeys(name)
-		fs.Select.Options = fs.model.Store.KeyList
-		fs.Select.Refresh()
+func (fs *EffectSelect) onChange(title string) {
+	if fs.model.IsFolder(title) {
+		fs.auto = false
+		fs.Select.SetOptions(fs.model.RefreshKeys(title))
 		return
 	}
-	fs.model.LoadFrame(name)
+	if fs.auto {
+		fs.auto = false
+	} else {
+		fs.model.ReadEffect(title)
+		fmt.Println("EffectSelect", title)
+	}
 }
