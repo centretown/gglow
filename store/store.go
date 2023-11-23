@@ -32,6 +32,8 @@ func defaultFrame() (frame *glow.Frame) {
 type Store struct {
 	EffectName string
 	Frame      binding.Untyped
+	Layer      binding.Untyped
+	LayerIndex int
 	Current    fyne.ListableURI
 	KeyList    []string
 	FolderList []string
@@ -71,6 +73,7 @@ func NewStore(preferences fyne.Preferences) *Store {
 		KeyList:     make([]string, 0),
 		FolderList:  make([]string, 0),
 		Frame:       binding.NewUntyped(),
+		Layer:       binding.NewUntyped(),
 		IsDirty:     binding.NewBool(),
 		HasPrevious: binding.NewBool(),
 
@@ -108,14 +111,14 @@ func NewStore(preferences fyne.Preferences) *Store {
 	return st
 }
 
-func (st *Store) Undo(title string) (*glow.Frame, error) {
+func (st *Store) Undo(title string) (*glow.GlowState, error) {
 
 	if st.frameHasChanged {
 		st.frameHasChanged = false
 		frame := *st.GetFrame()
 		st.Frame.Set(&frame)
 		st.HasPrevious.Set(st.CanUndo(title))
-		return &frame, nil
+		return glow.NewGlowState(&frame, st.LayerIndex), nil
 	}
 
 	frame, err := st.history.Previous(st.route, title)
@@ -131,7 +134,8 @@ func (st *Store) Undo(title string) (*glow.Frame, error) {
 func (st *Store) UpdateHistory() (err error) {
 	st.frameHasChanged = false
 	frame := st.GetFrame()
-	return st.history.Add(st.route, st.EffectName, frame)
+	return st.history.Add(st.route, st.EffectName,
+		glow.NewGlowState(frame, st.LayerIndex))
 }
 
 func (st *Store) CanUndo(title string) bool {
@@ -154,6 +158,24 @@ func (m *Store) GetDirty() bool {
 func (st *Store) GetFrame() *glow.Frame {
 	f, _ := st.Frame.Get()
 	return f.(*glow.Frame)
+}
+
+func (st *Store) SetCurrentLayer(i int) {
+	frame := st.GetFrame()
+	var layer *glow.Layer
+	if i < len(frame.Layers) {
+		st.LayerIndex = i
+		layer = &frame.Layers[i]
+	} else {
+		st.LayerIndex = 0
+		layer = &glow.Layer{}
+	}
+	st.Layer.Set(layer)
+}
+
+func (st *Store) GetCurrentLayer() *glow.Layer {
+	layer, _ := st.Layer.Get()
+	return layer.(*glow.Layer)
 }
 
 func (st *Store) OnExit() {
@@ -295,6 +317,8 @@ func (st *Store) ReadEffect(title string) error {
 	}
 
 	st.Frame.Set(frame)
+	st.LayerIndex = 0
+	st.Layer.Set(st.GetFrame().Layers[st.LayerIndex])
 	st.EffectName = title
 	st.route = st.stack.Route()
 	st.IsDirty.Set(false)

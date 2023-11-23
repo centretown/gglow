@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/data"
+	"glow-gui/control"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
@@ -19,10 +19,10 @@ type FrameTools struct {
 
 	toolBar *widget.Toolbar
 	popUp   *widget.PopUp
-	model   *data.Model
+	model   *control.Manager
 }
 
-func NewFrameTools(model *data.Model, window fyne.Window) *FrameTools {
+func NewFrameTools(model *control.Manager, window fyne.Window) *FrameTools {
 	ft := &FrameTools{
 		model: model,
 	}

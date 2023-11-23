@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/data"
+	"glow-gui/control"
 
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -12,7 +12,7 @@ type LayerTools struct {
 	RemoveButton *ButtonItem
 }
 
-func NewLayerTools(model *data.Model) *LayerTools {
+func NewLayerTools(model *control.Manager) *LayerTools {
 	lt := &LayerTools{}
 
 	lt.InsertButton = NewButtonItem(

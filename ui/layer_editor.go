@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/data"
+	"glow-gui/control"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"strconv"
@@ -15,9 +15,9 @@ import (
 
 type LayerEditor struct {
 	*fyne.Container
-	model  *data.Model
+	model  *control.Manager
 	layer  *glow.Layer
-	fields *data.LayerFields
+	fields *control.LayerFields
 	window fyne.Window
 
 	patches []*ColorPatch
@@ -44,7 +44,7 @@ type LayerEditor struct {
 	tools *LayerTools
 }
 
-func NewLayerEditor(model *data.Model, window fyne.Window,
+func NewLayerEditor(model *control.Manager, window fyne.Window,
 	sharedTools *SharedTools) *LayerEditor {
 
 	le := &LayerEditor{
@@ -53,7 +53,7 @@ func NewLayerEditor(model *data.Model, window fyne.Window,
 		model: model,
 		layer: model.GetCurrentLayer(),
 
-		fields: data.NewLayerFields(),
+		fields: control.NewLayerFields(),
 		tools:  NewLayerTools(model),
 
 		rateBounds: RateBounds,
@@ -79,8 +79,8 @@ func NewLayerEditor(model *data.Model, window fyne.Window,
 }
 
 func (le *LayerEditor) createPatches() {
-	le.patches = make([]*ColorPatch, data.MaxLayerColors)
-	for i := 0; i < data.MaxLayerColors; i++ {
+	le.patches = make([]*ColorPatch, control.MaxLayerColors)
+	for i := 0; i < control.MaxLayerColors; i++ {
 		patch := NewColorPatch(le.model)
 		patch.SetTapped(le.selectColor(patch))
 		le.patches[i] = patch

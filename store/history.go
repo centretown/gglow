@@ -13,13 +13,13 @@ const (
 )
 
 type HistoryItem struct {
-	List   []*glow.Frame
+	List   []*glow.GlowState
 	cursor int
 }
 
 func NewHistoryItem() *HistoryItem {
 	return &HistoryItem{
-		List: make([]*glow.Frame, 0),
+		List: make([]*glow.GlowState, 0),
 	}
 }
 
@@ -47,7 +47,7 @@ func (h *History) makePath(route []string, title string) string {
 	return bld.String()
 }
 
-func (h *History) Add(route []string, title string, source *glow.Frame) error {
+func (h *History) Add(route []string, title string, source *glow.GlowState) error {
 	path := h.makePath(route, title)
 	item, ok := h.HistoryItems[path]
 	if !ok {
@@ -55,7 +55,7 @@ func (h *History) Add(route []string, title string, source *glow.Frame) error {
 		h.HistoryItems[path] = item
 	}
 
-	frame, err := glow.FrameDeepCopy(source)
+	frame, err := glow.FrameDeepCopy(source.Frame)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,8 @@ func (h *History) Add(route []string, title string, source *glow.Frame) error {
 	// 	item.List = item.List[:item.cursor+1]
 	// }
 
-	item.List = append(item.List, frame)
+	item.List = append(item.List,
+		&glow.GlowState{Frame: frame, LayerIndex: source.LayerIndex})
 	item.cursor = len(item.List) - 1
 	fmt.Println("HistoryAdd", title, item.cursor)
 	return nil
@@ -83,7 +84,7 @@ func (h *History) HasPrevious(route []string, title string) bool {
 	return ok
 }
 
-func (h *History) Previous(route []string, title string) (frame *glow.Frame, err error) {
+func (h *History) Previous(route []string, title string) (source *glow.GlowState, err error) {
 	path := h.makePath(route, title)
 	item, ok := h.HistoryItems[path]
 	if !ok {
@@ -96,7 +97,7 @@ func (h *History) Previous(route []string, title string) (frame *glow.Frame, err
 		return
 	}
 
-	frame = item.List[item.cursor]
+	source = item.List[item.cursor]
 	item.cursor--
 	return
 }

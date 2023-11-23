@@ -2,7 +2,7 @@ package ui
 
 import (
 	"fmt"
-	"glow-gui/data"
+	"glow-gui/control"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
@@ -10,11 +10,11 @@ import (
 
 type EffectSelect struct {
 	*widget.Select
-	model *data.Model
+	model *control.Manager
 	auto  bool
 }
 
-func NewEffectSelect(model *data.Model) *widget.Select {
+func NewEffectSelect(model *control.Manager) *widget.Select {
 	fs := &EffectSelect{
 		model: model,
 	}

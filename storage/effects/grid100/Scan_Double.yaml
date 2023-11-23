@@ -33,7 +33,7 @@ layers:
         length: 0
         rows: 0
         origin: 0
-        orientation: 1
+        orientation: 2
       chroma:
         length: 0
         hue_shift: 0
@@ -52,7 +52,7 @@ layers:
         length: 0
         rows: 0
         origin: 1
-        orientation: 0
+        orientation: 2
       chroma:
         length: 0
         hue_shift: 0

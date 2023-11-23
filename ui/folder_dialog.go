@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/data"
+	"glow-gui/control"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -16,11 +16,11 @@ import (
 type FolderDialog struct {
 	*dialog.CustomDialog
 	title       binding.String
-	model       *data.Model
+	model       *control.Manager
 	applyButton *widget.Button
 }
 
-func NewFolderDialog(model *data.Model, window fyne.Window) *FolderDialog {
+func NewFolderDialog(model *control.Manager, window fyne.Window) *FolderDialog {
 	fd := &FolderDialog{
 		model: model,
 		title: binding.NewString(),

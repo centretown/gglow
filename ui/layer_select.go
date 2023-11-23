@@ -1,14 +1,14 @@
 package ui
 
 import (
-	"glow-gui/data"
+	"glow-gui/control"
 	"glow-gui/resources"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 )
 
-func NewLayerSelect(model *data.Model) (sel *widget.Select) {
+func NewLayerSelect(model *control.Manager) (sel *widget.Select) {
 	sel = widget.NewSelect([]string{}, func(s string) {})
 	sel.PlaceHolder = resources.LayersLabel.PlaceHolder() + "..."
 	// sel.Alignment = fyne.TextAlignCenter
@@ -18,7 +18,7 @@ func NewLayerSelect(model *data.Model) (sel *widget.Select) {
 	model.Layer.AddListener(binding.NewDataListener(func() {
 		summaries, _ := model.LayerSummaryList.Get()
 		sel.SetOptions(summaries)
-		sel.SetSelectedIndex(model.LayerIndex)
+		sel.SetSelectedIndex(model.LayerIndex())
 	}))
 	return
 }

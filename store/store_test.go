@@ -60,19 +60,19 @@ func TestStoreUndo(t *testing.T) {
 
 	t.Log("new interval after update", frame.Interval)
 
-	frame, err = store.Undo(title)
+	state, err := store.Undo(title)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
 
-	t.Log("after undo 1", frame.Interval)
+	t.Log("after undo 1", state.Frame.Interval)
 	if interval != frame.Interval {
 		t.Fatal("undo level 1")
 	}
 
 	frame.Interval += 2
 	store.SetDirty(true)
-	frame, err = store.Undo(title)
+	state, err = store.Undo(title)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

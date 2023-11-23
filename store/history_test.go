@@ -29,7 +29,8 @@ func TestHistory(t *testing.T) {
 
 	title := "effect"
 
-	err := history.Add(store.route, title, current)
+	err := history.Add(store.route, title,
+		glow.NewGlowState(current, 0))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,15 +38,18 @@ func TestHistory(t *testing.T) {
 	current.SetInterval(300)
 	current.Setup(200, 10)
 
-	err = history.Add(store.route, title, current)
+	err = history.Add(store.route, title,
+		glow.NewGlowState(current, 0))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	frame, err := history.Previous(store.route, title)
+	state, err := history.Previous(store.route, title)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	frame := state.Frame
 
 	if frame.Interval != 300 {
 		t.Fatal(fmt.Errorf("frame.Interval != 300"))
@@ -55,10 +59,11 @@ func TestHistory(t *testing.T) {
 	}
 	t.Log(dumpItem(t, frame))
 
-	frame, err = history.Previous(store.route, title)
+	state, err = history.Previous(store.route, title)
 	if err != nil {
 		t.Fatal(err)
 	}
+	frame = state.Frame
 
 	if frame.Interval != 48 {
 		t.Fatal(fmt.Errorf("frame.Interval != 48"))

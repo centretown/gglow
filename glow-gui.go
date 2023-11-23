@@ -1,7 +1,7 @@
 package main
 
 import (
-	"glow-gui/data"
+	"glow-gui/control"
 	"glow-gui/resources"
 	"glow-gui/settings"
 	"glow-gui/store"
@@ -24,7 +24,7 @@ func main() {
 	app.Settings().SetTheme(theme)
 
 	store := store.NewStore(preferences)
-	model := data.NewModel(store)
+	model := control.NewController(store)
 
 	window := app.NewWindow(resources.GlowLabel.String())
 	ui := ui.NewUi(app, window, model, theme)

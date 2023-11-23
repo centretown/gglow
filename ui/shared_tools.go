@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/data"
+	"glow-gui/control"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
@@ -12,11 +12,11 @@ type SharedTools struct {
 	*widget.Toolbar
 	saveButton  *ButtonItem
 	undoButton  *ButtonItem
-	model       *data.Model
+	model       *control.Manager
 	apply_funcs []func() `json:"-"`
 }
 
-func NewSharedTools(model *data.Model) *SharedTools {
+func NewSharedTools(model *control.Manager) *SharedTools {
 	tl := &SharedTools{
 		Toolbar: widget.NewToolbar(),
 		model:   model,

@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/data"
+	"glow-gui/control"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"image/color"
@@ -16,7 +16,7 @@ import (
 
 type ColorPatchEditor struct {
 	*dialog.CustomDialog
-	model  *data.Model
+	model  *control.Manager
 	window fyne.Window
 
 	source      *ColorPatch
@@ -31,7 +31,7 @@ type ColorPatchEditor struct {
 }
 
 func NewColorPatchEditor(source *ColorPatch,
-	model *data.Model,
+	model *control.Manager,
 	window fyne.Window) *ColorPatchEditor {
 
 	pe := &ColorPatchEditor{

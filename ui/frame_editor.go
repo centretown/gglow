@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/data"
+	"glow-gui/control"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"strconv"
@@ -15,23 +15,23 @@ import (
 
 type FrameEditor struct {
 	*fyne.Container
-	model       *data.Model
+	model       *control.Manager
 	frame       *glow.Frame
 	layerSelect *widget.Select
-	fields      *data.FrameFields
+	fields      *control.FrameFields
 	rateBounds  *IntEntryBounds
 	rateBox     *RangeIntBox
 	tools       *FrameTools
 }
 
-func NewFrameEditor(model *data.Model, window fyne.Window,
+func NewFrameEditor(model *control.Manager, window fyne.Window,
 	sharedTools *SharedTools) *FrameEditor {
 
 	fe := &FrameEditor{
 		model:       model,
 		layerSelect: NewLayerSelect(model),
 		rateBounds:  RateBounds,
-		fields:      data.NewFrameFields(),
+		fields:      control.NewFrameFields(),
 		frame:       &glow.Frame{},
 	}
 
