@@ -58,6 +58,8 @@ func (tl *SharedTools) AddApply(f func()) {
 }
 
 func (tl *SharedTools) apply() {
+	tl.model.UpdateHistory()
+
 	for _, f := range tl.apply_funcs {
 		f()
 	}

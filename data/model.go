@@ -68,6 +68,10 @@ func (m *Model) KeyList() []string {
 	return m.store.KeyList
 }
 
+func (m *Model) UpdateHistory() error {
+	return m.store.UpdateHistory()
+}
+
 func (m *Model) WriteEffect() (err error) {
 	frame := m.GetFrame()
 	err = m.store.WriteEffect(m.EffectName(), frame)
@@ -89,6 +93,33 @@ func (m *Model) ReadEffect(title string) (err error) {
 	return
 }
 
+func (m *Model) AddFrameListener(listener binding.DataListener) {
+	m.Frame.AddListener(listener)
+}
+
+func (m *Model) AddDirtyListener(listener binding.DataListener) {
+	m.isDirty.AddListener(listener)
+}
+
+func (m *Model) SetDirty() {
+	if m.WindowHasContent {
+		m.store.SetDirty(true)
+	}
+}
+
+func (m *Model) IsDirty() bool {
+	return m.store.GetDirty()
+}
+
+func (m *Model) AddUndoListener(listener binding.DataListener) {
+	m.canUndo.AddListener(listener)
+}
+
+func (m *Model) CanUndo() bool {
+	b, _ := m.canUndo.Get()
+	return b
+}
+
 func (m *Model) UndoEffect() {
 	if !m.store.CanUndo(m.EffectName()) {
 		fyne.LogError("UndoEffect",
@@ -102,41 +133,15 @@ func (m *Model) UndoEffect() {
 		return
 	}
 
+	m.Layer.Set(frame.Layers[m.LayerIndex])
+
 	// fmt.Println(m.EffectName)
-	err = m.Frame.Set(frame)
-	if err != nil {
-		fyne.LogError("UndoEffect", err)
-		return
-	}
-	// fmt.Println("UndoEffect", frame.Interval, m.EffectName)
-}
-
-func (m *Model) AddFrameListener(listener binding.DataListener) {
-	m.Frame.AddListener(listener)
-}
-
-func (m *Model) AddDirtyListener(listener binding.DataListener) {
-	m.isDirty.AddListener(listener)
-}
-
-func (m *Model) SetDirty() {
-	if m.WindowHasContent {
-		m.isDirty.Set(true)
-	}
-}
-
-func (m *Model) IsDirty() bool {
-	b, _ := m.isDirty.Get()
-	return b
-}
-
-func (m *Model) AddUndoListener(listener binding.DataListener) {
-	m.canUndo.AddListener(listener)
-}
-
-func (m *Model) CanUndo() bool {
-	b, _ := m.canUndo.Get()
-	return b
+	// err = m.Frame.Set(frame)
+	// if err != nil {
+	// 	fyne.LogError("UndoEffect", err)
+	// 	return
+	// }
+	fmt.Println("UndoEffect", frame.Interval, m.EffectName())
 }
 
 func (m *Model) onChangeFrame() {
@@ -151,8 +156,7 @@ func (m *Model) onChangeFrame() {
 }
 
 func (m *Model) GetFrame() *glow.Frame {
-	frame, _ := m.Frame.Get()
-	return frame.(*glow.Frame)
+	return m.store.GetFrame()
 }
 
 func (m *Model) GetCurrentLayer() *glow.Layer {

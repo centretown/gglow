@@ -7,7 +7,7 @@ layers:
       grid:
         length: 0
         rows: 0
-        origin: 2
+        origin: 1
         orientation: 2
       chroma:
         length: 0
@@ -48,7 +48,7 @@ layers:
               saturation: 37
               value: 100
       hue_shift: 0
-      scan: 1
+      scan: 3
       begin: 0
       end: 0
       rate: 0

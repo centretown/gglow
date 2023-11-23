@@ -1,72 +1,88 @@
 package store
 
-// import (
-// 	"glow-gui/glow"
-// 	"testing"
+import (
+	"testing"
 
-// 	"fyne.io/fyne/v2/storage"
-// 	"fyne.io/fyne/v2/test"
-// 	"gopkg.in/yaml.v3"
-// )
+	"fyne.io/fyne/v2/test"
+)
 
-// var files = []string{
-// 	"AAA_Spotlight.yaml",
-// 	"Black_and_White.yaml",
-// 	"Rainbow_Diagonal.yaml",
-// 	"Rainbow_Horizontal.yaml",
-// 	"Rainbow_Vertical.yaml",
-// 	"Scan_Complementary.yaml",
-// 	"Scan_Double.yaml",
-// 	"Scan_Gradient.yaml",
-// 	"Split_in_Three.yaml",
-// 	"Split_in_Two.yaml",
-// }
+var titles = []string{
+	"AAA_Spotlight",
+	"Black_and_White",
+	"Rainbow_Diagonal",
+	"Rainbow_Horizontal",
+	"Rainbow_Vertical",
+	"Scan_Complementary",
+	"Scan_Double",
+	"Scan_Gradient",
+	"Split_in_Three",
+	"Split_in_Two",
+}
 
-// func TestSetup(t *testing.T) {
-// 	test.NewApp()
-// 	err := Setup()
+func TestStoreRead(t *testing.T) {
+	app := test.NewApp()
+	store := NewStore(app.Preferences())
 
-// 	if err != nil {
-// 		t.Fatalf(err.Error())
-// 	}
+	t.Log(store.Current.Name(), store.Current.Path())
+	t.Log(store.KeyList)
 
-// 	uri := Current
-// 	if uri == nil {
-// 		t.Fatalf("nil FrameURI")
-// 	}
+	for _, title := range store.KeyList {
+		err := store.ReadEffect(title)
+		if err != nil && !store.IsFolder(title) {
+			t.Fatalf(err.Error())
+		}
+		t.Log(title, store.Current.Name(), store.EffectName)
+	}
+}
 
-// 	canList, err := storage.CanList(uri)
-// 	if err != nil {
-// 		t.Fatalf(err.Error())
-// 	}
+func TestStoreUndo(t *testing.T) {
+	app := test.NewApp()
+	store := NewStore(app.Preferences())
+	t.Log(store.Current.Name(), store.EffectName)
 
-// 	if canList == false {
-// 		t.Fatalf("can't list %v", uri.Path())
-// 	}
-// }
+	if len(store.KeyList) < 1 {
+		t.Fatal("No Keys")
+	}
+	title := store.KeyList[0]
 
-// func TestLoadFrame(t *testing.T) {
-// 	test.NewApp()
+	err := store.ReadEffect(title)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 
-// 	for i := range files {
-// 		var frame glow.Frame
-// 		err := loadFrame(ExamplesPath+files[i], &frame)
-// 		if err != nil {
-// 			t.Fatalf(err.Error())
-// 		}
+	frame := store.GetFrame()
+	t.Log("before", title, store.Current.Name(), store.EffectName, frame.Interval)
 
-// 		var b []byte
-// 		frame.Setup(100, 5)
-// 		b, err = yaml.Marshal(&frame)
-// 		if err != nil {
-// 			t.Fatalf(err.Error())
-// 		}
+	interval := frame.Interval
+	store.UpdateHistory()
+	frame.Interval++
+	store.SetDirty(true)
 
-// 		t.Logf("%s:", files[i])
-// 		t.Logf("%s", string(b))
-// 	}
+	t.Log("new interval after update", frame.Interval)
 
-// }
+	frame, err = store.Undo(title)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	t.Log("after undo 1", frame.Interval)
+	if interval != frame.Interval {
+		t.Fatal("undo level 1")
+	}
+
+	frame.Interval += 2
+	store.SetDirty(true)
+	frame, err = store.Undo(title)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	t.Log("after undo 0", frame.Interval)
+	if interval != frame.Interval {
+		t.Fatal("undo level 0")
+	}
+
+}
 
 // func TestStoreFrame(t *testing.T) {
 // 	test.NewApp()

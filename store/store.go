@@ -45,6 +45,8 @@ type Store struct {
 	history     *History
 	HasPrevious binding.Bool
 	IsDirty     binding.Bool
+
+	frameHasChanged bool
 }
 
 func NewStore(preferences fyne.Preferences) *Store {
@@ -96,16 +98,62 @@ func NewStore(preferences fyne.Preferences) *Store {
 	}
 
 	st.IsDirty.AddListener(binding.NewDataListener(func() {
-		isDirty, _ := st.IsDirty.Get()
+		isDirty := st.GetDirty()
 		if isDirty {
-			frame, _ := st.Frame.Get()
-			st.history.Add(st.route, st.EffectName, frame.(*glow.Frame))
-			fmt.Println("ADD", st.EffectName)
+			st.frameHasChanged = true
+			st.HasPrevious.Set(true)
+			fmt.Println("store.IsDirty Listener HasPrevious TRUE", st.EffectName)
 		}
-
-		st.HasPrevious.Set(st.CanUndo(st.EffectName))
 	}))
 	return st
+}
+
+func (st *Store) Undo(title string) (*glow.Frame, error) {
+
+	if st.frameHasChanged {
+		st.frameHasChanged = false
+		frame := *st.GetFrame()
+		st.Frame.Set(&frame)
+		st.HasPrevious.Set(st.CanUndo(title))
+		return &frame, nil
+	}
+
+	frame, err := st.history.Previous(st.route, title)
+	if err != nil {
+		fyne.LogError(resources.MsgGetFrame.Format(title), err)
+		return nil, err
+	}
+	st.Frame.Set(frame)
+	st.HasPrevious.Set(st.CanUndo(title))
+	return frame, err
+}
+
+func (st *Store) UpdateHistory() (err error) {
+	st.frameHasChanged = false
+	frame := st.GetFrame()
+	return st.history.Add(st.route, st.EffectName, frame)
+}
+
+func (st *Store) CanUndo(title string) bool {
+	isDirty := st.GetDirty()
+	if isDirty {
+		return true
+	}
+	return st.history.HasPrevious(st.route, title)
+}
+
+func (st *Store) SetDirty(dirty bool) {
+	st.IsDirty.Set(dirty)
+}
+
+func (m *Store) GetDirty() bool {
+	b, _ := m.IsDirty.Get()
+	return b
+}
+
+func (st *Store) GetFrame() *glow.Frame {
+	f, _ := st.Frame.Get()
+	return f.(*glow.Frame)
 }
 
 func (st *Store) OnExit() {
@@ -294,21 +342,8 @@ func (st *Store) WriteEffect(title string, frame *glow.Frame) error {
 	}
 
 	st.makeLookupList()
-	st.IsDirty.Set(false)
 	st.HasPrevious.Set(st.CanUndo(st.EffectName))
+	st.IsDirty.Set(false)
 
 	return err
-}
-
-func (st *Store) CanUndo(title string) bool {
-	return st.history.HasPrevious(st.route, title)
-}
-
-func (st *Store) Undo(title string) (frame *glow.Frame, err error) {
-	frame, err = st.history.Previous(st.route, title)
-	if err != nil {
-		return
-	}
-	st.IsDirty.Set(true)
-	return
 }
