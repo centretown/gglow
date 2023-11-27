@@ -2,16 +2,16 @@ package ui
 
 import (
 	"glow-gui/control"
-	"glow-gui/store"
+	"glow-gui/data"
 	"testing"
 
 	"fyne.io/fyne/v2/test"
 )
 
-func test_editor_setup(t *testing.T) (model *control.Manager, e *LayerEditor, err error) {
+func test_editor_setup(t *testing.T) (model *control.Model, e *LayerEditor, err error) {
 	app := test.NewApp()
 	w := app.NewWindow("Editor")
-	model = control.NewController(store.NewStore(app.Preferences()))
+	model = control.NewController(data.NewStore(app.Preferences()))
 	toolBar := NewSharedTools(model)
 	e = NewLayerEditor(model, w, toolBar)
 	return

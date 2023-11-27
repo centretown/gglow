@@ -1,4 +1,4 @@
-package store
+package data
 
 import (
 	"fmt"
@@ -26,25 +26,6 @@ func ValidateFolderName(title string) error {
 		}
 	}
 	return nil
-}
-
-func (st *Store) ValidateNewFolderName(title string) error {
-	err := ValidateFolderName(title)
-	if err != nil {
-		return err
-	}
-
-	err = st.IsDuplicate(title)
-	return err
-}
-
-func (st *Store) ValidateNewEffectName(title string) error {
-	err := ValidateEffectName(title)
-	if err != nil {
-		return err
-	}
-	err = st.IsDuplicate(title)
-	return err
 }
 
 func ValidateEffectName(title string) error {

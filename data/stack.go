@@ -1,4 +1,4 @@
-package store
+package data
 
 import (
 	"fyne.io/fyne/v2"

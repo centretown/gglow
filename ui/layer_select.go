@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func NewLayerSelect(model *control.Manager) (sel *widget.Select) {
+func NewLayerSelect(model *control.Model) (sel *widget.Select) {
 	sel = widget.NewSelect([]string{}, func(s string) {})
 	sel.PlaceHolder = resources.LayersLabel.PlaceHolder() + "..."
 	// sel.Alignment = fyne.TextAlignCenter

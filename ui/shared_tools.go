@@ -10,24 +10,21 @@ import (
 
 type SharedTools struct {
 	*widget.Toolbar
-	saveButton  *ButtonItem
-	undoButton  *ButtonItem
-	model       *control.Manager
-	apply_funcs []func() `json:"-"`
+	saveButton *ButtonItem
+	undoButton *ButtonItem
+	model      *control.Model
 }
 
-func NewSharedTools(model *control.Manager) *SharedTools {
+func NewSharedTools(model *control.Model) *SharedTools {
 	tl := &SharedTools{
 		Toolbar: widget.NewToolbar(),
 		model:   model,
 	}
 
 	tl.saveButton = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), tl.apply))
-	// tl.saveButton.Disable()
+		widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), tl.save))
 	tl.undoButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.ContentUndoIcon(), tl.undo))
-	// tl.undoButton.Disable()
 
 	tl.model.AddDirtyListener(binding.NewDataListener(func() {
 		if tl.model.IsDirty() {
@@ -53,17 +50,7 @@ func (tl *SharedTools) AddItems(items ...widget.ToolbarItem) {
 	tl.Toolbar.Items = append(tl.Toolbar.Items, items...)
 }
 
-func (tl *SharedTools) AddApply(f func()) {
-	tl.apply_funcs = append(tl.apply_funcs, f)
-}
-
-func (tl *SharedTools) apply() {
-	tl.model.UpdateHistory()
-
-	for _, f := range tl.apply_funcs {
-		f()
-	}
-
+func (tl *SharedTools) save() {
 	tl.model.WriteEffect()
 }
 

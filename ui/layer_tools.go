@@ -12,7 +12,7 @@ type LayerTools struct {
 	RemoveButton *ButtonItem
 }
 
-func NewLayerTools(model *control.Manager) *LayerTools {
+func NewLayerTools(model *control.Model) *LayerTools {
 	lt := &LayerTools{}
 
 	lt.InsertButton = NewButtonItem(

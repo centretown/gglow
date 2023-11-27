@@ -16,11 +16,11 @@ import (
 type FolderDialog struct {
 	*dialog.CustomDialog
 	title       binding.String
-	model       *control.Manager
+	model       *control.Model
 	applyButton *widget.Button
 }
 
-func NewFolderDialog(model *control.Manager, window fyne.Window) *FolderDialog {
+func NewFolderDialog(model *control.Model, window fyne.Window) *FolderDialog {
 	fd := &FolderDialog{
 		model: model,
 		title: binding.NewString(),

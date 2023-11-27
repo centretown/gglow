@@ -19,10 +19,10 @@ type FrameTools struct {
 
 	toolBar *widget.Toolbar
 	popUp   *widget.PopUp
-	model   *control.Manager
+	model   *control.Model
 }
 
-func NewFrameTools(model *control.Manager, window fyne.Window) *FrameTools {
+func NewFrameTools(model *control.Model, window fyne.Window) *FrameTools {
 	ft := &FrameTools{
 		model: model,
 	}

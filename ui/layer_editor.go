@@ -15,7 +15,7 @@ import (
 
 type LayerEditor struct {
 	*fyne.Container
-	model  *control.Manager
+	model  *control.Model
 	layer  *glow.Layer
 	fields *control.LayerFields
 	window fyne.Window
@@ -44,7 +44,7 @@ type LayerEditor struct {
 	tools *LayerTools
 }
 
-func NewLayerEditor(model *control.Manager, window fyne.Window,
+func NewLayerEditor(model *control.Model, window fyne.Window,
 	sharedTools *SharedTools) *LayerEditor {
 
 	le := &LayerEditor{
@@ -74,7 +74,7 @@ func NewLayerEditor(model *control.Manager, window fyne.Window,
 	le.model.Layer.AddListener(binding.NewDataListener(le.setFields))
 
 	sharedTools.AddItems(le.tools.Items()...)
-	sharedTools.AddApply(le.apply)
+	model.AddSaveAction(le.apply)
 	return le
 }
 

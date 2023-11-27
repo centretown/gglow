@@ -2,9 +2,9 @@ package main
 
 import (
 	"glow-gui/control"
+	"glow-gui/data"
 	"glow-gui/resources"
 	"glow-gui/settings"
-	"glow-gui/store"
 	"glow-gui/ui"
 
 	"fyne.io/fyne/v2"
@@ -23,7 +23,7 @@ func main() {
 	theme := settings.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
 
-	store := store.NewStore(preferences)
+	store := data.NewStore(preferences)
 	model := control.NewController(store)
 
 	window := app.NewWindow(resources.GlowLabel.String())

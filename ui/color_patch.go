@@ -36,10 +36,10 @@ type ColorPatch struct {
 	unused           bool
 
 	Editing bool
-	model   *control.Manager
+	model   *control.Model
 }
 
-func NewColorPatch(model *control.Manager) (patch *ColorPatch) {
+func NewColorPatch(model *control.Model) (patch *ColorPatch) {
 	var hsv glow.HSV
 	hsv.FromColor(theme.DisabledColor())
 	patch = NewColorPatchWithColor(hsv, model, nil)
@@ -47,7 +47,7 @@ func NewColorPatch(model *control.Manager) (patch *ColorPatch) {
 	return
 }
 
-func NewColorPatchWithColor(hsv glow.HSV, model *control.Manager, tapped func()) *ColorPatch {
+func NewColorPatchWithColor(hsv glow.HSV, model *control.Model, tapped func()) *ColorPatch {
 	cp := &ColorPatch{
 		background: canvas.NewRectangle(theme.ButtonColor()),
 		rectangle:  canvas.NewRectangle(hsv.ToRGB()),

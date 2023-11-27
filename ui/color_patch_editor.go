@@ -16,7 +16,7 @@ import (
 
 type ColorPatchEditor struct {
 	*dialog.CustomDialog
-	model  *control.Manager
+	model  *control.Model
 	window fyne.Window
 
 	source      *ColorPatch
@@ -31,7 +31,7 @@ type ColorPatchEditor struct {
 }
 
 func NewColorPatchEditor(source *ColorPatch,
-	model *control.Manager,
+	model *control.Model,
 	window fyne.Window) *ColorPatchEditor {
 
 	pe := &ColorPatchEditor{

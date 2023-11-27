@@ -1,4 +1,4 @@
-package store
+package data
 
 import (
 	"testing"
@@ -39,11 +39,12 @@ func TestStoreUndo(t *testing.T) {
 	app := test.NewApp()
 	store := NewStore(app.Preferences())
 	t.Log(store.Current.Name(), store.EffectName)
-
 	if len(store.KeyList) < 1 {
 		t.Fatal("No Keys")
 	}
+
 	title := store.KeyList[0]
+	t.Log("KeyList[0]", title)
 
 	err := store.ReadEffect(title)
 	if err != nil {
@@ -54,25 +55,30 @@ func TestStoreUndo(t *testing.T) {
 	t.Log("before", title, store.Current.Name(), store.EffectName, frame.Interval)
 
 	interval := frame.Interval
+
+	for i := 0; i < 3; i++ {
+		store.UpdateHistory()
+		frame.Interval++
+		t.Log("new interval after update", frame.Interval)
+	}
+
 	store.UpdateHistory()
 	frame.Interval++
-	store.SetDirty(true)
-
 	t.Log("new interval after update", frame.Interval)
 
-	state, err := store.Undo(title)
+	frame, err = store.Undo(title)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
 
-	t.Log("after undo 1", state.Frame.Interval)
+	t.Log("after undo 1", frame.Interval)
 	if interval != frame.Interval {
 		t.Fatal("undo level 1")
 	}
 
 	frame.Interval += 2
 	store.SetDirty(true)
-	state, err = store.Undo(title)
+	frame, err = store.Undo(title)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

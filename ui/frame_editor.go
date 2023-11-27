@@ -15,7 +15,7 @@ import (
 
 type FrameEditor struct {
 	*fyne.Container
-	model       *control.Manager
+	model       *control.Model
 	frame       *glow.Frame
 	layerSelect *widget.Select
 	fields      *control.FrameFields
@@ -24,7 +24,7 @@ type FrameEditor struct {
 	tools       *FrameTools
 }
 
-func NewFrameEditor(model *control.Manager, window fyne.Window,
+func NewFrameEditor(model *control.Model, window fyne.Window,
 	sharedTools *SharedTools) *FrameEditor {
 
 	fe := &FrameEditor{
@@ -43,7 +43,7 @@ func NewFrameEditor(model *control.Manager, window fyne.Window,
 
 	fe.tools = NewFrameTools(model, window)
 	sharedTools.AddItems(fe.tools.Items()...)
-	sharedTools.AddApply(fe.apply)
+	model.AddSaveAction(fe.apply)
 
 	fe.fields.Interval.AddListener(binding.NewDataListener(func() {
 		interval, _ := fe.fields.Interval.Get()

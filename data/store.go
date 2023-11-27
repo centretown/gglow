@@ -1,4 +1,4 @@
-package store
+package data
 
 import (
 	"fmt"
@@ -17,8 +17,8 @@ import (
 
 const (
 	scheme            = "file://"
-	DefaultEffectPath = "/home/dave/src/glow-gui/storage/effects/"
-	ExamplesPath      = "/home/dave/src/glow-gui/storage/effects/examples/"
+	DefaultEffectPath = "/home/dave/src/glow-gui/cabinet/effects/"
+	ExamplesPath      = "/home/dave/src/glow-gui/cabinet/examples/"
 	dots              = ".."
 )
 
@@ -48,7 +48,7 @@ type Store struct {
 	HasPrevious binding.Bool
 	IsDirty     binding.Bool
 
-	frameHasChanged bool
+	changeDetected bool
 }
 
 func NewStore(preferences fyne.Preferences) *Store {
@@ -103,7 +103,7 @@ func NewStore(preferences fyne.Preferences) *Store {
 	st.IsDirty.AddListener(binding.NewDataListener(func() {
 		isDirty := st.GetDirty()
 		if isDirty {
-			st.frameHasChanged = true
+			st.changeDetected = true
 			st.HasPrevious.Set(true)
 			fmt.Println("store.IsDirty Listener HasPrevious TRUE", st.EffectName)
 		}
@@ -111,17 +111,17 @@ func NewStore(preferences fyne.Preferences) *Store {
 	return st
 }
 
-func (st *Store) Undo(title string) (*glow.GlowState, error) {
+func (st *Store) Undo(title string) (*glow.Frame, error) {
 
-	if st.frameHasChanged {
-		st.frameHasChanged = false
+	if st.changeDetected {
+		st.changeDetected = false
 		frame := *st.GetFrame()
 		st.Frame.Set(&frame)
 		st.HasPrevious.Set(st.CanUndo(title))
-		return glow.NewGlowState(&frame, st.LayerIndex), nil
+		return &frame, nil
 	}
 
-	frame, err := st.history.Previous(st.route, title)
+	frame, err := st.history.RestorePrevious(st.route, title)
 	if err != nil {
 		fyne.LogError(resources.MsgGetFrame.Format(title), err)
 		return nil, err
@@ -132,18 +132,16 @@ func (st *Store) Undo(title string) (*glow.GlowState, error) {
 }
 
 func (st *Store) UpdateHistory() (err error) {
-	st.frameHasChanged = false
+	st.changeDetected = false
 	frame := st.GetFrame()
-	return st.history.Add(st.route, st.EffectName,
-		glow.NewGlowState(frame, st.LayerIndex))
+	return st.history.Add(st.route, st.EffectName, frame)
 }
 
 func (st *Store) CanUndo(title string) bool {
-	isDirty := st.GetDirty()
-	if isDirty {
+	if st.changeDetected {
 		return true
 	}
-	return st.history.HasPrevious(st.route, title)
+	return st.history.HasHistory(st.route, title)
 }
 
 func (st *Store) SetDirty(dirty bool) {
@@ -318,7 +316,7 @@ func (st *Store) ReadEffect(title string) error {
 
 	st.Frame.Set(frame)
 	st.LayerIndex = 0
-	st.Layer.Set(st.GetFrame().Layers[st.LayerIndex])
+	st.Layer.Set(&frame.Layers[st.LayerIndex])
 	st.EffectName = title
 	st.route = st.stack.Route()
 	st.IsDirty.Set(false)
@@ -369,5 +367,24 @@ func (st *Store) WriteEffect(title string, frame *glow.Frame) error {
 	st.HasPrevious.Set(st.CanUndo(st.EffectName))
 	st.IsDirty.Set(false)
 
+	return err
+}
+
+func (st *Store) ValidateNewFolderName(title string) error {
+	err := ValidateFolderName(title)
+	if err != nil {
+		return err
+	}
+
+	err = st.IsDuplicate(title)
+	return err
+}
+
+func (st *Store) ValidateNewEffectName(title string) error {
+	err := ValidateEffectName(title)
+	if err != nil {
+		return err
+	}
+	err = st.IsDuplicate(title)
 	return err
 }

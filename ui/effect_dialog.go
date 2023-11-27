@@ -17,11 +17,11 @@ import (
 type EffectDialog struct {
 	*dialog.CustomDialog
 	title       binding.String
-	model       *control.Manager
+	model       *control.Model
 	applyButton *widget.Button
 }
 
-func NewEffectDialog(model *control.Manager, window fyne.Window) (ef *EffectDialog) {
+func NewEffectDialog(model *control.Model, window fyne.Window) (ef *EffectDialog) {
 	ef = &EffectDialog{
 		model: model,
 		title: binding.NewString(),
