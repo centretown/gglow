@@ -118,7 +118,7 @@ func (pe *ColorPatchEditor) setValue() {
 
 func (pe *ColorPatchEditor) setColor(hsv glow.HSV) {
 	pe.patch.SetHSVColor(hsv)
-	pe.model.SetDirty()
+	pe.model.SetChanged()
 }
 
 func (pe *ColorPatchEditor) remove() {
@@ -136,7 +136,7 @@ func (le *ColorPatchEditor) selectColorPicker(patch *ColorPatch) func() {
 		picker := dialog.NewColorPicker("Color Picker", "color", func(c color.Color) {
 			if c != patch.GetColor() {
 				patch.SetColor(c)
-				le.model.SetDirty()
+				le.model.SetChanged()
 			}
 		}, le.window)
 		picker.Advanced = true

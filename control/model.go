@@ -1,11 +1,9 @@
 package control
 
 import (
-	"fmt"
 	"glow-gui/fileio"
 	"glow-gui/glow"
 
-	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
 )
 
@@ -94,16 +92,7 @@ func (m *Model) WriteEffect() (err error) {
 }
 
 func (m *Model) ReadEffect(title string) (err error) {
-	err = m.store.ReadEffect(title)
-	if err != nil {
-		fyne.LogError("ReadEffect", err)
-		return
-	}
-
-	frame := m.GetFrame()
-	fmt.Println("model frame", frame.Interval)
-
-	return
+	return m.store.ReadEffect(title)
 }
 
 func (m *Model) AddFrameListener(listener binding.DataListener) {
@@ -114,28 +103,22 @@ func (m *Model) AddLayerListener(listener binding.DataListener) {
 	m.store.Layer.AddListener(listener)
 }
 
-func (m *Model) AddDirtyListener(listener binding.DataListener) {
+func (m *Model) AddChangeListener(listener binding.DataListener) {
 	m.store.IsDirty.AddListener(listener)
 }
 
-func (m *Model) SetDirty() {
+func (m *Model) SetChanged() {
 	if m.WindowHasContent {
 		m.store.SetDirty(true)
 	}
 }
 
-func (m *Model) IsDirty() bool {
+func (m *Model) HasChanged() bool {
 	return m.store.GetDirty()
 }
 
 func (m *Model) UndoEffect() {
-	frame, err := m.store.Undo(m.EffectName())
-	if err != nil {
-		fyne.LogError("UndoEffect", err)
-		return
-	}
-
-	fmt.Println("UndoEffect succeeded", frame.Interval, m.EffectName())
+	m.store.Undo(m.EffectName())
 }
 
 func (m *Model) onChangeFrame() {

@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"glow-gui/control"
 	"glow-gui/glow"
 	"glow-gui/resources"
@@ -48,7 +47,7 @@ func NewFrameEditor(model *control.Model, window fyne.Window,
 		frame := fe.model.GetFrame()
 		interval, _ := fe.fields.Interval.Get()
 		if interval != int(frame.Interval) {
-			fe.model.SetDirty()
+			fe.model.SetChanged()
 		}
 	}))
 
@@ -62,7 +61,6 @@ func (fe *FrameEditor) setFields() {
 	frame := fe.model.GetFrame()
 	fe.fields.FromFrame(frame)
 	fe.rateBox.Entry.SetText(strconv.FormatInt(int64(frame.Interval), 10))
-	fmt.Println("setFields", frame.Interval)
 	fe.model.WindowHasContent = true
 }
 

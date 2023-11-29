@@ -26,8 +26,8 @@ func NewSharedTools(model *control.Model) *SharedTools {
 	tl.undoButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.ContentUndoIcon(), tl.undo))
 
-	tl.model.AddDirtyListener(binding.NewDataListener(func() {
-		if tl.model.IsDirty() {
+	tl.model.AddChangeListener(binding.NewDataListener(func() {
+		if tl.model.HasChanged() {
 			tl.saveButton.Enable()
 			tl.undoButton.Enable()
 		} else {

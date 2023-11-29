@@ -1,7 +1,6 @@
 package control
 
 import (
-	"fmt"
 	"glow-gui/glow"
 
 	"fyne.io/fyne/v2/data/binding"
@@ -19,7 +18,6 @@ func NewFrameFields() *FrameFields {
 }
 
 func (fld *FrameFields) FromFrame(frame *glow.Frame) {
-	fmt.Println("fld frame", frame.Interval)
 	fld.Interval.Set(int(frame.Interval))
 }
 

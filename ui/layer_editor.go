@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"glow-gui/control"
 	"glow-gui/glow"
 	"glow-gui/resources"
@@ -104,7 +103,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrigin.SelectedIndex()
 		if glow.Origin(selected) != current {
 			le.fields.Origin.Set(selected)
-			le.model.SetDirty()
+			le.model.SetChanged()
 		}
 	}
 
@@ -114,7 +113,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrientation.SelectedIndex()
 		if glow.Orientation(selected) != current {
 			le.fields.Orientation.Set(selected)
-			le.model.SetDirty()
+			le.model.SetChanged()
 		}
 	}
 
@@ -124,7 +123,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.fields.Scan.AddListener(binding.NewDataListener(func() {
 		scan, _ := le.fields.Scan.Get()
 		if uint16(scan) != le.layer.Scan {
-			le.model.SetDirty()
+			le.model.SetChanged()
 		}
 	}))
 	le.checkScan = widget.NewCheck("", checkRangeBox(le.scanBox, le.fields.Scan))
@@ -138,7 +137,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.fields.HueShift.AddListener(binding.NewDataListener(func() {
 		shift, _ := le.fields.HueShift.Get()
 		if int16(shift) != le.layer.HueShift {
-			le.model.SetDirty()
+			le.model.SetChanged()
 		}
 	}))
 	le.checkHue = widget.NewCheck("", checkRangeBox(le.hueBox, le.fields.HueShift))
@@ -149,7 +148,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.fields.Rate.AddListener(binding.NewDataListener(func() {
 		rate, _ := le.fields.Rate.Get()
 		if uint32(rate) != le.layer.Rate {
-			le.model.SetDirty()
+			le.model.SetChanged()
 		}
 	}))
 	le.checkRate = widget.NewCheck("", checkRangeBox(le.rateBox, le.fields.Rate))
@@ -179,7 +178,6 @@ func (le *LayerEditor) createForm() *fyne.Container {
 func (le *LayerEditor) setFields() {
 	le.model.WindowHasContent = false
 	le.layer = le.model.GetCurrentLayer()
-	fmt.Println("layer set fields", "origin", le.layer.Grid.Origin)
 	le.fields.FromLayer(le.layer)
 
 	le.selectOrigin.SetSelectedIndex(int(le.layer.Grid.Origin))

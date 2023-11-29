@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"glow-gui/control"
 
 	"fyne.io/fyne/v2/data/binding"
@@ -39,8 +38,5 @@ func (fs *EffectSelect) onChange(title string) {
 		fs.auto = false
 	} else {
 		fs.model.ReadEffect(title)
-		fmt.Println("EffectSelect", title)
-		frame := fs.model.GetFrame()
-		fmt.Println("select frame", frame.Interval)
 	}
 }

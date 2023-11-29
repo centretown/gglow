@@ -134,15 +134,15 @@ func (st *Store) GetCurrentLayer() *glow.Layer {
 	return layer.(*glow.Layer)
 }
 
-func (st *Store) Undo(title string) (*glow.Frame, error) {
+func (st *Store) Undo(title string) {
 
-	if st.GetDirty() {
-		frame := *st.GetFrame()
-		st.setFrame(&frame, st.LayerIndex)
-		return &frame, nil
+	if !st.GetDirty() {
+		fyne.LogError("UndoEffect", fmt.Errorf("nothing to undo"))
+		return
 	}
 
-	return st.GetFrame(), fmt.Errorf("nothing to undo")
+	frame := *st.GetFrame()
+	st.setFrame(&frame, st.LayerIndex)
 }
 
 func (st *Store) SetDirty(dirty bool) {
@@ -252,7 +252,6 @@ func (st *Store) WriteFolder(title string) error {
 	}
 
 	path := scheme + st.Current.Path() + "/" + title
-	fmt.Println(path)
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		return err
@@ -292,7 +291,6 @@ func (st *Store) ReadEffect(title string) error {
 		return err
 	}
 
-	fmt.Println("store frame", frame.Interval)
 	st.route = st.stack.Route()
 	st.EffectName = title
 	st.setFrame(frame, 0)

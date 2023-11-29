@@ -95,7 +95,7 @@ func (cp *ColorPatch) paste(s string) {
 	if err != nil {
 		return
 	}
-	cp.model.SetDirty()
+	cp.model.SetChanged()
 	cp.SetHSVColor(hsv)
 }
 
@@ -172,7 +172,7 @@ func (cp *ColorPatch) SetTapped(tapped func()) {
 func (cp *ColorPatch) SetUnused(b bool) {
 	cp.unused = b
 	cp.setFill(theme.DisabledColor())
-	cp.model.SetDirty()
+	cp.model.SetChanged()
 }
 
 func (cp *ColorPatch) Unused() bool {

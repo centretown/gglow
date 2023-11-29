@@ -16,7 +16,7 @@ layers:
             - hue: 1
               saturation: 100
               value: 100
-            - hue: 0
+            - hue: 75
               saturation: 100
               value: 100
       hue_shift: 0
