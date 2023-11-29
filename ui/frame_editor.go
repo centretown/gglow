@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"glow-gui/control"
 	"glow-gui/glow"
 	"glow-gui/resources"
@@ -16,7 +17,6 @@ import (
 type FrameEditor struct {
 	*fyne.Container
 	model       *control.Model
-	frame       *glow.Frame
 	layerSelect *widget.Select
 	fields      *control.FrameFields
 	rateBounds  *IntEntryBounds
@@ -32,7 +32,6 @@ func NewFrameEditor(model *control.Model, window fyne.Window,
 		layerSelect: NewLayerSelect(model),
 		rateBounds:  RateBounds,
 		fields:      control.NewFrameFields(),
-		frame:       &glow.Frame{},
 	}
 
 	fe.layerSelect = NewLayerSelect(fe.model)
@@ -46,8 +45,9 @@ func NewFrameEditor(model *control.Model, window fyne.Window,
 	model.AddSaveAction(fe.apply)
 
 	fe.fields.Interval.AddListener(binding.NewDataListener(func() {
+		frame := fe.model.GetFrame()
 		interval, _ := fe.fields.Interval.Get()
-		if uint32(interval) != fe.frame.Interval {
+		if interval != int(frame.Interval) {
 			fe.model.SetDirty()
 		}
 	}))
@@ -58,11 +58,14 @@ func NewFrameEditor(model *control.Model, window fyne.Window,
 }
 
 func (fe *FrameEditor) setFields() {
-	fe.frame = fe.model.GetFrame()
-	fe.fields.FromFrame(fe.frame)
-	fe.rateBox.Entry.SetText(strconv.FormatInt(int64(fe.frame.Interval), 10))
+	fe.model.WindowHasContent = false
+	frame := fe.model.GetFrame()
+	fe.fields.FromFrame(frame)
+	fe.rateBox.Entry.SetText(strconv.FormatInt(int64(frame.Interval), 10))
+	fmt.Println("setFields", frame.Interval)
+	fe.model.WindowHasContent = true
 }
 
-func (fe *FrameEditor) apply() {
-	fe.fields.ToFrame(fe.frame)
+func (fe *FrameEditor) apply(frame *glow.Frame) {
+	fe.fields.ToFrame(frame)
 }

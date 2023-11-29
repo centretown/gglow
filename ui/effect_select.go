@@ -40,5 +40,7 @@ func (fs *EffectSelect) onChange(title string) {
 	} else {
 		fs.model.ReadEffect(title)
 		fmt.Println("EffectSelect", title)
+		frame := fs.model.GetFrame()
+		fmt.Println("select frame", frame.Interval)
 	}
 }

@@ -2,7 +2,7 @@ package ui
 
 import (
 	"glow-gui/control"
-	"glow-gui/data"
+	"glow-gui/fileio"
 	"testing"
 
 	"fyne.io/fyne/v2/test"
@@ -11,7 +11,7 @@ import (
 func test_editor_setup(t *testing.T) (model *control.Model, e *LayerEditor, err error) {
 	app := test.NewApp()
 	w := app.NewWindow("Editor")
-	model = control.NewController(data.NewStore(app.Preferences()))
+	model = control.NewModel(fileio.NewStore(app.Preferences()))
 	toolBar := NewSharedTools(model)
 	e = NewLayerEditor(model, w, toolBar)
 	return

@@ -1,4 +1,4 @@
-package data
+package fileio
 
 import (
 	"fmt"
@@ -35,11 +35,14 @@ func (hi *HistoryItem) Push(source *glow.Frame) error {
 		return err
 	}
 	hi.List = append(hi.List, frame)
+	length := len(hi.List)
+	fmt.Println("push", length)
 	return nil
 }
 
 func (hi *HistoryItem) Pop() (*glow.Frame, error) {
 	length := len(hi.List)
+	fmt.Println("pop", length)
 	if length < 1 {
 		return nil,
 			fmt.Errorf("%s: %s", makePath(hi.Route, hi.Title),

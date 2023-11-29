@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"glow-gui/control"
 	"glow-gui/glow"
 	"time"
 
@@ -13,7 +14,8 @@ import (
 type LightStripPlayer struct {
 	*widget.Toolbar
 
-	sourceFrame binding.Untyped
+	model *control.Model
+	// sourceFrame binding.Untyped
 	sourceStrip binding.Untyped
 	strip       *LightStrip
 
@@ -36,11 +38,12 @@ type LightStripPlayer struct {
 	isActive  bool
 }
 
-func NewLightStripPlayer(sourceStrip binding.Untyped, sourceFrame binding.Untyped,
+func NewLightStripPlayer(sourceStrip binding.Untyped, model *control.Model,
 	lightStripLayout *LightStripLayout) *LightStripPlayer {
 
 	sb := &LightStripPlayer{
-		sourceFrame:  sourceFrame,
+		// sourceFrame:  sourceFrame,
+		model:        model,
 		sourceStrip:  sourceStrip,
 		stopChan:     make(chan int),
 		stepChan:     make(chan int),
@@ -72,14 +75,14 @@ func NewLightStripPlayer(sourceStrip binding.Untyped, sourceFrame binding.Untype
 	)
 
 	sb.strip = sb.getStrip()
-	sb.sourceFrame.AddListener(binding.NewDataListener(sb.frameListener))
+	sb.model.AddFrameListener(binding.NewDataListener(sb.frameListener))
 	return sb
 }
 
-func (sb *LightStripPlayer) getFrame() *glow.Frame {
-	frame, _ := sb.sourceFrame.Get()
-	return frame.(*glow.Frame)
-}
+// func (sb *LightStripPlayer) getFrame() *glow.Frame {
+// 	frame, _ := sb.sourceFrame.Get()
+// 	return frame.(*glow.Frame)
+// }
 
 func (sb *LightStripPlayer) getStrip() *LightStrip {
 	strip, _ := sb.sourceStrip.Get()
@@ -93,7 +96,7 @@ func (sb *LightStripPlayer) ResetStrip() {
 
 func (sb *LightStripPlayer) frameListener() {
 	sb.run()
-	sb.frameChan <- sb.getFrame()
+	sb.frameChan <- sb.model.GetFrame()
 }
 
 func (sb *LightStripPlayer) OnExit() {
@@ -182,7 +185,7 @@ func (sb *LightStripPlayer) spin() {
 		}
 	}
 
-	copyFrame(sb.getFrame())
+	copyFrame(sb.model.GetFrame())
 
 	for {
 		select {
@@ -206,11 +209,11 @@ func (sb *LightStripPlayer) spin() {
 
 		case <-sb.stripChan:
 			sb.strip = sb.getStrip()
-			copyFrame(sb.getFrame())
+			copyFrame(sb.model.GetFrame())
 			frame.Spin(sb.strip)
 
 		case <-sb.resetChan:
-			copyFrame(sb.getFrame())
+			copyFrame(sb.model.GetFrame())
 			frame.Spin(sb.strip)
 
 		default:

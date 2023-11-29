@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"glow-gui/control"
 	"glow-gui/glow"
 	"glow-gui/resources"
@@ -71,7 +72,9 @@ func NewLayerEditor(model *control.Model, window fyne.Window,
 
 	le.Container = container.NewBorder(nil, nil, nil, nil, scroll)
 
-	le.model.Layer.AddListener(binding.NewDataListener(le.setFields))
+	le.model.AddFrameListener(binding.NewDataListener(le.setFields))
+
+	le.model.AddLayerListener(binding.NewDataListener(le.setFields))
 
 	sharedTools.AddItems(le.tools.Items()...)
 	model.AddSaveAction(le.apply)
@@ -174,7 +177,9 @@ func (le *LayerEditor) createForm() *fyne.Container {
 }
 
 func (le *LayerEditor) setFields() {
+	le.model.WindowHasContent = false
 	le.layer = le.model.GetCurrentLayer()
+	fmt.Println("layer set fields", "origin", le.layer.Grid.Origin)
 	le.fields.FromLayer(le.layer)
 
 	le.selectOrigin.SetSelectedIndex(int(le.layer.Grid.Origin))
@@ -202,9 +207,12 @@ func (le *LayerEditor) setFields() {
 			p.SetUnused(true)
 		}
 	}
+	le.model.WindowHasContent = true
 }
 
-func (le *LayerEditor) apply() {
+func (le *LayerEditor) apply(frame *glow.Frame) {
+	index := le.model.LayerIndex()
+	le.layer = &frame.Layers[index]
 	le.setColors()
 	le.fields.ToLayer(le.layer)
 }

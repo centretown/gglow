@@ -1,70 +1,55 @@
 package control
 
-import (
-	"testing"
-)
+// import (
+// 	"fmt"
+// 	"glow-gui/fileio"
+// 	"glow-gui/glow"
+// 	"testing"
 
-func TestNewModel(t *testing.T) {
-	// err := store.Setup()
-	// if err != nil {
-	// 	t.Fatalf(err.Error())
-	// }
+// 	"fyne.io/fyne/v2/test"
+// )
 
-	// app := test.NewApp()
-	// window := app.NewWindow("test")
-	// model := NewModel()
+// func showStatus(model *Model) string {
+// 	frame := model.GetFrame()
+// 	return fmt.Sprintf("EffectName: %v\n IsDirty: %v\n CanUndo: %v\n Interval: %v",
+// 		model.EffectName(), model.IsDirty(), model.CanUndo(), frame.Interval)
+// }
 
-	// // sliderHueShift := widget.NewSliderWithData(-100, 100, model.Fields.HueShift)
-	// // sliderScan := widget.NewSliderWithData(-100, 100, model.Fields.Scan)
-	// selectOrigin := widget.NewSelect(resources.OriginLabels, func(s string) {})
-	// selectOrigin.OnChanged = func(s string) {
-	// 	model.Fields.Origin.Set(selectOrigin.SelectedIndex())
-	// }
-	// model.Fields.Origin.AddListener(binding.NewDataListener(func() {
-	// 	index, _ := model.Fields.Origin.Get()
-	// 	selectOrigin.SetSelectedIndex(index)
-	// }))
+// func TestModel(t *testing.T) {
+// 	var err error
+// 	app := test.NewApp()
+// 	store := fileio.NewStore(app.Preferences())
+// 	model := NewModel(store)
 
-	// vbox := container.NewVBox(sliderHueShift, sliderScan, selectOrigin)
-	// window.SetContent(vbox)
+// 	t.Log("Nothing", showStatus(model))
 
-	// lookUpList := store.LookUpList()
+// 	title := model.KeyList()[0]
+// 	err = model.ReadEffect(title)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
-	// doLogAndTest := func() {
-	// 	t.Log()
-	// 	hueShift, _ := model.Fields.HueShift.Get()
-	// 	t.Log(resources.HueShiftLabel, hueShift)
-	// 	t.Log("hue slider.Value", sliderHueShift.Value)
-	// 	if hueShift != sliderHueShift.Value {
-	// 		t.Errorf("hueShift %f doesn't match slider value %f",
-	// 			hueShift, sliderHueShift.Value)
-	// 	}
+// 	model.WindowHasContent = true
+// 	t.Log("ReadEffect", showStatus(model))
 
-	// 	scan, _ := model.Fields.Scan.Get()
-	// 	t.Log(resources.ScanLabel, scan)
-	// 	t.Log("scan slider.Value", sliderScan.Value)
-	// 	if scan != sliderScan.Value {
-	// 		t.Errorf("scan %f doesn't match slider value %f",
-	// 			hueShift, sliderScan.Value)
-	// 	}
+// 	incrementInterval := func(fr *glow.Frame) {
+// 		fr.Interval++
+// 		model.SetDirty()
+// 		t.Log("incrementInterval", showStatus(model))
+// 	}
 
-	// 	origin, _ := model.Fields.Origin.Get()
-	// 	t.Log(resources.OriginLabel, origin)
-	// 	t.Log("origin selection", selectOrigin.SelectedIndex())
-	// }
+// 	model.AddSaveAction(incrementInterval)
 
-	// for _, s := range lookUpList {
-	// 	t.Log()
-	// 	t.Log(s)
-	// 	err = model.LoadFrame(s)
-	// 	if err != nil {
-	// 		t.Fatalf(err.Error())
-	// 	}
+// 	err = model.WriteEffect()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
-	// 	for i := 0; i < model.LayerList.Length(); i++ {
-	// 		model.SetCurrentLayer(i)
-	// 		time.Sleep(time.Duration(time.Duration.Nanoseconds(1)))
-	// 		doLogAndTest()
-	// 	}
-	// }
-}
+// 	t.Log("WriteEffect", showStatus(model))
+
+// 	for index := 0; model.CanUndo(); index++ {
+// 		model.UndoEffect()
+// 		t.Logf("undo %v \n%v",
+// 			index, showStatus(model))
+// 	}
+// }

@@ -2,7 +2,7 @@ package control
 
 import (
 	"fmt"
-	"glow-gui/data"
+	"glow-gui/fileio"
 	"glow-gui/glow"
 
 	"fyne.io/fyne/v2"
@@ -10,30 +10,24 @@ import (
 )
 
 type Model struct {
-	store            *data.Store
-	Frame            binding.Untyped
-	Layer            binding.Untyped
+	store            *fileio.Store
 	LayerSummaryList binding.StringList
-	isDirty          binding.Bool
-	saveActions      []func() `json:"-"`
+	saveActions      []func(*glow.Frame) `json:"-"`
 	WindowHasContent bool
 }
 
-func NewController(store *data.Store) *Model {
+func NewModel(store *fileio.Store) *Model {
 	m := &Model{
 		store:            store,
-		Frame:            store.Frame,
-		Layer:            store.Layer,
 		LayerSummaryList: binding.NewStringList(),
-		isDirty:          store.IsDirty,
-		saveActions:      make([]func(), 0),
+		saveActions:      make([]func(*glow.Frame), 0),
 	}
 
-	m.Frame.AddListener(binding.NewDataListener(m.onChangeFrame))
+	m.AddFrameListener(binding.NewDataListener(m.onChangeFrame))
 	return m
 }
 
-func (m *Model) AddSaveAction(f func()) {
+func (m *Model) AddSaveAction(f func(*glow.Frame)) {
 	m.saveActions = append(m.saveActions, f)
 }
 
@@ -87,17 +81,15 @@ func (m *Model) KeyList() []string {
 }
 
 func (m *Model) WriteEffect() (err error) {
-	m.store.UpdateHistory()
+	frame := m.GetFrame()
 
 	for _, saveAction := range m.saveActions {
-		saveAction()
+		saveAction(frame)
 	}
-
-	frame := m.GetFrame()
 
 	err = m.store.WriteEffect(m.EffectName(), frame)
 	current := *frame
-	m.Frame.Set(&current)
+	m.store.Frame.Set(&current)
 	return
 }
 
@@ -107,15 +99,23 @@ func (m *Model) ReadEffect(title string) (err error) {
 		fyne.LogError("ReadEffect", err)
 		return
 	}
+
+	frame := m.GetFrame()
+	fmt.Println("model frame", frame.Interval)
+
 	return
 }
 
 func (m *Model) AddFrameListener(listener binding.DataListener) {
-	m.Frame.AddListener(listener)
+	m.store.Frame.AddListener(listener)
+}
+
+func (m *Model) AddLayerListener(listener binding.DataListener) {
+	m.store.Layer.AddListener(listener)
 }
 
 func (m *Model) AddDirtyListener(listener binding.DataListener) {
-	m.isDirty.AddListener(listener)
+	m.store.IsDirty.AddListener(listener)
 }
 
 func (m *Model) SetDirty() {
@@ -128,21 +128,7 @@ func (m *Model) IsDirty() bool {
 	return m.store.GetDirty()
 }
 
-func (m *Model) AddUndoListener(listener binding.DataListener) {
-	m.store.HasPrevious.AddListener(listener)
-}
-
-func (m *Model) CanUndo() bool {
-	return m.store.CanUndo(m.store.EffectName)
-}
-
 func (m *Model) UndoEffect() {
-	if !m.store.CanUndo(m.EffectName()) {
-		fyne.LogError("UndoEffect",
-			fmt.Errorf("%s has no history", m.EffectName()))
-		return
-	}
-
 	frame, err := m.store.Undo(m.EffectName())
 	if err != nil {
 		fyne.LogError("UndoEffect", err)

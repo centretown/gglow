@@ -29,18 +29,18 @@ func NewSharedTools(model *control.Model) *SharedTools {
 	tl.model.AddDirtyListener(binding.NewDataListener(func() {
 		if tl.model.IsDirty() {
 			tl.saveButton.Enable()
+			tl.undoButton.Enable()
 		} else {
+			tl.undoButton.Disable()
 			tl.saveButton.Disable()
 		}
 	}))
 
-	tl.model.AddUndoListener(binding.NewDataListener(func() {
-		if tl.model.CanUndo() {
-			tl.undoButton.Enable()
-		} else {
-			tl.undoButton.Disable()
-		}
-	}))
+	// tl.model.AddUndoListener(binding.NewDataListener(func() {
+	// 	if tl.model.CanUndo() {
+	// 	} else {
+	// 	}
+	// }))
 
 	tl.AddItems(tl.saveButton, tl.undoButton)
 	return tl

@@ -1,4 +1,4 @@
-package data
+package fileio
 
 import (
 	"fyne.io/fyne/v2"

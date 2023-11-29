@@ -55,7 +55,6 @@ func NewUi(app fyne.App, window fyne.Window, model *control.Model, theme *settin
 	}
 
 	window.SetContent(ui.BuildContent())
-	model.WindowHasContent = true
 	return ui
 }
 
@@ -113,7 +112,7 @@ func (ui *Ui) BuildContent() *fyne.Container {
 	ui.sourceStrip.Set(ui.strip)
 
 	ui.stripLayout = NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip, color)
-	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model.Frame, ui.stripLayout)
+	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model, ui.stripLayout)
 	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
 	ui.effectSelect = NewEffectSelect(ui.model)
