@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/fields"
+	"glow-gui/effects"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -16,14 +16,14 @@ import (
 type FolderDialog struct {
 	*dialog.CustomDialog
 	title       binding.String
-	model       fields.Model
+	effect      effects.Effect
 	applyButton *widget.Button
 }
 
-func NewFolderDialog(model fields.Model, window fyne.Window) *FolderDialog {
+func NewFolderDialog(effect effects.Effect, window fyne.Window) *FolderDialog {
 	fd := &FolderDialog{
-		model: model,
-		title: binding.NewString(),
+		effect: effect,
+		title:  binding.NewString(),
 	}
 
 	nameLabel := widget.NewLabel("Folder")
@@ -48,7 +48,7 @@ func NewFolderDialog(model fields.Model, window fyne.Window) *FolderDialog {
 
 func (fd *FolderDialog) apply() {
 	title, _ := fd.title.Get()
-	err := fd.model.CreateNewFolder(title)
+	err := fd.effect.CreateNewFolder(title)
 	if err != nil {
 		fyne.LogError(title, err)
 	}
@@ -56,7 +56,7 @@ func (fd *FolderDialog) apply() {
 }
 
 func (fd *FolderDialog) validateFolderName(s string) error {
-	err := fd.model.ValidateNewFolderName(s)
+	err := fd.effect.ValidateNewFolderName(s)
 	if err != nil {
 		fd.applyButton.Disable()
 		return err

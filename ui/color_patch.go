@@ -3,7 +3,7 @@ package ui
 import (
 	"encoding/json"
 	"fmt"
-	"glow-gui/fields"
+	"glow-gui/effects"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"image/color"
@@ -36,23 +36,23 @@ type ColorPatch struct {
 	unused           bool
 
 	Editing bool
-	model   fields.Model
+	effect  effects.Effect
 }
 
-func NewColorPatch(model fields.Model) (patch *ColorPatch) {
+func NewColorPatch(effect effects.Effect) (patch *ColorPatch) {
 	var hsv glow.HSV
 	hsv.FromColor(theme.DisabledColor())
-	patch = NewColorPatchWithColor(hsv, model, nil)
+	patch = NewColorPatchWithColor(hsv, effect, nil)
 	patch.unused = true
 	return
 }
 
-func NewColorPatchWithColor(hsv glow.HSV, model fields.Model, tapped func()) *ColorPatch {
+func NewColorPatchWithColor(hsv glow.HSV, effect effects.Effect, tapped func()) *ColorPatch {
 	cp := &ColorPatch{
 		background: canvas.NewRectangle(theme.ButtonColor()),
 		rectangle:  canvas.NewRectangle(hsv.ToRGB()),
 		tapped:     tapped,
-		model:      model,
+		effect:     effect,
 	}
 	cp.colorHSV = hsv
 	cp.ExtendBaseWidget(cp)
@@ -95,7 +95,7 @@ func (cp *ColorPatch) paste(s string) {
 	if err != nil {
 		return
 	}
-	cp.model.SetChanged()
+	cp.effect.SetChanged()
 	cp.SetHSVColor(hsv)
 }
 
@@ -172,7 +172,7 @@ func (cp *ColorPatch) SetTapped(tapped func()) {
 func (cp *ColorPatch) SetUnused(b bool) {
 	cp.unused = b
 	cp.setFill(theme.DisabledColor())
-	cp.model.SetChanged()
+	cp.effect.SetChanged()
 }
 
 func (cp *ColorPatch) Unused() bool {

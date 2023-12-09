@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/fields"
+	"glow-gui/effects"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"strconv"
@@ -15,49 +15,49 @@ import (
 
 type FrameEditor struct {
 	*fyne.Container
-	model       fields.Model
+	effect      effects.Effect
 	layerSelect *widget.Select
-	fields      *fields.FrameFields
+	fields      *effects.FrameFields
 	rateBounds  *IntEntryBounds
 	rateBox     *RangeIntBox
 	tools       *FrameTools
 }
 
-func NewFrameEditor(model fields.Model, window fyne.Window,
+func NewFrameEditor(effect effects.Effect, window fyne.Window,
 	sharedTools *SharedTools) *FrameEditor {
 
 	fe := &FrameEditor{
-		model:       model,
-		layerSelect: NewLayerSelect(model),
+		effect:      effect,
+		layerSelect: NewLayerSelect(effect),
 		rateBounds:  RateBounds,
-		fields:      fields.NewFrameFields(),
+		fields:      effects.NewFrameFields(),
 	}
 
-	fe.layerSelect = NewLayerSelect(fe.model)
+	fe.layerSelect = NewLayerSelect(fe.effect)
 	ratelabel := widget.NewLabel(resources.RateLabel.String())
 	fe.rateBox = NewRangeIntBox(fe.fields.Interval, fe.rateBounds)
 	frm := container.New(layout.NewFormLayout(), ratelabel, fe.rateBox.Container)
 	fe.Container = container.NewBorder(nil, fe.layerSelect, nil, nil, frm)
 
-	fe.tools = NewFrameTools(model, window)
+	fe.tools = NewFrameTools(effect, window)
 	sharedTools.AddItems(fe.tools.Items()...)
-	model.OnApply(fe.apply)
+	effect.OnApply(fe.apply)
 
 	fe.fields.Interval.AddListener(binding.NewDataListener(func() {
-		frame := fe.model.GetFrame()
+		frame := fe.effect.GetFrame()
 		interval, _ := fe.fields.Interval.Get()
 		if interval != int(frame.Interval) {
-			fe.model.SetChanged()
+			fe.effect.SetChanged()
 		}
 	}))
 
-	fe.model.AddFrameListener(binding.NewDataListener(fe.setFields))
+	fe.effect.AddFrameListener(binding.NewDataListener(fe.setFields))
 
 	return fe
 }
 
 func (fe *FrameEditor) setFields() {
-	frame := fe.model.GetFrame()
+	frame := fe.effect.GetFrame()
 	fe.fields.FromFrame(frame)
 	fe.rateBox.Entry.SetText(strconv.FormatInt(int64(frame.Interval), 10))
 }

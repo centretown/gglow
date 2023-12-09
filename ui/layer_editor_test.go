@@ -1,11 +1,11 @@
 package ui
 
-// func test_editor_setup(t *testing.T) (model control.Control, e *LayerEditor, err error) {
+// func test_editor_setup(t *testing.T) (effect control.Control, e *LayerEditor, err error) {
 // 	app := test.NewApp()
 // 	w := app.NewWindow("Editor")
-// 	model = control.NewModel(fileio.NewStore(app.Preferences()))
-// 	toolBar := NewSharedTools(model)
-// 	e = NewLayerEditor(model, w, toolBar)
+// 	effect = control.Neweffect(fileio.NewStore(app.Preferences()))
+// 	toolBar := NewSharedTools(effect)
+// 	e = NewLayerEditor(effect, w, toolBar)
 // 	return
 // }
 
@@ -65,7 +65,7 @@ package ui
 // }
 
 // func isDirty(le *LayerEditor) bool {
-// 	return le.model.HasChanged()
+// 	return le.effect.HasChanged()
 // }
 
 // func TestLayerEditor(t *testing.T) {

@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/fields"
+	"glow-gui/effects"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"strconv"
@@ -15,9 +15,9 @@ import (
 
 type LayerEditor struct {
 	*fyne.Container
-	model  fields.Model
+	effect effects.Effect
 	layer  *glow.Layer
-	fields *fields.LayerFields
+	fields *effects.LayerFields
 	window fyne.Window
 
 	patches []*ColorPatch
@@ -44,17 +44,17 @@ type LayerEditor struct {
 	tools *LayerTools
 }
 
-func NewLayerEditor(model fields.Model, window fyne.Window,
+func NewLayerEditor(effect effects.Effect, window fyne.Window,
 	sharedTools *SharedTools) *LayerEditor {
 
 	le := &LayerEditor{
 		window: window,
 
-		model: model,
-		layer: model.GetCurrentLayer(),
+		effect: effect,
+		layer:  effect.GetCurrentLayer(),
 
-		fields: fields.NewLayerFields(),
-		tools:  NewLayerTools(model),
+		fields: effects.NewLayerFields(),
+		tools:  NewLayerTools(effect),
 
 		rateBounds: RateBounds,
 		hueBounds:  HueShiftBounds,
@@ -71,19 +71,19 @@ func NewLayerEditor(model fields.Model, window fyne.Window,
 
 	le.Container = container.NewBorder(nil, nil, nil, nil, scroll)
 
-	le.model.AddFrameListener(binding.NewDataListener(le.setFields))
+	le.effect.AddFrameListener(binding.NewDataListener(le.setFields))
 
-	le.model.AddLayerListener(binding.NewDataListener(le.setFields))
+	le.effect.AddLayerListener(binding.NewDataListener(le.setFields))
 
 	sharedTools.AddItems(le.tools.Items()...)
-	model.OnApply(le.apply)
+	effect.OnApply(le.apply)
 	return le
 }
 
 func (le *LayerEditor) createPatches() {
-	le.patches = make([]*ColorPatch, fields.MaxLayerColors)
-	for i := 0; i < fields.MaxLayerColors; i++ {
-		patch := NewColorPatch(le.model)
+	le.patches = make([]*ColorPatch, effects.MaxLayerColors)
+	for i := 0; i < effects.MaxLayerColors; i++ {
+		patch := NewColorPatch(le.effect)
 		patch.SetTapped(le.selectColor(patch))
 		le.patches[i] = patch
 	}
@@ -91,7 +91,7 @@ func (le *LayerEditor) createPatches() {
 
 func (le *LayerEditor) selectColor(patch *ColorPatch) func() {
 	return func() {
-		ce := NewColorPatchEditor(patch, le.model, le.window)
+		ce := NewColorPatchEditor(patch, le.effect, le.window)
 		ce.Show()
 	}
 }
@@ -103,7 +103,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrigin.SelectedIndex()
 		if glow.Origin(selected) != current {
 			le.fields.Origin.Set(selected)
-			le.model.SetChanged()
+			le.effect.SetChanged()
 		}
 	}
 
@@ -113,7 +113,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrientation.SelectedIndex()
 		if glow.Orientation(selected) != current {
 			le.fields.Orientation.Set(selected)
-			le.model.SetChanged()
+			le.effect.SetChanged()
 		}
 	}
 
@@ -123,7 +123,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.fields.Scan.AddListener(binding.NewDataListener(func() {
 		scan, _ := le.fields.Scan.Get()
 		if uint16(scan) != le.layer.Scan {
-			le.model.SetChanged()
+			le.effect.SetChanged()
 		}
 	}))
 	le.checkScan = widget.NewCheck("", checkRangeBox(le.scanBox, le.fields.Scan))
@@ -137,7 +137,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.fields.HueShift.AddListener(binding.NewDataListener(func() {
 		shift, _ := le.fields.HueShift.Get()
 		if int16(shift) != le.layer.HueShift {
-			le.model.SetChanged()
+			le.effect.SetChanged()
 		}
 	}))
 	le.checkHue = widget.NewCheck("", checkRangeBox(le.hueBox, le.fields.HueShift))
@@ -148,7 +148,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.fields.Rate.AddListener(binding.NewDataListener(func() {
 		rate, _ := le.fields.Rate.Get()
 		if uint32(rate) != le.layer.Rate {
-			le.model.SetChanged()
+			le.effect.SetChanged()
 		}
 	}))
 	le.checkRate = widget.NewCheck("", checkRangeBox(le.rateBox, le.fields.Rate))
@@ -176,7 +176,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 }
 
 func (le *LayerEditor) setFields() {
-	le.layer = le.model.GetCurrentLayer()
+	le.layer = le.effect.GetCurrentLayer()
 	le.fields.FromLayer(le.layer)
 
 	le.selectOrigin.SetSelectedIndex(int(le.layer.Grid.Origin))
@@ -207,7 +207,7 @@ func (le *LayerEditor) setFields() {
 }
 
 func (le *LayerEditor) apply(frame *glow.Frame) {
-	index := le.model.LayerIndex()
+	index := le.effect.LayerIndex()
 	le.layer = &frame.Layers[index]
 	le.setColors()
 	le.fields.ToLayer(le.layer)

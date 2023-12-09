@@ -2,7 +2,7 @@ package fileio
 
 import (
 	"fmt"
-	"glow-gui/fields"
+	"glow-gui/effects"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"glow-gui/settings"
@@ -271,7 +271,7 @@ func (st *Store) makeLookupList() (err error) {
 	return
 }
 
-func (st *Store) IsDuplicate(title string) error {
+func (st *Store) isDuplicate(title string) error {
 	_, found := st.uriMap[title]
 	if found {
 		return fmt.Errorf(resources.MsgDuplicate.String())
@@ -280,7 +280,7 @@ func (st *Store) IsDuplicate(title string) error {
 }
 
 func (st *Store) CreateNewEffect(title string, frame *glow.Frame) error {
-	err := st.IsDuplicate(title)
+	err := st.isDuplicate(title)
 	if err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func (st *Store) CreateNewEffect(title string, frame *glow.Frame) error {
 }
 
 func (st *Store) CreateNewFolder(title string) error {
-	err := st.IsDuplicate(title)
+	err := st.isDuplicate(title)
 	if err != nil {
 		return err
 	}
@@ -297,7 +297,7 @@ func (st *Store) CreateNewFolder(title string) error {
 
 func (st *Store) WriteFolder(title string) error {
 	title = strings.TrimSpace(title)
-	err := ValidateFolderName(title)
+	err := effects.ValidateFolderName(title)
 	if err != nil {
 		return err
 	}
@@ -357,7 +357,7 @@ func (st *Store) WriteEffect() error {
 func (st *Store) writeEffect(title string, frame *glow.Frame) error {
 	title = strings.TrimSpace(title)
 
-	err := ValidateEffectName(title)
+	err := effects.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}
@@ -400,21 +400,21 @@ func (st *Store) writeEffect(title string, frame *glow.Frame) error {
 }
 
 func (st *Store) ValidateNewFolderName(title string) error {
-	err := ValidateFolderName(title)
+	err := effects.ValidateFolderName(title)
 	if err != nil {
 		return err
 	}
 
-	err = st.IsDuplicate(title)
+	err = st.isDuplicate(title)
 	return err
 }
 
 func (st *Store) ValidateNewEffectName(title string) error {
-	err := ValidateEffectName(title)
+	err := effects.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}
-	err = st.IsDuplicate(title)
+	err = st.isDuplicate(title)
 	return err
 }
 
@@ -459,7 +459,23 @@ func (st *Store) onChangeFrame() {
 	frame := st.GetFrame()
 	summaries := make([]string, 0, len(frame.Layers))
 	for i, layer := range frame.Layers {
-		summaries = append(summaries, fields.Summarize(&layer, i+1))
+		summaries = append(summaries, effects.SummarizeLayer(&layer, i+1))
 	}
 	st.LayerSummaryList.Set(summaries)
+}
+
+func MakeTitle(uri fyne.URI) (s string) {
+	s = uri.Name()
+	i := strings.Index(s, uri.Extension())
+	if i > 0 {
+		s = s[:i]
+	}
+	s = strings.ReplaceAll(s, "_", " ")
+	return
+}
+
+func MakeFileName(title string) string {
+	s := strings.ReplaceAll(title, " ", "_")
+	s += ".yaml"
+	return s
 }

@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/fields"
+	"glow-gui/effects"
 	"glow-gui/glow"
 
 	"fyne.io/fyne/v2"
@@ -16,16 +16,16 @@ import (
 
 type EffectDialog struct {
 	*dialog.CustomDialog
-	title binding.String
-	model fields.Model
+	title  binding.String
+	effect effects.Effect
 
 	applyButton *widget.Button
 }
 
-func NewEffectDialog(model fields.Model, window fyne.Window) (ef *EffectDialog) {
+func NewEffectDialog(effect effects.Effect, window fyne.Window) (ef *EffectDialog) {
 	ef = &EffectDialog{
-		model: model,
-		title: binding.NewString(),
+		effect: effect,
+		title:  binding.NewString(),
 	}
 
 	nameLabel := widget.NewLabel("Title")
@@ -53,7 +53,7 @@ func (ef *EffectDialog) apply() {
 	title, _ := ef.title.Get()
 	frame := &glow.Frame{}
 	frame.Interval = uint32(RateBounds.OnVal)
-	err := ef.model.CreateNewEffect(title, frame)
+	err := ef.effect.CreateNewEffect(title, frame)
 	if err != nil {
 		fyne.LogError(title, err)
 	}
@@ -61,7 +61,7 @@ func (ef *EffectDialog) apply() {
 }
 
 func (ef *EffectDialog) validateFileName(s string) error {
-	err := ef.model.ValidateNewEffectName(s)
+	err := ef.effect.ValidateNewEffectName(s)
 	if err != nil {
 		ef.applyButton.Disable()
 		return err

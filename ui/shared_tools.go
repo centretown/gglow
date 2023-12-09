@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/fields"
+	"glow-gui/effects"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
@@ -13,13 +13,13 @@ type SharedTools struct {
 	saveButton  *ButtonItem
 	applyButton *ButtonItem
 	undoButton  *ButtonItem
-	model       fields.Model
+	effect      effects.Effect
 }
 
-func NewSharedTools(model fields.Model) *SharedTools {
+func NewSharedTools(effect effects.Effect) *SharedTools {
 	tl := &SharedTools{
 		Toolbar: widget.NewToolbar(),
-		model:   model,
+		effect:  effect,
 	}
 
 	tl.saveButton = NewButtonItem(
@@ -29,22 +29,22 @@ func NewSharedTools(model fields.Model) *SharedTools {
 	tl.applyButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.ConfirmIcon(), tl.apply))
 
-	tl.model.AddChangeListener(binding.NewDataListener(func() {
-		if tl.model.HasChanged() {
+	tl.effect.AddChangeListener(binding.NewDataListener(func() {
+		if tl.effect.HasChanged() {
 			tl.saveButton.Enable()
 			tl.undoButton.Enable()
 			tl.applyButton.Enable()
 			return
 		}
-		if !tl.model.CanUndo() {
+		if !tl.effect.CanUndo() {
 			tl.undoButton.Disable()
 		}
 		tl.saveButton.Disable()
 		tl.applyButton.Disable()
 	}))
 
-	// tl.model.AddUndoListener(binding.NewDataListener(func() {
-	// 	if tl.model.CanUndo() {
+	// tl.effect.AddUndoListener(binding.NewDataListener(func() {
+	// 	if tl.effect.CanUndo() {
 	// 	} else {
 	// 	}
 	// }))
@@ -58,13 +58,13 @@ func (tl *SharedTools) AddItems(items ...widget.ToolbarItem) {
 }
 
 func (tl *SharedTools) save() {
-	tl.model.WriteEffect()
+	tl.effect.WriteEffect()
 }
 
 func (tl *SharedTools) apply() {
-	tl.model.Apply()
+	tl.effect.Apply()
 }
 
 func (tl *SharedTools) undo() {
-	tl.model.UndoEffect()
+	tl.effect.UndoEffect()
 }

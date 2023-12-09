@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/fields"
+	"glow-gui/effects"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
@@ -19,16 +19,16 @@ type FrameTools struct {
 
 	toolBar *widget.Toolbar
 	popUp   *widget.PopUp
-	model   fields.Model
+	effect  effects.Effect
 }
 
-func NewFrameTools(model fields.Model, window fyne.Window) *FrameTools {
+func NewFrameTools(effect effects.Effect, window fyne.Window) *FrameTools {
 	ft := &FrameTools{
-		model: model,
+		effect: effect,
 	}
 
-	ft.createDialog = NewEffectDialog(model, window)
-	ft.folderDialog = NewFolderDialog(model, window)
+	ft.createDialog = NewEffectDialog(effect, window)
+	ft.folderDialog = NewFolderDialog(effect, window)
 
 	ft.frameMenu = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.DocumentIcon(), ft.menu))

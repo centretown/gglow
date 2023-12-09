@@ -1,4 +1,4 @@
-package fields
+package effects
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Summarize(layer *glow.Layer, index int) string {
+func SummarizeLayer(layer *glow.Layer, index int) string {
 	bldr := strings.Builder{}
 	bldr.Grow(80)
 

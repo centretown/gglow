@@ -1,12 +1,10 @@
-package fileio
+package effects
 
 import (
 	"fmt"
 	"glow-gui/resources"
 	"strings"
 	"unicode"
-
-	"fyne.io/fyne/v2"
 )
 
 func ValidateFolderName(title string) error {
@@ -48,20 +46,4 @@ func ValidateEffectName(title string) error {
 		}
 	}
 	return nil
-}
-
-func MakeTitle(uri fyne.URI) (s string) {
-	s = uri.Name()
-	i := strings.Index(s, uri.Extension())
-	if i > 0 {
-		s = s[:i]
-	}
-	s = strings.ReplaceAll(s, "_", " ")
-	return
-}
-
-func MakeFileName(title string) string {
-	s := strings.ReplaceAll(title, " ", "_")
-	s += ".yaml"
-	return s
 }

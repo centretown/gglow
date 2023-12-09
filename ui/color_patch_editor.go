@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/fields"
+	"glow-gui/effects"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"image/color"
@@ -16,7 +16,7 @@ import (
 
 type ColorPatchEditor struct {
 	*dialog.CustomDialog
-	model  fields.Model
+	effect effects.Effect
 	window fyne.Window
 
 	source      *ColorPatch
@@ -31,13 +31,13 @@ type ColorPatchEditor struct {
 }
 
 func NewColorPatchEditor(source *ColorPatch,
-	model fields.Model,
+	effect effects.Effect,
 	window fyne.Window) *ColorPatchEditor {
 
 	pe := &ColorPatchEditor{
 		source: source,
-		patch:  NewColorPatchWithColor(source.GetHSVColor(), model, func() {}),
-		model:  model,
+		patch:  NewColorPatchWithColor(source.GetHSVColor(), effect, func() {}),
+		effect: effect,
 		window: window,
 
 		hue:        binding.NewFloat(),
@@ -118,7 +118,7 @@ func (pe *ColorPatchEditor) setValue() {
 
 func (pe *ColorPatchEditor) setColor(hsv glow.HSV) {
 	pe.patch.SetHSVColor(hsv)
-	pe.model.SetChanged()
+	pe.effect.SetChanged()
 }
 
 func (pe *ColorPatchEditor) remove() {
@@ -136,7 +136,7 @@ func (le *ColorPatchEditor) selectColorPicker(patch *ColorPatch) func() {
 		picker := dialog.NewColorPicker("Color Picker", "color", func(c color.Color) {
 			if c != patch.GetColor() {
 				patch.SetColor(c)
-				le.model.SetChanged()
+				le.effect.SetChanged()
 			}
 		}, le.window)
 		picker.Advanced = true

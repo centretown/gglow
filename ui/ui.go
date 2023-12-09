@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/fields"
+	"glow-gui/effects"
 	"glow-gui/resources"
 	"glow-gui/settings"
 
@@ -18,7 +18,7 @@ type Ui struct {
 	window      fyne.Window
 	app         fyne.App
 	preferences fyne.Preferences
-	model       fields.Model
+	effect      effects.Effect
 	theme       *settings.GlowTheme
 	sourceStrip binding.Untyped
 
@@ -43,13 +43,13 @@ type Ui struct {
 	isMobile      bool
 }
 
-func NewUi(app fyne.App, window fyne.Window, model fields.Model, theme *settings.GlowTheme) *Ui {
+func NewUi(app fyne.App, window fyne.Window, effect effects.Effect, theme *settings.GlowTheme) *Ui {
 	ui := &Ui{
 		window:      window,
 		app:         app,
 		preferences: app.Preferences(),
 		theme:       theme,
-		model:       model,
+		effect:      effect,
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
 	}
@@ -60,7 +60,7 @@ func NewUi(app fyne.App, window fyne.Window, model fields.Model, theme *settings
 
 func (ui *Ui) OnExit() {
 	ui.stripPlayer.OnExit()
-	ui.preferences.SetString(settings.Effect.String(), ui.model.EffectName())
+	ui.preferences.SetString(settings.Effect.String(), ui.effect.EffectName())
 	ui.preferences.SetBool(settings.ContentSplit.String(), ui.isSplit)
 }
 
@@ -112,14 +112,14 @@ func (ui *Ui) BuildContent() *fyne.Container {
 	ui.sourceStrip.Set(ui.strip)
 
 	ui.stripLayout = NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip, color)
-	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.model, ui.stripLayout)
+	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.effect, ui.stripLayout)
 	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
-	ui.effectSelect = NewEffectSelect(ui.model)
+	ui.effectSelect = NewEffectSelect(ui.effect)
 
-	ui.toolbar = NewSharedTools(ui.model)
-	ui.frameEditor = NewFrameEditor(ui.model, ui.window, ui.toolbar)
-	ui.layerEditor = NewLayerEditor(ui.model, ui.window, ui.toolbar)
+	ui.toolbar = NewSharedTools(ui.effect)
+	ui.frameEditor = NewFrameEditor(ui.effect, ui.window, ui.toolbar)
+	ui.layerEditor = NewLayerEditor(ui.effect, ui.window, ui.toolbar)
 	ui.toolbar.Refresh()
 
 	ui.playContainer = container.NewBorder(ui.stripTools, nil, nil, nil, ui.strip)

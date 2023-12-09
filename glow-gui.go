@@ -23,7 +23,6 @@ func main() {
 	app.Settings().SetTheme(theme)
 
 	store := fileio.NewStore(preferences)
-	// model := control.NewModel(store)
 
 	window := app.NewWindow(resources.GlowLabel.String())
 	ui := ui.NewUi(app, window, store, theme)

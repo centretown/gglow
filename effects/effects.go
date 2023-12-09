@@ -1,4 +1,4 @@
-package fields
+package effects
 
 import (
 	"glow-gui/glow"
@@ -6,20 +6,16 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 )
 
-type Model interface {
+type Effect interface {
+	EffectName() string
+	GetFrame() *glow.Frame
 	KeyList() []string
 	SummaryList() []string
 
 	SetActive()
-	EffectName() string
-	GetFrame() *glow.Frame
 	GetCurrentLayer() *glow.Layer
 	SetCurrentLayer(i int)
 	LayerIndex() int
-
-	RefreshKeys(title string) []string
-	ValidateNewFolderName(title string) (err error)
-	ValidateNewEffectName(title string) (err error)
 
 	AddFrameListener(listener binding.DataListener)
 	AddLayerListener(listener binding.DataListener)
@@ -28,9 +24,14 @@ type Model interface {
 	SetChanged()
 	HasChanged() bool
 
+	ValidateNewFolderName(title string) (err error)
+	ValidateNewEffectName(title string) (err error)
+
 	IsFolder(title string) bool
 	CreateNewEffect(title string, frame *glow.Frame) (err error)
 	CreateNewFolder(title string) (err error)
+
+	RefreshKeys(title string) []string
 
 	OnApply(f func(*glow.Frame))
 	Apply()

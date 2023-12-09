@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/fields"
+	"glow-gui/effects"
 	"glow-gui/glow"
 	"time"
 
@@ -14,7 +14,7 @@ import (
 type LightStripPlayer struct {
 	*widget.Toolbar
 
-	model fields.Model
+	effect effects.Effect
 	// sourceFrame binding.Untyped
 	sourceStrip binding.Untyped
 	strip       *LightStrip
@@ -38,12 +38,12 @@ type LightStripPlayer struct {
 	isActive  bool
 }
 
-func NewLightStripPlayer(sourceStrip binding.Untyped, model fields.Model,
+func NewLightStripPlayer(sourceStrip binding.Untyped, effect effects.Effect,
 	lightStripLayout *LightStripLayout) *LightStripPlayer {
 
 	sb := &LightStripPlayer{
 		// sourceFrame:  sourceFrame,
-		model:        model,
+		effect:       effect,
 		sourceStrip:  sourceStrip,
 		stopChan:     make(chan int),
 		stepChan:     make(chan int),
@@ -75,7 +75,7 @@ func NewLightStripPlayer(sourceStrip binding.Untyped, model fields.Model,
 	)
 
 	sb.strip = sb.getStrip()
-	sb.model.AddFrameListener(binding.NewDataListener(sb.frameListener))
+	sb.effect.AddFrameListener(binding.NewDataListener(sb.frameListener))
 	return sb
 }
 
@@ -96,7 +96,7 @@ func (sb *LightStripPlayer) ResetStrip() {
 
 func (sb *LightStripPlayer) frameListener() {
 	sb.run()
-	sb.frameChan <- sb.model.GetFrame()
+	sb.frameChan <- sb.effect.GetFrame()
 }
 
 func (sb *LightStripPlayer) OnExit() {
@@ -185,7 +185,7 @@ func (sb *LightStripPlayer) spin() {
 		}
 	}
 
-	copyFrame(sb.model.GetFrame())
+	copyFrame(sb.effect.GetFrame())
 
 	for {
 		select {
@@ -209,11 +209,11 @@ func (sb *LightStripPlayer) spin() {
 
 		case <-sb.stripChan:
 			sb.strip = sb.getStrip()
-			copyFrame(sb.model.GetFrame())
+			copyFrame(sb.effect.GetFrame())
 			frame.Spin(sb.strip)
 
 		case <-sb.resetChan:
-			copyFrame(sb.model.GetFrame())
+			copyFrame(sb.effect.GetFrame())
 			frame.Spin(sb.strip)
 
 		default:
