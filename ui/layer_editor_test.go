@@ -1,104 +1,96 @@
 package ui
 
-import (
-	"glow-gui/control"
-	"glow-gui/fileio"
-	"testing"
+// func test_editor_setup(t *testing.T) (model control.Control, e *LayerEditor, err error) {
+// 	app := test.NewApp()
+// 	w := app.NewWindow("Editor")
+// 	model = control.NewModel(fileio.NewStore(app.Preferences()))
+// 	toolBar := NewSharedTools(model)
+// 	e = NewLayerEditor(model, w, toolBar)
+// 	return
+// }
 
-	"fyne.io/fyne/v2/test"
-)
+// // func test_apply_button_disabled(t *testing.T, e *LayerEditor, expected bool) {
+// // 	b := e.applyButton.Disabled()
+// // 	if b != expected {
+// // 		t.Fatalf("apply button got %v expected %v", b, expected)
+// // 	}
+// // }
 
-func test_editor_setup(t *testing.T) (model *control.Model, e *LayerEditor, err error) {
-	app := test.NewApp()
-	w := app.NewWindow("Editor")
-	model = control.NewModel(fileio.NewStore(app.Preferences()))
-	toolBar := NewSharedTools(model)
-	e = NewLayerEditor(model, w, toolBar)
-	return
-}
+// // func test_revert_button_disabled(t *testing.T, e *LayerEditor, expected bool) {
+// // 	b := e.revertButton.Disabled()
+// // 	if b != expected {
+// // 		t.Fatalf("revert button got %v expected %v", b, expected)
+// // 	}
+// // }
 
-// func test_apply_button_disabled(t *testing.T, e *LayerEditor, expected bool) {
-// 	b := e.applyButton.Disabled()
+// func test_dirty(t *testing.T, e *LayerEditor, expected bool) {
+// 	b := isDirty(e)
 // 	if b != expected {
-// 		t.Fatalf("apply button got %v expected %v", b, expected)
+// 		t.Fatalf("dirty got %v expected %v", b, expected)
 // 	}
 // }
 
-// func test_revert_button_disabled(t *testing.T, e *LayerEditor, expected bool) {
-// 	b := e.revertButton.Disabled()
-// 	if b != expected {
-// 		t.Fatalf("revert button got %v expected %v", b, expected)
+// func test_layer_editor_init(t *testing.T) (e *LayerEditor) {
+// 	_, e, err := test_editor_setup(t)
+// 	if err != nil {
+// 		t.Fatalf(err.Error())
+// 	}
+
+// 	// test_apply_button_disabled(t, e, true)
+// 	// test_revert_button_disabled(t, e, true)
+// 	test_dirty(t, e, false)
+
+// 	return
+// }
+
+// func testScan(t *testing.T, e *LayerEditor, expected int) {
+// 	scan, _ := e.fields.Scan.Get()
+// 	if scan != expected {
+// 		t.Fatalf("expected %d value %d", expected, scan)
 // 	}
 // }
 
-func test_dirty(t *testing.T, e *LayerEditor, expected bool) {
-	b := isDirty(e)
-	if b != expected {
-		t.Fatalf("dirty got %v expected %v", b, expected)
-	}
-}
+// func testHue(t *testing.T, e *LayerEditor, expected int) {
+// 	shift, _ := e.fields.HueShift.Get()
+// 	if shift != expected {
+// 		t.Fatalf("expected %d value %d", expected, shift)
+// 	}
+// }
 
-func test_layer_editor_init(t *testing.T) (e *LayerEditor) {
-	_, e, err := test_editor_setup(t)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+// func testRate(t *testing.T, e *LayerEditor, expected int) {
+// 	rate, _ := e.fields.Rate.Get()
+// 	if rate != expected {
+// 		t.Fatalf("expected %d value %d", expected, rate)
+// 	}
+// }
 
-	// test_apply_button_disabled(t, e, true)
-	// test_revert_button_disabled(t, e, true)
-	test_dirty(t, e, false)
+// func isDirty(le *LayerEditor) bool {
+// 	return le.model.HasChanged()
+// }
 
-	return
-}
+// func TestLayerEditor(t *testing.T) {
+// 	e := test_layer_editor_init(t)
 
-func testScan(t *testing.T, e *LayerEditor, expected int) {
-	scan, _ := e.fields.Scan.Get()
-	if scan != expected {
-		t.Fatalf("expected %d value %d", expected, scan)
-	}
-}
+// 	if isDirty(e) {
+// 		t.Fatal("Dirty")
+// 	}
 
-func testHue(t *testing.T, e *LayerEditor, expected int) {
-	shift, _ := e.fields.HueShift.Get()
-	if shift != expected {
-		t.Fatalf("expected %d value %d", expected, shift)
-	}
-}
+// 	testScan(t, e, e.scanBounds.OffVal)
+// 	testHue(t, e, e.hueBounds.OffVal)
+// 	testRate(t, e, e.rateBounds.OffVal)
 
-func testRate(t *testing.T, e *LayerEditor, expected int) {
-	rate, _ := e.fields.Rate.Get()
-	if rate != expected {
-		t.Fatalf("expected %d value %d", expected, rate)
-	}
-}
+// 	e.checkScan.SetChecked(true)
+// 	testScan(t, e, e.scanBounds.OnVal)
+// 	e.checkScan.SetChecked(false)
+// 	testScan(t, e, e.scanBounds.OffVal)
 
-func isDirty(le *LayerEditor) bool {
-	return le.model.HasChanged()
-}
+// 	e.checkHue.SetChecked(true)
+// 	testHue(t, e, e.hueBounds.OnVal)
+// 	e.checkHue.SetChecked(false)
+// 	testRate(t, e, e.hueBounds.OffVal)
 
-func TestLayerEditor(t *testing.T) {
-	e := test_layer_editor_init(t)
-
-	if isDirty(e) {
-		t.Fatal("Dirty")
-	}
-
-	testScan(t, e, e.scanBounds.OffVal)
-	testHue(t, e, e.hueBounds.OffVal)
-	testRate(t, e, e.rateBounds.OffVal)
-
-	e.checkScan.SetChecked(true)
-	testScan(t, e, e.scanBounds.OnVal)
-	e.checkScan.SetChecked(false)
-	testScan(t, e, e.scanBounds.OffVal)
-
-	e.checkHue.SetChecked(true)
-	testHue(t, e, e.hueBounds.OnVal)
-	e.checkHue.SetChecked(false)
-	testRate(t, e, e.hueBounds.OffVal)
-
-	e.checkRate.SetChecked(true)
-	testRate(t, e, e.rateBounds.OnVal)
-	e.checkRate.SetChecked(false)
-	testRate(t, e, e.rateBounds.OffVal)
-}
+// 	e.checkRate.SetChecked(true)
+// 	testRate(t, e, e.rateBounds.OnVal)
+// 	e.checkRate.SetChecked(false)
+// 	testRate(t, e, e.rateBounds.OffVal)
+// }

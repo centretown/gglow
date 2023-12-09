@@ -3,7 +3,7 @@ package ui
 import (
 	"encoding/json"
 	"fmt"
-	"glow-gui/control"
+	"glow-gui/fields"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"image/color"
@@ -36,10 +36,10 @@ type ColorPatch struct {
 	unused           bool
 
 	Editing bool
-	model   *control.Model
+	model   fields.Model
 }
 
-func NewColorPatch(model *control.Model) (patch *ColorPatch) {
+func NewColorPatch(model fields.Model) (patch *ColorPatch) {
 	var hsv glow.HSV
 	hsv.FromColor(theme.DisabledColor())
 	patch = NewColorPatchWithColor(hsv, model, nil)
@@ -47,7 +47,7 @@ func NewColorPatch(model *control.Model) (patch *ColorPatch) {
 	return
 }
 
-func NewColorPatchWithColor(hsv glow.HSV, model *control.Model, tapped func()) *ColorPatch {
+func NewColorPatchWithColor(hsv glow.HSV, model fields.Model, tapped func()) *ColorPatch {
 	cp := &ColorPatch{
 		background: canvas.NewRectangle(theme.ButtonColor()),
 		rectangle:  canvas.NewRectangle(hsv.ToRGB()),

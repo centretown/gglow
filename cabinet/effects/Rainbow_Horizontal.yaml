@@ -1,6 +1,6 @@
 length: 0
 rows: 0
-interval: 91
+interval: 93
 layers:
     - length: 0
       rows: 0
@@ -16,7 +16,7 @@ layers:
             - hue: 1
               saturation: 100
               value: 100
-            - hue: 75
+            - hue: 197
               saturation: 100
               value: 100
       hue_shift: 0

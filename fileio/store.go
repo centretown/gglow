@@ -2,6 +2,7 @@ package fileio
 
 import (
 	"fmt"
+	"glow-gui/fields"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"glow-gui/settings"
@@ -30,13 +31,14 @@ func defaultFrame() (frame *glow.Frame) {
 }
 
 type Store struct {
-	EffectName string
-	Frame      binding.Untyped
-	Layer      binding.Untyped
-	LayerIndex int
-	Current    fyne.ListableURI
-	KeyList    []string
-	FolderList []string
+	effectName       string
+	Frame            binding.Untyped
+	Layer            binding.Untyped
+	LayerSummaryList binding.StringList
+	layerIndex       int
+	Current          fyne.ListableURI
+	keyList          []string
+	FolderList       []string
 
 	uriMap      map[string]fyne.URI
 	route       []string
@@ -47,8 +49,12 @@ type Store struct {
 	// history *History
 	// CanUndo binding.Bool
 	// CanSave binding.Bool
-	IsDirty binding.Bool
+	backup     *glow.Frame
+	HasBackup  bool
+	hasChanged binding.Bool
+	isActive   bool
 
+	saveActions []func(*glow.Frame)
 	// changeDetected bool
 }
 
@@ -71,11 +77,12 @@ func NewStore(preferences fyne.Preferences) *Store {
 	}
 
 	st := &Store{
-		KeyList:    make([]string, 0),
-		FolderList: make([]string, 0),
-		Frame:      binding.NewUntyped(),
-		Layer:      binding.NewUntyped(),
-		IsDirty:    binding.NewBool(),
+		keyList:          make([]string, 0),
+		FolderList:       make([]string, 0),
+		Frame:            binding.NewUntyped(),
+		Layer:            binding.NewUntyped(),
+		LayerSummaryList: binding.NewStringList(),
+		hasChanged:       binding.NewBool(),
 		// CanUndo:    binding.NewBool(),
 		// CanSave:    binding.NewBool(),
 
@@ -83,7 +90,9 @@ func NewStore(preferences fyne.Preferences) *Store {
 		uriMap:      make(map[string]fyne.URI),
 		stack:       NewStack(rootURI),
 		rootPath:    rootPath,
+		backup:      &glow.Frame{},
 		// history:     NewHistory(),
+		saveActions: make([]func(*glow.Frame), 0),
 	}
 
 	st.stack.Push(rootURI)
@@ -102,13 +111,35 @@ func NewStore(preferences fyne.Preferences) *Store {
 		st.setFrame(defaultFrame(), 0)
 	}
 
+	st.AddChangeListener(binding.NewDataListener(func() {
+		if st.HasChanged() {
+			f := st.GetFrame()
+			fmt.Println("hasChanged makeBackup", f.Interval)
+			st.makeBackup(true)
+			// st.setFrame(&frame, st.LayerIndex)
+		}
+	}))
+
 	return st
+}
+
+func (st *Store) SummaryList() []string {
+	l, _ := st.LayerSummaryList.Get()
+	return l
+}
+
+func (st *Store) LayerIndex() int {
+	return st.layerIndex
+}
+
+func (st *Store) SetActive() {
+	st.isActive = true
 }
 
 func (st *Store) setFrame(frame *glow.Frame, layerIndex int) {
 	st.Frame.Set(frame)
 	st.SetCurrentLayer(layerIndex)
-	st.IsDirty.Set(false)
+	st.hasChanged.Set(false)
 }
 
 func (st *Store) GetFrame() *glow.Frame {
@@ -120,10 +151,10 @@ func (st *Store) SetCurrentLayer(i int) {
 	frame := st.GetFrame()
 	var layer *glow.Layer
 	if i < len(frame.Layers) {
-		st.LayerIndex = i
+		st.layerIndex = i
 		layer = &frame.Layers[i]
 	} else {
-		st.LayerIndex = 0
+		st.layerIndex = 0
 		layer = &glow.Layer{}
 	}
 	st.Layer.Set(layer)
@@ -136,21 +167,36 @@ func (st *Store) GetCurrentLayer() *glow.Layer {
 
 func (st *Store) Undo(title string) {
 
-	if !st.GetDirty() {
-		fyne.LogError("UndoEffect", fmt.Errorf("nothing to undo"))
-		return
+	if st.HasBackup {
+		frame := st.backup
+		st.setFrame(frame, st.layerIndex)
+		st.makeBackup(false)
 	}
 
-	frame := *st.GetFrame()
-	st.setFrame(&frame, st.LayerIndex)
+	fyne.LogError("UndoEffect", fmt.Errorf("nothing to undo"))
 }
 
-func (st *Store) SetDirty(dirty bool) {
-	st.IsDirty.Set(dirty)
+func (st *Store) SetChanged() {
+	if !st.isActive {
+		return
+	}
+	st.hasChanged.Set(true)
 }
 
-func (m *Store) GetDirty() bool {
-	b, _ := m.IsDirty.Get()
+func (st *Store) AddFrameListener(listener binding.DataListener) {
+	st.Frame.AddListener(listener)
+}
+
+func (st *Store) AddLayerListener(listener binding.DataListener) {
+	st.Layer.AddListener(listener)
+}
+
+func (st *Store) AddChangeListener(listener binding.DataListener) {
+	st.hasChanged.AddListener(listener)
+}
+
+func (m *Store) HasChanged() bool {
+	b, _ := m.hasChanged.Get()
 	return b
 }
 
@@ -167,19 +213,23 @@ func (st *Store) IsFolder(key string) bool {
 	return ok
 }
 
-func (st *Store) RefreshKeys(key string) {
+func (st *Store) KeyList() []string {
+	return st.keyList
+}
+
+func (st *Store) RefreshKeys(key string) []string {
 
 	uri, ok := st.uriMap[key]
 	if !ok {
 		err := fmt.Errorf(resources.MsgGetEffectLookup.Format(key))
 		fyne.LogError("RefreshKeys", err)
-		return
+		return st.keyList
 	}
 
 	listable, err := storage.ListerForURI(uri)
 	if err != nil {
 		fyne.LogError(resources.MsgPathNotFolder.Format(key), err)
-		return
+		return st.keyList
 	}
 
 	if key == dots {
@@ -189,6 +239,7 @@ func (st *Store) RefreshKeys(key string) {
 	}
 
 	st.makeLookupList()
+	return st.keyList
 }
 
 func (st *Store) makeLookupList() (err error) {
@@ -201,17 +252,17 @@ func (st *Store) makeLookupList() (err error) {
 	st.Current = currentUri
 
 	uriList, err := st.Current.List()
-	st.KeyList = make([]string, 0, len(uriList)+1)
+	st.keyList = make([]string, 0, len(uriList)+1)
 	st.FolderList = make([]string, 0)
 	if !isRoot {
-		st.KeyList = append(st.KeyList, dots)
+		st.keyList = append(st.keyList, dots)
 		st.FolderList = append(st.FolderList, dots)
 	}
 
 	for _, uri := range uriList {
 		title := MakeTitle(uri)
 		st.uriMap[title] = uri
-		st.KeyList = append(st.KeyList, title)
+		st.keyList = append(st.keyList, title)
 		isList, _ := storage.CanList(uri)
 		if isList {
 			st.FolderList = append(st.FolderList, title)
@@ -233,7 +284,7 @@ func (st *Store) CreateNewEffect(title string, frame *glow.Frame) error {
 	if err != nil {
 		return err
 	}
-	return st.WriteEffect(title, frame)
+	return st.writeEffect(title, frame)
 }
 
 func (st *Store) CreateNewFolder(title string) error {
@@ -292,12 +343,18 @@ func (st *Store) ReadEffect(title string) error {
 	}
 
 	st.route = st.stack.Route()
-	st.EffectName = title
+	st.effectName = title
 	st.setFrame(frame, 0)
+	st.makeBackup(false)
+	st.hasChanged.Set(false)
 	return nil
 }
 
-func (st *Store) WriteEffect(title string, frame *glow.Frame) error {
+func (st *Store) WriteEffect() error {
+	return st.writeEffect(st.EffectName(), st.GetFrame())
+}
+
+func (st *Store) writeEffect(title string, frame *glow.Frame) error {
 	title = strings.TrimSpace(title)
 
 	err := ValidateEffectName(title)
@@ -338,7 +395,7 @@ func (st *Store) WriteEffect(title string, frame *glow.Frame) error {
 	}
 
 	st.makeLookupList()
-	st.IsDirty.Set(false)
+	st.hasChanged.Set(false)
 	return err
 }
 
@@ -359,4 +416,50 @@ func (st *Store) ValidateNewEffectName(title string) error {
 	}
 	err = st.IsDuplicate(title)
 	return err
+}
+
+func (st *Store) makeBackup(b bool) {
+	st.HasBackup = b
+	if b {
+		st.backup, _ = glow.FrameDeepCopy(st.GetFrame())
+	} else {
+		st.backup = &glow.Frame{}
+	}
+}
+
+func (st *Store) Apply() {
+	frame := st.GetFrame()
+
+	for _, saveAction := range st.saveActions {
+		saveAction(frame)
+	}
+
+	current := *frame
+	st.Frame.Set(&current)
+}
+
+func (st *Store) OnApply(f func(*glow.Frame)) {
+	st.saveActions = append(st.saveActions, f)
+}
+
+func (st *Store) EffectName() string {
+	return st.effectName
+}
+
+func (st *Store) UndoEffect() {
+	st.Undo(st.effectName)
+	st.Apply()
+}
+
+func (st *Store) CanUndo() bool {
+	return st.HasBackup
+}
+
+func (st *Store) onChangeFrame() {
+	frame := st.GetFrame()
+	summaries := make([]string, 0, len(frame.Layers))
+	for i, layer := range frame.Layers {
+		summaries = append(summaries, fields.Summarize(&layer, i+1))
+	}
+	st.LayerSummaryList.Set(summaries)
 }

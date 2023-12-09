@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/control"
+	"glow-gui/fields"
 	"glow-gui/resources"
 	"glow-gui/settings"
 
@@ -18,7 +18,7 @@ type Ui struct {
 	window      fyne.Window
 	app         fyne.App
 	preferences fyne.Preferences
-	model       *control.Model
+	model       fields.Model
 	theme       *settings.GlowTheme
 	sourceStrip binding.Untyped
 
@@ -43,7 +43,7 @@ type Ui struct {
 	isMobile      bool
 }
 
-func NewUi(app fyne.App, window fyne.Window, model *control.Model, theme *settings.GlowTheme) *Ui {
+func NewUi(app fyne.App, window fyne.Window, model fields.Model, theme *settings.GlowTheme) *Ui {
 	ui := &Ui{
 		window:      window,
 		app:         app,

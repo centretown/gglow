@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/control"
+	"glow-gui/fields"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
@@ -10,12 +10,13 @@ import (
 
 type SharedTools struct {
 	*widget.Toolbar
-	saveButton *ButtonItem
-	undoButton *ButtonItem
-	model      *control.Model
+	saveButton  *ButtonItem
+	applyButton *ButtonItem
+	undoButton  *ButtonItem
+	model       fields.Model
 }
 
-func NewSharedTools(model *control.Model) *SharedTools {
+func NewSharedTools(model fields.Model) *SharedTools {
 	tl := &SharedTools{
 		Toolbar: widget.NewToolbar(),
 		model:   model,
@@ -25,15 +26,21 @@ func NewSharedTools(model *control.Model) *SharedTools {
 		widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), tl.save))
 	tl.undoButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.ContentUndoIcon(), tl.undo))
+	tl.applyButton = NewButtonItem(
+		widget.NewButtonWithIcon("", theme.ConfirmIcon(), tl.apply))
 
 	tl.model.AddChangeListener(binding.NewDataListener(func() {
 		if tl.model.HasChanged() {
 			tl.saveButton.Enable()
 			tl.undoButton.Enable()
-		} else {
-			tl.undoButton.Disable()
-			tl.saveButton.Disable()
+			tl.applyButton.Enable()
+			return
 		}
+		if !tl.model.CanUndo() {
+			tl.undoButton.Disable()
+		}
+		tl.saveButton.Disable()
+		tl.applyButton.Disable()
 	}))
 
 	// tl.model.AddUndoListener(binding.NewDataListener(func() {
@@ -42,7 +49,7 @@ func NewSharedTools(model *control.Model) *SharedTools {
 	// 	}
 	// }))
 
-	tl.AddItems(tl.saveButton, tl.undoButton)
+	tl.AddItems(tl.saveButton, tl.applyButton, tl.undoButton)
 	return tl
 }
 
@@ -52,6 +59,10 @@ func (tl *SharedTools) AddItems(items ...widget.ToolbarItem) {
 
 func (tl *SharedTools) save() {
 	tl.model.WriteEffect()
+}
+
+func (tl *SharedTools) apply() {
+	tl.model.Apply()
 }
 
 func (tl *SharedTools) undo() {

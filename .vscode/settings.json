@@ -1,3 +1,19 @@
 {
-    "svg.preview.background": "transparent"
+    "svg.preview.background": "transparent",
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "openwrt",
+            "port": 3306,
+            "driver": "MariaDB",
+            "name": "glow",
+            "database": "glow",
+            "username": "dave",
+            "password": "football"
+        }
+    ]
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"glow-gui/control"
 	"glow-gui/fileio"
 	"glow-gui/resources"
 	"glow-gui/settings"
@@ -24,10 +23,10 @@ func main() {
 	app.Settings().SetTheme(theme)
 
 	store := fileio.NewStore(preferences)
-	model := control.NewModel(store)
+	// model := control.NewModel(store)
 
 	window := app.NewWindow(resources.GlowLabel.String())
-	ui := ui.NewUi(app, window, model, theme)
+	ui := ui.NewUi(app, window, store, theme)
 
 	window.SetCloseIntercept(func() {
 		store.OnExit()
@@ -44,5 +43,7 @@ func main() {
 		window.Resize(fyne.Size{Width: float32(width), Height: float32(height)})
 	}
 
-	window.ShowAndRun()
+	window.Show()
+	store.SetActive()
+	app.Run()
 }

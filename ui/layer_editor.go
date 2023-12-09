@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/control"
+	"glow-gui/fields"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"strconv"
@@ -15,9 +15,9 @@ import (
 
 type LayerEditor struct {
 	*fyne.Container
-	model  *control.Model
+	model  fields.Model
 	layer  *glow.Layer
-	fields *control.LayerFields
+	fields *fields.LayerFields
 	window fyne.Window
 
 	patches []*ColorPatch
@@ -44,7 +44,7 @@ type LayerEditor struct {
 	tools *LayerTools
 }
 
-func NewLayerEditor(model *control.Model, window fyne.Window,
+func NewLayerEditor(model fields.Model, window fyne.Window,
 	sharedTools *SharedTools) *LayerEditor {
 
 	le := &LayerEditor{
@@ -53,7 +53,7 @@ func NewLayerEditor(model *control.Model, window fyne.Window,
 		model: model,
 		layer: model.GetCurrentLayer(),
 
-		fields: control.NewLayerFields(),
+		fields: fields.NewLayerFields(),
 		tools:  NewLayerTools(model),
 
 		rateBounds: RateBounds,
@@ -76,13 +76,13 @@ func NewLayerEditor(model *control.Model, window fyne.Window,
 	le.model.AddLayerListener(binding.NewDataListener(le.setFields))
 
 	sharedTools.AddItems(le.tools.Items()...)
-	model.AddSaveAction(le.apply)
+	model.OnApply(le.apply)
 	return le
 }
 
 func (le *LayerEditor) createPatches() {
-	le.patches = make([]*ColorPatch, control.MaxLayerColors)
-	for i := 0; i < control.MaxLayerColors; i++ {
+	le.patches = make([]*ColorPatch, fields.MaxLayerColors)
+	for i := 0; i < fields.MaxLayerColors; i++ {
 		patch := NewColorPatch(le.model)
 		patch.SetTapped(le.selectColor(patch))
 		le.patches[i] = patch
@@ -176,7 +176,6 @@ func (le *LayerEditor) createForm() *fyne.Container {
 }
 
 func (le *LayerEditor) setFields() {
-	le.model.WindowHasContent = false
 	le.layer = le.model.GetCurrentLayer()
 	le.fields.FromLayer(le.layer)
 
@@ -205,7 +204,6 @@ func (le *LayerEditor) setFields() {
 			p.SetUnused(true)
 		}
 	}
-	le.model.WindowHasContent = true
 }
 
 func (le *LayerEditor) apply(frame *glow.Frame) {

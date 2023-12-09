@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/control"
+	"glow-gui/fields"
 	"glow-gui/glow"
 
 	"fyne.io/fyne/v2"
@@ -16,12 +16,13 @@ import (
 
 type EffectDialog struct {
 	*dialog.CustomDialog
-	title       binding.String
-	model       *control.Model
+	title binding.String
+	model fields.Model
+
 	applyButton *widget.Button
 }
 
-func NewEffectDialog(model *control.Model, window fyne.Window) (ef *EffectDialog) {
+func NewEffectDialog(model fields.Model, window fyne.Window) (ef *EffectDialog) {
 	ef = &EffectDialog{
 		model: model,
 		title: binding.NewString(),

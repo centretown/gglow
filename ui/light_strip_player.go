@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/control"
+	"glow-gui/fields"
 	"glow-gui/glow"
 	"time"
 
@@ -14,7 +14,7 @@ import (
 type LightStripPlayer struct {
 	*widget.Toolbar
 
-	model *control.Model
+	model fields.Model
 	// sourceFrame binding.Untyped
 	sourceStrip binding.Untyped
 	strip       *LightStrip
@@ -38,7 +38,7 @@ type LightStripPlayer struct {
 	isActive  bool
 }
 
-func NewLightStripPlayer(sourceStrip binding.Untyped, model *control.Model,
+func NewLightStripPlayer(sourceStrip binding.Untyped, model fields.Model,
 	lightStripLayout *LightStripLayout) *LightStripPlayer {
 
 	sb := &LightStripPlayer{
