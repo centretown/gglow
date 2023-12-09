@@ -19,7 +19,7 @@ layers:
             - hue: 107
               saturation: 51
               value: 39
-      hue_shift: 5
+      hue_shift: 1
       scan: 0
       begin: 0
       end: 0

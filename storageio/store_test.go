@@ -1,4 +1,4 @@
-package fileio
+package storageio
 
 // import (
 // 	"testing"

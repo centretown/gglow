@@ -1,9 +1,10 @@
 package main
 
 import (
-	"glow-gui/fileio"
+	"glow-gui/effects"
 	"glow-gui/resources"
 	"glow-gui/settings"
+	"glow-gui/storageio"
 	"glow-gui/ui"
 
 	"fyne.io/fyne/v2"
@@ -22,13 +23,14 @@ func main() {
 	theme := settings.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
 
-	store := fileio.NewStore(preferences)
+	fh := storageio.NewStorageHandler(preferences)
+	eff := effects.NewEffectIo(fh, preferences)
 
 	window := app.NewWindow(resources.GlowLabel.String())
-	ui := ui.NewUi(app, window, store, theme)
+	ui := ui.NewUi(app, window, eff, theme)
 
 	window.SetCloseIntercept(func() {
-		store.OnExit()
+		eff.OnExit()
 		ui.OnExit()
 		size := window.Canvas().Size()
 		preferences.SetInt(settings.ContentWidth.String(), int(size.Width))
@@ -43,6 +45,6 @@ func main() {
 	}
 
 	window.Show()
-	store.SetActive()
+	eff.SetActive()
 	app.Run()
 }
