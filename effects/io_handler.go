@@ -3,8 +3,8 @@ package effects
 import "glow-gui/glow"
 
 type IoHandler interface {
-	CreateNewEffect(title string, frame *glow.Frame) error
 	WriteEffect(title string, frame *glow.Frame) error
+	CreateNewEffect(title string, frame *glow.Frame) error
 	ReadEffect(title string) (*glow.Frame, error)
 	CreateNewFolder(title string) error
 	WriteFolder(title string) error
