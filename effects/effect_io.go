@@ -76,7 +76,8 @@ func NewEffectIo(io IoHandler, preferences fyne.Preferences) *EffectIo {
 }
 
 func (eff *EffectIo) RefreshKeys(key string) []string {
-	return eff.io.RefreshKeys(key)
+	keys, _ := eff.io.RefreshKeys(key)
+	return keys
 }
 
 func (eff *EffectIo) KeyList() []string {

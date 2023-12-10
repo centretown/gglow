@@ -79,19 +79,19 @@ func (fh *StorageHandler) IsFolder(key string) bool {
 	return ok
 }
 
-func (fh *StorageHandler) RefreshKeys(key string) []string {
+func (fh *StorageHandler) RefreshKeys(key string) ([]string, error) {
 
 	uri, ok := fh.uriMap[key]
 	if !ok {
 		err := fmt.Errorf(resources.MsgGetEffectLookup.Format(key))
 		fyne.LogError("RefreshKeys", err)
-		return fh.keyList
+		return fh.keyList, err
 	}
 
 	listable, err := storage.ListerForURI(uri)
 	if err != nil {
 		fyne.LogError(resources.MsgPathNotFolder.Format(key), err)
-		return fh.keyList
+		return fh.keyList, err
 	}
 
 	if key == dots {
@@ -101,7 +101,7 @@ func (fh *StorageHandler) RefreshKeys(key string) []string {
 	}
 
 	fh.makeLookupList()
-	return fh.keyList
+	return fh.keyList, nil
 }
 
 func (fh *StorageHandler) KeyList() []string {

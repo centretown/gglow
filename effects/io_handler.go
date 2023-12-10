@@ -12,6 +12,6 @@ type IoHandler interface {
 	ValidateNewEffectName(title string) error
 	IsFolder(key string) bool
 	KeyList() []string
-	RefreshKeys(key string) []string
+	RefreshKeys(key string) ([]string, error)
 	OnExit()
 }
