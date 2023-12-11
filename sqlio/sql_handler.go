@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"glow-gui/effects"
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"log"
@@ -12,28 +13,43 @@ import (
 
 	"fyne.io/fyne/v2"
 	_ "github.com/go-sql-driver/mysql"
-	"gopkg.in/yaml.v3"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
-	dsn = "dave:football@tcp(192.168.40.1:3306)/glow"
+	dsnMYSQL      = "dave:football@tcp(192.168.40.1:3306)/test"
+	dsnSQLLite    = "./glow.db"
+	driverMYSQL   = "mysql"
+	driverSQLLite = "sqlite3"
 )
 
+var _ effects.IoHandler = (*SqlHandler)(nil)
+
 type SqlHandler struct {
-	Folder  string
-	db      *sql.DB
-	keyList []string
-	keyMap  map[string]bool
+	Folder     string
+	db         *sql.DB
+	keyList    []string
+	keyMap     map[string]bool
+	serializer effects.Serializer
 }
 
-func NewSqlHandler() *SqlHandler {
-	var err error
+func NewDefaultSqlHandler() *SqlHandler {
+	return NewSqlHandler(driverMYSQL, dsnMYSQL)
+}
+
+func NewSqlLiteHandler() *SqlHandler {
+	return NewSqlHandler(driverSQLLite, dsnSQLLite)
+}
+
+func NewSqlHandler(driver, dsn string) *SqlHandler {
 	sqlh := &SqlHandler{
-		Folder:  "effects",
-		keyList: make([]string, 0),
+		Folder:     "effects",
+		keyList:    make([]string, 0),
+		serializer: &effects.JsonSerializer{},
 	}
 
-	sqlh.db, err = sql.Open("mysql", dsn)
+	var err error
+	sqlh.db, err = sql.Open(driver, dsn)
 	if err != nil {
 		fyne.LogError(resources.MsgParseEffectPath.Format(dsn), err)
 		os.Exit(1)
@@ -73,7 +89,8 @@ func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 	}
 
 	frame := &glow.Frame{}
-	err = yaml.Unmarshal(source, frame)
+	sqlh.serializer.Scan(source, frame)
+	// err = yaml.Unmarshal(source, frame)
 	if err != nil {
 		fyne.LogError("unable to decode frame", err)
 		return nil, err
@@ -82,11 +99,28 @@ func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 	return frame, nil
 }
 
-func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
+func (sqlh *SqlHandler) IsFolder(title string) bool {
+	return false
+}
+func (sqlh *SqlHandler) WriteFolder(title string) error {
 	return nil
 }
+func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
+	err := effects.ValidateFolderName(title)
+	if err != nil {
+		return err
+	}
+
+	err = sqlh.isDuplicate(title)
+	return err
+}
 func (sqlh *SqlHandler) ValidateNewEffectName(title string) error {
-	return nil
+	err := effects.ValidateEffectName(title)
+	if err != nil {
+		return err
+	}
+	err = sqlh.isDuplicate(title)
+	return err
 }
 func (sqlh *SqlHandler) CreateNewFolder(title string) error {
 	return nil
@@ -117,7 +151,8 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 		source []byte
 	)
 
-	source, err := yaml.Marshal(frame)
+	// source, err := yaml.Marshal(frame)
+	source, err := sqlh.serializer.Format(frame)
 	if err != nil {
 		fyne.LogError("unable to encode frame", err)
 		return err
@@ -141,7 +176,7 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 	}
 
 	sqlh.keyList = append(sqlh.keyList, title)
-	sqlh.keyMap[title] = true
+	sqlh.keyMap[title] = false
 	return nil
 }
 
@@ -168,7 +203,7 @@ func (sqlh *SqlHandler) RefreshKeys(folder string) ([]string, error) {
 			break
 		}
 		sqlh.keyList = append(sqlh.keyList, title)
-		sqlh.keyMap[title] = true
+		sqlh.keyMap[title] = false
 	}
 
 	return sqlh.keyList, err

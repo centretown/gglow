@@ -2,8 +2,16 @@ package sqlio
 
 import "testing"
 
-func TestSql(t *testing.T) {
-	sqlh := NewSqlHandler()
+func TestMySql(t *testing.T) {
+	testSql(t, driverMYSQL, dsnMYSQL)
+}
+
+func TestSqlLite(t *testing.T) {
+	testSql(t, driverSQLLite, dsnSQLLite)
+}
+
+func testSql(t *testing.T, driver, dsn string) {
+	sqlh := NewSqlHandler(driver, dsn)
 
 	err := sqlh.Ping()
 	if err != nil {
@@ -66,7 +74,7 @@ func TestSql(t *testing.T) {
 
 	frame2.Interval += 10
 
-	err = sqlh.CreateNewEffect("Scan Complementary9", frame2)
+	err = sqlh.CreateNewEffect("Scan Complementary15", frame2)
 	if err != nil {
 		t.Log(err)
 	}

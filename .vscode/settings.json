@@ -14,6 +14,20 @@
             "database": "glow",
             "username": "dave",
             "password": "football"
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "192.168.40.1",
+            "port": 3306,
+            "driver": "MariaDB",
+            "name": "test",
+            "database": "test",
+            "username": "dave",
+            "password": "football"
         }
-    ]
+    ],
 }

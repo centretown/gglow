@@ -12,7 +12,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/storage"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -31,6 +30,7 @@ type StorageHandler struct {
 	keyList     []string
 	route       []string
 	preferences fyne.Preferences
+	serializer  effects.Serializer
 }
 
 func NewStorageHandler(preferences fyne.Preferences) *StorageHandler {
@@ -57,6 +57,7 @@ func NewStorageHandler(preferences fyne.Preferences) *StorageHandler {
 		uriMap:      make(map[string]fyne.URI),
 		rootPath:    rootPath,
 		keyList:     make([]string, 0),
+		serializer:  &effects.JsonSerializer{},
 	}
 
 	fh.stack.Push(rootURI)
@@ -197,7 +198,10 @@ func (fh *StorageHandler) WriteFolder(title string) error {
 func (fh *StorageHandler) WriteEffect(title string, frame *glow.Frame) error {
 	title = strings.TrimSpace(title)
 
-	path := scheme + fh.Current.Path() + "/" + MakeFileName(title)
+	path := scheme + fh.Current.Path() + "/" +
+		fh.serializer.MakeFileName(title)
+	fmt.Println(path)
+	// path := scheme + fh.Current.Path() + "/" + MakeFileName(title)
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		return err
@@ -219,7 +223,9 @@ func (fh *StorageHandler) WriteEffect(title string, frame *glow.Frame) error {
 	}
 	defer wrt.Close()
 
-	buf, err := yaml.Marshal(frame)
+	buf, err := fh.serializer.Format(frame)
+
+	// buf, err := json.Marshal(frame)
 	if err != nil {
 		return err
 	}
@@ -257,7 +263,8 @@ func (fh *StorageHandler) ReadEffect(title string) (*glow.Frame, error) {
 		return frame, err
 	}
 
-	err = yaml.Unmarshal(buffer, frame)
+	serializer := effects.UriSerializer(uri)
+	err = serializer.Scan(buffer, frame)
 	if err != nil {
 		fyne.LogError(resources.MsgGetFrame.Format(title), err)
 		return frame, err
