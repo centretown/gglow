@@ -212,3 +212,32 @@ func (sqlh *SqlHandler) RefreshKeys(folder string) ([]string, error) {
 func (sqlh *SqlHandler) KeyList() []string {
 	return sqlh.keyList
 }
+
+func (sqlh *SqlHandler) CreateNewDatabase() error {
+	var query string = `
+	DROP VIEW IF EXISTS palettes;
+	DROP VIEW IF EXISTS folders;
+	DROP TABLE IF EXISTS effects;
+	DROP TABLE IF EXISTS colors;
+	CREATE TABLE effects (
+		folder VARCHAR(80) NOT NULL,
+		title VARCHAR(80) NOT NULL,
+		effect TEXT,
+		PRIMARY KEY (folder, title)
+	);
+	CREATE VIEW folders(folder) AS
+	SELECT DISTINCT folder
+	FROM effects
+	ORDER BY folder;
+`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := sqlh.db.ExecContext(ctx, query)
+	if err != nil {
+		fyne.LogError("CreateNewDatabase", err)
+		return err
+	}
+	return err
+}

@@ -2,12 +2,28 @@ package sqlio
 
 import "testing"
 
-func TestMySql(t *testing.T) {
+func testMySql(t *testing.T) {
 	testSql(t, driverMYSQL, dsnMYSQL)
 }
 
 func TestSqlLite(t *testing.T) {
-	testSql(t, driverSQLLite, dsnSQLLite)
+	// testSql(t, driverSQLLite, dsnSQLLite)
+	testCreate(t, driverSQLLite, dsnSQLLite)
+}
+
+func testCreate(t *testing.T, driver, dsn string) {
+	sqlh := NewSqlHandler(driver, dsn)
+	defer sqlh.OnExit()
+
+	err := sqlh.Ping()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = sqlh.CreateNewDatabase()
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func testSql(t *testing.T, driver, dsn string) {

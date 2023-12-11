@@ -22,7 +22,7 @@ const (
 )
 
 type StorageHandler struct {
-	Current     fyne.ListableURI
+	Folder      fyne.ListableURI
 	FolderList  []string
 	stack       *URIStack
 	uriMap      map[string]fyne.URI
@@ -114,11 +114,11 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 	fh.uriMap = make(map[string]fyne.URI)
 	currentUri, isRoot := fh.stack.Current()
 	if !isRoot {
-		fh.uriMap[dots] = fh.Current
+		fh.uriMap[dots] = fh.Folder
 	}
-	fh.Current = currentUri
+	fh.Folder = currentUri
 
-	uriList, err := fh.Current.List()
+	uriList, err := fh.Folder.List()
 	fh.keyList = make([]string, 0, len(uriList)+1)
 	fh.FolderList = make([]string, 0)
 	if !isRoot {
@@ -156,12 +156,6 @@ func MakeTitle(uri fyne.URI) (s string) {
 	return
 }
 
-func MakeFileName(title string) string {
-	s := strings.ReplaceAll(title, " ", "_")
-	s += ".yaml"
-	return s
-}
-
 func (fh *StorageHandler) CreateNewEffect(title string, frame *glow.Frame) error {
 	err := fh.isDuplicate(title)
 	if err != nil {
@@ -185,7 +179,7 @@ func (fh *StorageHandler) WriteFolder(title string) error {
 		return err
 	}
 
-	path := scheme + fh.Current.Path() + "/" + title
+	path := scheme + fh.Folder.Path() + "/" + title
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		return err
@@ -198,10 +192,7 @@ func (fh *StorageHandler) WriteFolder(title string) error {
 func (fh *StorageHandler) WriteEffect(title string, frame *glow.Frame) error {
 	title = strings.TrimSpace(title)
 
-	path := scheme + fh.Current.Path() + "/" +
-		fh.serializer.MakeFileName(title)
-	fmt.Println(path)
-	// path := scheme + fh.Current.Path() + "/" + MakeFileName(title)
+	path := scheme + fh.Folder.Path() + "/" + fh.serializer.FileName(title)
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		return err
