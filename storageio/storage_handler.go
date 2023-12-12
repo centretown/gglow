@@ -22,11 +22,11 @@ const (
 )
 
 type StorageHandler struct {
-	Folder      fyne.ListableURI
+	Current     fyne.ListableURI
 	FolderList  []string
 	stack       *URIStack
 	uriMap      map[string]fyne.URI
-	rootPath    string
+	RootPath    string
 	keyList     []string
 	route       []string
 	preferences fyne.Preferences
@@ -55,7 +55,7 @@ func NewStorageHandler(preferences fyne.Preferences) *StorageHandler {
 		FolderList:  make([]string, 0),
 		stack:       NewStack(rootURI),
 		uriMap:      make(map[string]fyne.URI),
-		rootPath:    rootPath,
+		RootPath:    rootPath,
 		keyList:     make([]string, 0),
 		serializer:  &effects.JsonSerializer{},
 	}
@@ -70,6 +70,12 @@ func NewStorageHandler(preferences fyne.Preferences) *StorageHandler {
 	}
 
 	return fh
+}
+
+func (fh *StorageHandler) RootList() []string {
+	fh.stack.Root()
+	fh.makeLookupList()
+	return fh.keyList
 }
 
 func (fh *StorageHandler) IsFolder(key string) bool {
@@ -114,11 +120,11 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 	fh.uriMap = make(map[string]fyne.URI)
 	currentUri, isRoot := fh.stack.Current()
 	if !isRoot {
-		fh.uriMap[dots] = fh.Folder
+		fh.uriMap[dots] = fh.Current
 	}
-	fh.Folder = currentUri
+	fh.Current = currentUri
 
-	uriList, err := fh.Folder.List()
+	uriList, err := fh.Current.List()
 	fh.keyList = make([]string, 0, len(uriList)+1)
 	fh.FolderList = make([]string, 0)
 	if !isRoot {
@@ -179,7 +185,7 @@ func (fh *StorageHandler) WriteFolder(title string) error {
 		return err
 	}
 
-	path := scheme + fh.Folder.Path() + "/" + title
+	path := scheme + fh.Current.Path() + "/" + title
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		return err
@@ -192,7 +198,7 @@ func (fh *StorageHandler) WriteFolder(title string) error {
 func (fh *StorageHandler) WriteEffect(title string, frame *glow.Frame) error {
 	title = strings.TrimSpace(title)
 
-	path := scheme + fh.Folder.Path() + "/" + fh.serializer.FileName(title)
+	path := scheme + fh.Current.Path() + "/" + fh.serializer.FileName(title)
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		return err
@@ -286,5 +292,5 @@ func (st *StorageHandler) ValidateNewEffectName(title string) error {
 
 func (fh *StorageHandler) OnExit() {
 	fh.preferences.SetStringList(settings.EffectRoute.String(), fh.route)
-	fh.preferences.SetString(settings.EffectPath.String(), fh.rootPath)
+	fh.preferences.SetString(settings.EffectPath.String(), fh.RootPath)
 }

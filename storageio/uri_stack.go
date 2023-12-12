@@ -17,6 +17,10 @@ func NewStack(base fyne.ListableURI) *URIStack {
 	return stack
 }
 
+func (stack *URIStack) Root() {
+	stack.elements = stack.elements[:1]
+}
+
 func (stack *URIStack) Push(element fyne.ListableURI) {
 	stack.elements = append(stack.elements, element)
 }

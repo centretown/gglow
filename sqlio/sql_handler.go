@@ -30,10 +30,11 @@ type SqlHandler struct {
 	db         *sql.DB
 	keyList    []string
 	keyMap     map[string]bool
+	driver     string
 	serializer effects.Serializer
 }
 
-func NewDefaultSqlHandler() *SqlHandler {
+func NewMySqlHandler() *SqlHandler {
 	return NewSqlHandler(driverMYSQL, dsnMYSQL)
 }
 
@@ -45,7 +46,9 @@ func NewSqlHandler(driver, dsn string) *SqlHandler {
 	sqlh := &SqlHandler{
 		Folder:     "effects",
 		keyList:    make([]string, 0),
+		keyMap:     make(map[string]bool),
 		serializer: &effects.JsonSerializer{},
+		driver:     driver,
 	}
 
 	var err error
@@ -213,31 +216,34 @@ func (sqlh *SqlHandler) KeyList() []string {
 	return sqlh.keyList
 }
 
-func (sqlh *SqlHandler) CreateNewDatabase() error {
-	var query string = `
-	DROP VIEW IF EXISTS palettes;
-	DROP VIEW IF EXISTS folders;
-	DROP TABLE IF EXISTS effects;
-	DROP TABLE IF EXISTS colors;
-	CREATE TABLE effects (
-		folder VARCHAR(80) NOT NULL,
-		title VARCHAR(80) NOT NULL,
-		effect TEXT,
-		PRIMARY KEY (folder, title)
-	);
-	CREATE VIEW folders(folder) AS
-	SELECT DISTINCT folder
-	FROM effects
-	ORDER BY folder;
-`
+var sql_create = []string{
+	"DROP VIEW IF EXISTS palettes;",
+	"DROP VIEW IF EXISTS folders;",
+	"DROP TABLE IF EXISTS effects;",
+	"DROP TABLE IF EXISTS colors;",
+	`CREATE TABLE effects (
+folder VARCHAR(80) NOT NULL,
+title VARCHAR(80) NOT NULL,
+effect TEXT,
+PRIMARY KEY (folder, title)
+);`,
+	`CREATE VIEW folders(folder) AS
+SELECT DISTINCT folder
+FROM effects
+ORDER BY folder;
+`,
+}
 
+func (sqlh *SqlHandler) CreateNewDatabase() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := sqlh.db.ExecContext(ctx, query)
-	if err != nil {
-		fyne.LogError("CreateNewDatabase", err)
-		return err
+	for _, query := range sql_create {
+		_, err := sqlh.db.ExecContext(ctx, query)
+		if err != nil {
+			fyne.LogError("CreateNewDatabase", err)
+			return err
+		}
 	}
-	return err
+	return nil
 }
