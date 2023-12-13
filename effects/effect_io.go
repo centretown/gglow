@@ -9,6 +9,10 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 )
 
+var _ Effect = (*EffectIo)(nil)
+
+const Dots = ".."
+
 func defaultFrame() (frame *glow.Frame) {
 	frame = &glow.Frame{}
 	frame.Interval = 48
@@ -17,14 +21,15 @@ func defaultFrame() (frame *glow.Frame) {
 }
 
 type EffectIo struct {
-	io               IoHandler
+	IoHandler
 	effectName       string
+	folderName       string
 	Frame            binding.Untyped
 	Layer            binding.Untyped
 	LayerSummaryList binding.StringList
 	layerIndex       int
 
-	// preferences fyne.Preferences
+	preferences fyne.Preferences
 
 	// history *History
 	// CanUndo binding.Bool
@@ -41,7 +46,7 @@ type EffectIo struct {
 func NewEffectIo(io IoHandler, preferences fyne.Preferences) *EffectIo {
 
 	eff := &EffectIo{
-		io:               io,
+		IoHandler:        io,
 		Frame:            binding.NewUntyped(),
 		Layer:            binding.NewUntyped(),
 		LayerSummaryList: binding.NewStringList(),
@@ -49,10 +54,15 @@ func NewEffectIo(io IoHandler, preferences fyne.Preferences) *EffectIo {
 		// CanUndo:    binding.NewBool(),
 		// CanSave:    binding.NewBool(),
 
-		// preferences: preferences,
-		backup: &glow.Frame{},
+		preferences: preferences,
+		backup:      &glow.Frame{},
 		// history:     NewHistory(),
 		saveActions: make([]func(*glow.Frame), 0),
+	}
+
+	folder := preferences.StringWithFallback(settings.EffectFolder.String(), "")
+	if folder != "" {
+		eff.RefreshFolder(folder)
 	}
 
 	effect := preferences.StringWithFallback(settings.Effect.String(), "")
@@ -64,10 +74,9 @@ func NewEffectIo(io IoHandler, preferences fyne.Preferences) *EffectIo {
 
 	eff.AddChangeListener(binding.NewDataListener(func() {
 		if eff.HasChanged() {
-			f := eff.GetFrame()
-			fmt.Println("hasChanged makeBackup", f.Interval)
+			// f := eff.GetFrame()
+			// fmt.Println("hasChanged makeBackup", f.Interval)
 			eff.makeBackup(true)
-			// st.setFrame(&frame, st.LayerIndex)
 		}
 	}))
 
@@ -75,17 +84,9 @@ func NewEffectIo(io IoHandler, preferences fyne.Preferences) *EffectIo {
 	return eff
 }
 
-func (eff *EffectIo) RefreshKeys(key string) []string {
-	keys, _ := eff.io.RefreshKeys(key)
+func (eff *EffectIo) RefreshFolder(folder string) []string {
+	keys, _ := eff.IoHandler.RefreshFolder(folder)
 	return keys
-}
-
-func (eff *EffectIo) KeyList() []string {
-	return eff.io.KeyList()
-}
-
-func (eff *EffectIo) IsFolder(title string) bool {
-	return eff.io.IsFolder(title)
 }
 
 func (st *EffectIo) SummaryList() []string {
@@ -166,29 +167,21 @@ func (m *EffectIo) HasChanged() bool {
 }
 
 func (eff *EffectIo) OnExit() {
-	eff.io.OnExit()
-}
+	eff.IoHandler.OnExit()
+	eff.preferences.SetString(settings.EffectFolder.String(), eff.folderName)
+	eff.preferences.SetString(settings.Effect.String(), eff.effectName)
 
-func (st *EffectIo) CreateNewEffect(title string, frame *glow.Frame) error {
-	return st.io.CreateNewEffect(title, frame)
-}
-
-func (st *EffectIo) CreateNewFolder(title string) error {
-	return st.io.CreateNewFolder(title)
-}
-
-func (eff *EffectIo) WriteFolder(title string) error {
-	return eff.io.WriteFolder(title)
 }
 
 func (st *EffectIo) ReadEffect(title string) error {
-
-	frame, err := st.io.ReadEffect(title)
+	frame, err := st.IoHandler.ReadEffect(title)
 	if err != nil {
 		return err
 	}
 
 	st.effectName = title
+	st.folderName = st.IoHandler.FolderName()
+
 	st.setFrame(frame, 0)
 	st.makeBackup(false)
 	st.hasChanged.Set(false)
@@ -202,21 +195,13 @@ func (st *EffectIo) WriteEffect() error {
 		return err
 	}
 
-	err = st.io.WriteEffect(title, frame)
+	err = st.IoHandler.WriteEffect(title, frame)
 	if err != nil {
 		return err
 	}
 
 	st.hasChanged.Set(false)
 	return err
-}
-
-func (eff *EffectIo) ValidateNewFolderName(title string) error {
-	return eff.io.ValidateNewFolderName(title)
-}
-
-func (eff *EffectIo) ValidateNewEffectName(title string) error {
-	return eff.io.ValidateNewEffectName(title)
 }
 
 func (st *EffectIo) makeBackup(b bool) {

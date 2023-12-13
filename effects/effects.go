@@ -7,6 +7,7 @@ import (
 )
 
 type Effect interface {
+	FolderName() string
 	EffectName() string
 	GetFrame() *glow.Frame
 	KeyList() []string
@@ -31,7 +32,7 @@ type Effect interface {
 	CreateNewEffect(title string, frame *glow.Frame) (err error)
 	CreateNewFolder(title string) (err error)
 
-	RefreshKeys(title string) []string
+	RefreshFolder(title string) []string
 
 	OnApply(f func(*glow.Frame))
 	Apply()

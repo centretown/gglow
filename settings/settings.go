@@ -12,7 +12,7 @@ const (
 	GlowThemeScale
 	Effect
 	EffectPath
-	EffectRoute
+	EffectFolder
 )
 
 var settings = []string{
@@ -25,7 +25,7 @@ var settings = []string{
 	"theme_scale",
 	"effect",
 	"effect_path",
-	"effect_route",
+	"effect_folder",
 }
 
 func (s Settings) String() string {

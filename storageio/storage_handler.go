@@ -5,7 +5,6 @@ import (
 	"glow-gui/effects"
 	"glow-gui/glow"
 	"glow-gui/resources"
-	"glow-gui/settings"
 	"io"
 	"os"
 	"strings"
@@ -14,28 +13,28 @@ import (
 	"fyne.io/fyne/v2/storage"
 )
 
+var _ effects.IoHandler = (*StorageHandler)(nil)
+
 const (
-	scheme            = "file://"
-	defaultEffectPath = "/home/dave/src/glow-gui/cabinet/effects/"
-	examplesPath      = "/home/dave/src/glow-gui/cabinet/examples/"
-	dots              = ".."
+	scheme = "file://"
 )
 
 type StorageHandler struct {
-	Current     fyne.ListableURI
-	FolderList  []string
-	stack       *URIStack
-	uriMap      map[string]fyne.URI
-	RootPath    string
-	keyList     []string
-	route       []string
-	preferences fyne.Preferences
-	serializer  effects.Serializer
+	RootURI  fyne.ListableURI
+	Current  fyne.ListableURI
+	uriMap   map[string]fyne.URI
+	rootPath string
+	keyList  []string
+	folder   string
+	title    string
+
+	folderRead string
+	titleRead  string
+	// preferences fyne.Preferences
+	serializer effects.Serializer
 }
 
-func NewStorageHandler(preferences fyne.Preferences) *StorageHandler {
-	rootPath := preferences.StringWithFallback(settings.EffectPath.String(),
-		defaultEffectPath)
+func NewStorageHandler(rootPath string) *StorageHandler {
 	path := scheme + rootPath
 
 	uri, err := storage.ParseURI(path)
@@ -51,29 +50,22 @@ func NewStorageHandler(preferences fyne.Preferences) *StorageHandler {
 	}
 
 	fh := &StorageHandler{
-		preferences: preferences,
-		FolderList:  make([]string, 0),
-		stack:       NewStack(rootURI),
-		uriMap:      make(map[string]fyne.URI),
-		RootPath:    rootPath,
-		keyList:     make([]string, 0),
-		serializer:  &effects.JsonSerializer{},
+		// preferences: preferences,
+		RootURI:    rootURI,
+		uriMap:     make(map[string]fyne.URI),
+		rootPath:   rootPath,
+		keyList:    make([]string, 0),
+		serializer: &effects.JsonSerializer{},
 	}
 
-	fh.stack.Push(rootURI)
-	fh.makeLookupList()
-	fh.route = preferences.StringListWithFallback(settings.EffectRoute.String(),
-		[]string{MakeTitle(rootURI)})
-
-	for _, s := range fh.route[1:] {
-		fh.RefreshKeys(s)
-	}
+	fh.Refresh()
 
 	return fh
 }
 
-func (fh *StorageHandler) RootList() []string {
-	fh.stack.Root()
+func (fh *StorageHandler) Refresh() []string {
+	fh.Current = fh.RootURI
+	fh.folder = ".."
 	fh.makeLookupList()
 	return fh.keyList
 }
@@ -86,27 +78,26 @@ func (fh *StorageHandler) IsFolder(key string) bool {
 	return ok
 }
 
-func (fh *StorageHandler) RefreshKeys(key string) ([]string, error) {
+func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
+	if folder == effects.Dots {
+		return fh.Refresh(), nil
+	}
 
-	uri, ok := fh.uriMap[key]
+	uri, ok := fh.uriMap[folder]
 	if !ok {
-		err := fmt.Errorf(resources.MsgGetEffectLookup.Format(key))
-		fyne.LogError("RefreshKeys", err)
+		err := fmt.Errorf(resources.MsgGetEffectLookup.Format(folder))
+		fyne.LogError("RefreshFolder", err)
 		return fh.keyList, err
 	}
 
 	listable, err := storage.ListerForURI(uri)
 	if err != nil {
-		fyne.LogError(resources.MsgPathNotFolder.Format(key), err)
+		fyne.LogError(resources.MsgPathNotFolder.Format(folder), err)
 		return fh.keyList, err
 	}
 
-	if key == dots {
-		fh.stack.Pop()
-	} else {
-		fh.stack.Push(listable)
-	}
-
+	fh.Current = listable
+	fh.folder = folder
 	fh.makeLookupList()
 	return fh.keyList, nil
 }
@@ -118,28 +109,23 @@ func (fh *StorageHandler) KeyList() []string {
 func (fh *StorageHandler) makeLookupList() (err error) {
 
 	fh.uriMap = make(map[string]fyne.URI)
-	currentUri, isRoot := fh.stack.Current()
+	currentUri := fh.Current
+	isRoot := currentUri == fh.RootURI
 	if !isRoot {
-		fh.uriMap[dots] = fh.Current
+		fh.uriMap[effects.Dots] = fh.Current
 	}
 	fh.Current = currentUri
 
 	uriList, err := fh.Current.List()
 	fh.keyList = make([]string, 0, len(uriList)+1)
-	fh.FolderList = make([]string, 0)
 	if !isRoot {
-		fh.keyList = append(fh.keyList, dots)
-		fh.FolderList = append(fh.FolderList, dots)
+		fh.keyList = append(fh.keyList, effects.Dots)
 	}
 
 	for _, uri := range uriList {
 		title := MakeTitle(uri)
 		fh.uriMap[title] = uri
 		fh.keyList = append(fh.keyList, title)
-		isList, _ := storage.CanList(uri)
-		if isList {
-			fh.FolderList = append(fh.FolderList, title)
-		}
 	}
 	return
 }
@@ -221,8 +207,6 @@ func (fh *StorageHandler) WriteEffect(title string, frame *glow.Frame) error {
 	defer wrt.Close()
 
 	buf, err := fh.serializer.Format(frame)
-
-	// buf, err := json.Marshal(frame)
 	if err != nil {
 		return err
 	}
@@ -267,8 +251,17 @@ func (fh *StorageHandler) ReadEffect(title string) (*glow.Frame, error) {
 		return frame, err
 	}
 
-	fh.route = fh.stack.Route()
+	fh.folder = fh.Current.Name()
+	fh.title = title
 	return frame, err
+}
+
+func (fh *StorageHandler) FolderName() string {
+	return fh.folder
+}
+
+func (fh *StorageHandler) EffectName() string {
+	return fh.title
 }
 
 func (fh *StorageHandler) ValidateNewFolderName(title string) error {
@@ -281,16 +274,14 @@ func (fh *StorageHandler) ValidateNewFolderName(title string) error {
 	return err
 }
 
-func (st *StorageHandler) ValidateNewEffectName(title string) error {
+func (fh *StorageHandler) ValidateNewEffectName(title string) error {
 	err := effects.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}
-	err = st.isDuplicate(title)
+	err = fh.isDuplicate(title)
 	return err
 }
 
 func (fh *StorageHandler) OnExit() {
-	fh.preferences.SetStringList(settings.EffectRoute.String(), fh.route)
-	fh.preferences.SetString(settings.EffectPath.String(), fh.RootPath)
 }

@@ -60,7 +60,6 @@ func NewUi(app fyne.App, window fyne.Window, effect effects.Effect, theme *setti
 
 func (ui *Ui) OnExit() {
 	ui.stripPlayer.OnExit()
-	ui.preferences.SetString(settings.Effect.String(), ui.effect.EffectName())
 	ui.preferences.SetBool(settings.ContentSplit.String(), ui.isSplit)
 }
 

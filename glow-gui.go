@@ -4,12 +4,15 @@ import (
 	"glow-gui/effects"
 	"glow-gui/resources"
 	"glow-gui/settings"
+	"glow-gui/sqlio"
 	"glow-gui/storageio"
 	"glow-gui/ui"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 )
+
+const defaultEffectPath = "/home/dave/src/glow-gui/cabinet/json/"
 
 func main() {
 	app := app.NewWithID(resources.AppID)
@@ -23,8 +26,18 @@ func main() {
 	theme := settings.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
 
-	fh := storageio.NewStorageHandler(preferences)
-	eff := effects.NewEffectIo(fh, preferences)
+	var store effects.IoHandler
+	var sqlOn = true
+
+	if sqlOn {
+		store = sqlio.NewMySqlHandler()
+	} else {
+		rootPath := preferences.StringWithFallback(settings.EffectPath.String(),
+			defaultEffectPath)
+		store = storageio.NewStorageHandler(rootPath)
+	}
+
+	eff := effects.NewEffectIo(store, preferences)
 
 	window := app.NewWindow(resources.GlowLabel.String())
 	ui := ui.NewUi(app, window, eff, theme)

@@ -11,10 +11,11 @@ import (
 	"fyne.io/fyne/v2/app"
 )
 
+const defaultEffectPath = "/home/dave/src/glow-gui/cabinet/json/"
+
 func main() {
-	app := app.NewWithID(resources.AppID)
-	preferences := app.Preferences()
-	fh := storageio.NewStorageHandler(preferences)
+	app.NewWithID(resources.AppID)
+	fh := storageio.NewStorageHandler(defaultEffectPath)
 	defer fh.OnExit()
 
 	f := func(fh *storageio.StorageHandler, sqlh *sqlio.SqlHandler) error {
@@ -43,21 +44,20 @@ func main() {
 }
 
 func WriteDatabase(fh *storageio.StorageHandler, sqlh *sqlio.SqlHandler) error {
-	sqlh.Folder = fh.Current.Name()
-	list := fh.RootList()
+	list := fh.KeyList()
 
-	fmt.Println(sqlh.Folder)
 	for _, item := range list {
+		fmt.Println(item, "item")
 		if fh.IsFolder(item) {
-			items, err := fh.RefreshKeys(item)
+			items, err := fh.RefreshFolder(item)
 			if err != nil {
-				fyne.LogError("fh RefreshKeys", err)
+				fyne.LogError("fh RefreshFolder", err)
 				return err
 			}
 
-			_, err = sqlh.RefreshKeys(fh.Current.Name())
+			_, err = sqlh.RefreshFolder(item)
 			if err != nil {
-				fyne.LogError("sqlh RefreshKeys", err)
+				fyne.LogError("fh RefreshFolder", err)
 				return err
 			}
 
@@ -66,13 +66,18 @@ func WriteDatabase(fh *storageio.StorageHandler, sqlh *sqlio.SqlHandler) error {
 				fyne.LogError("write folder", err)
 				return err
 			}
-			fh.RootList()
+			fh.Refresh()
 		}
 	}
 	return nil
 }
 
 func WriteFolder(list []string, source effects.IoHandler, dest effects.IoHandler) error {
+	err := dest.WriteFolder(dest.FolderName())
+	if err != nil {
+		return err
+	}
+
 	for _, item := range list {
 		if !source.IsFolder(item) {
 			frame, err := source.ReadEffect(item)

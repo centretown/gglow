@@ -31,7 +31,7 @@ func NewEffectSelect(effect effects.Effect) *widget.Select {
 func (fs *EffectSelect) onChange(title string) {
 	if fs.effect.IsFolder(title) {
 		fs.auto = false
-		fs.Select.SetOptions(fs.effect.RefreshKeys(title))
+		fs.Select.SetOptions(fs.effect.RefreshFolder(title))
 		return
 	}
 	if fs.auto {
