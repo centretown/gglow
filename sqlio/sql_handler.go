@@ -83,7 +83,7 @@ func (sqlh *SqlHandler) Refresh() []string {
 }
 
 func (sqlh *SqlHandler) Ping() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	err := sqlh.db.PingContext(ctx)
@@ -94,7 +94,7 @@ func (sqlh *SqlHandler) Ping() error {
 }
 
 func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	q := fmt.Sprintf("SELECT * FROM effects WHERE folder = '%s' AND title = '%s'",
 		sqlh.folder, title)
@@ -183,7 +183,7 @@ func (sqlh *SqlHandler) CreateNewEffect(title string, frame *glow.Frame) error {
 }
 
 func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	var (
@@ -222,7 +222,7 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 }
 
 func (sqlh *SqlHandler) findEffect(folder, title string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	q := fmt.Sprintf("SELECT title FROM effects WHERE folder = '%s' AND title = '%s';",
 		folder, title)
@@ -233,7 +233,7 @@ func (sqlh *SqlHandler) findEffect(folder, title string) error {
 }
 
 func (sqlh *SqlHandler) RefreshFolder(folder string) ([]string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	var query string
 	if folder == "" || folder == effects.Dots {
@@ -291,7 +291,7 @@ ORDER BY folder;
 `,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	for _, query := range sql_create {
