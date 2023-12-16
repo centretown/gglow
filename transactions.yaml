@@ -1,0 +1,16 @@
+- input:
+    method: "file"
+    path: "./cabinet/json"
+  outputs:
+    - method: "mysql"
+      path: "output-path-1"
+    - method: "sqlite3"
+      path: "output-path-2"
+- input:
+    method: "file"
+    path: "input-path"
+  outputs:
+    - method: "mysql"
+      path: "output-path-1"
+    - method: "sqlite3"
+      path: "output-path-2"

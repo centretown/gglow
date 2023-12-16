@@ -7,6 +7,7 @@ require (
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/mattn/go-sqlite3 v1.14.18
+	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

@@ -3,12 +3,13 @@ package effects
 import "glow-gui/glow"
 
 type IoHandler interface {
+	CreateNewDatabase() error
 	FolderName() string
 	EffectName() string
 	ReadEffect(title string) (*glow.Frame, error)
 	IsFolder(key string) bool
 	KeyList() []string
-	Refresh() []string
+	Refresh() ([]string, error)
 	RefreshFolder(key string) ([]string, error)
 	WriteEffect(title string, frame *glow.Frame) error
 	WriteFolder(title string) error

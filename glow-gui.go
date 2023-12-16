@@ -6,47 +6,44 @@ import (
 	"glow-gui/effects"
 	"glow-gui/resources"
 	"glow-gui/settings"
-	"glow-gui/sqlio"
-	"glow-gui/storageio"
+	"glow-gui/store"
 	"glow-gui/ui"
+	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 )
 
-const (
-	data_source_default = "sqlite"
-	usage               = "storage method (sqlite, mysql, file)"
-	defaultEffectPath   = "/home/dave/src/glow-gui/cabinet/json/"
-)
-
-var data_source string
+var parsed settings.Configuration
 
 func init() {
-	flag.StringVar(&data_source, "s", data_source_default, usage+" (short form)")
-	flag.StringVar(&data_source, "storage", data_source_default, usage)
+	settings.ParseCommandLine(&parsed)
 }
 
 func main() {
 
 	flag.Parse()
-	fmt.Println("using storage method", data_source)
+	fmt.Println("using storage method", parsed.Method, parsed.Path)
 
 	app := app.NewWithID(resources.AppID)
+	preferences := app.Preferences()
 	icon, err := resources.DarkGanderImage.Load()
 	if err == nil {
 		app.SetIcon(icon)
 	}
 
 	//storage
-	preferences := app.Preferences()
-	store := selectDataSource(preferences)
-	effect := effects.NewEffectIo(store, preferences)
+	store, err := store.DataSource(&parsed, preferences, true)
+	if err != nil {
+		fyne.LogError("storage", err)
+		os.Exit(1)
+	}
+	effect := effects.NewEffectIo(store, preferences, &parsed)
 
 	//window
-	window := app.NewWindow(resources.GlowLabel.String())
 	theme := settings.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
+	window := app.NewWindow(resources.GlowLabel.String())
 	ui := ui.NewUi(app, window, effect, theme)
 
 	window.SetCloseIntercept(func() {
@@ -67,22 +64,4 @@ func main() {
 	window.Show()
 	effect.SetActive()
 	app.Run()
-}
-
-func selectDataSource(preferences fyne.Preferences) (store effects.IoHandler) {
-	switch data_source {
-	case "file":
-		rootPath := preferences.StringWithFallback(settings.EffectPath.String(),
-			defaultEffectPath)
-		store = storageio.NewStorageHandler(rootPath)
-
-	case "mysql":
-		store = sqlio.NewMySqlHandler()
-
-	default:
-		fallthrough
-	case "sqlite":
-		store = sqlio.NewSqlLiteHandler()
-	}
-	return
 }

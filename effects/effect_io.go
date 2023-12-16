@@ -16,7 +16,10 @@ const Dots = ".."
 func defaultFrame() (frame *glow.Frame) {
 	frame = &glow.Frame{}
 	frame.Interval = 48
-	frame.Layers = append(frame.Layers, glow.Layer{})
+	var layer glow.Layer
+	layer.Chroma.Colors = append(layer.Chroma.Colors,
+		glow.HSV{Hue: 0, Saturation: 0, Value: 100})
+	frame.Layers = append(frame.Layers, layer)
 	return
 }
 
@@ -40,10 +43,11 @@ type EffectIo struct {
 	isActive   bool
 
 	saveActions []func(*glow.Frame)
+	config      *settings.Configuration
 	// changeDetected bool
 }
 
-func NewEffectIo(io IoHandler, preferences fyne.Preferences) *EffectIo {
+func NewEffectIo(io IoHandler, preferences fyne.Preferences, config *settings.Configuration) *EffectIo {
 
 	eff := &EffectIo{
 		IoHandler:        io,
@@ -58,14 +62,18 @@ func NewEffectIo(io IoHandler, preferences fyne.Preferences) *EffectIo {
 		backup:      &glow.Frame{},
 		// history:     NewHistory(),
 		saveActions: make([]func(*glow.Frame), 0),
+		config:      config,
 	}
+	// fmt.Println(config.Method, config.Path, config.Folder, config.Effect)
 
-	folder := preferences.StringWithFallback(settings.EffectFolder.String(), "")
+	folder := config.Folder
+	effect := config.Effect
+
+	// folder := preferences.StringWithFallback(settings.EffectFolder.String(), "")
 	if folder != "" {
 		eff.RefreshFolder(folder)
 	}
-
-	effect := preferences.StringWithFallback(settings.Effect.String(), "")
+	// effect := preferences.StringWithFallback(settings.Effect.String(), "")
 	if len(effect) > 0 {
 		eff.ReadEffect(effect)
 	} else {
@@ -168,23 +176,22 @@ func (m *EffectIo) HasChanged() bool {
 
 func (eff *EffectIo) OnExit() {
 	eff.IoHandler.OnExit()
-	eff.preferences.SetString(settings.EffectFolder.String(), eff.folderName)
-	eff.preferences.SetString(settings.Effect.String(), eff.effectName)
-
+	eff.preferences.SetStringList(eff.config.Method,
+		[]string{eff.config.Path, eff.folderName, eff.effectName})
 }
 
-func (st *EffectIo) ReadEffect(title string) error {
-	frame, err := st.IoHandler.ReadEffect(title)
+func (eff *EffectIo) ReadEffect(title string) error {
+	frame, err := eff.IoHandler.ReadEffect(title)
 	if err != nil {
 		return err
 	}
 
-	st.effectName = title
-	st.folderName = st.IoHandler.FolderName()
+	eff.effectName = title
+	eff.folderName = eff.IoHandler.FolderName()
 
-	st.setFrame(frame, 0)
-	st.makeBackup(false)
-	st.hasChanged.Set(false)
+	eff.setFrame(frame, 0)
+	eff.makeBackup(false)
+	eff.hasChanged.Set(false)
 	return nil
 }
 

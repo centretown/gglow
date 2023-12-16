@@ -8,7 +8,6 @@ import (
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"log"
-	"os"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -18,14 +17,12 @@ import (
 
 var _ effects.IoHandler = (*SqlHandler)(nil)
 
-const (
-	dsnMYSQL      = "dave:football@tcp(192.168.40.1:3306)/test"
-	dsnSQLLite    = "./glow.db"
-	driverMYSQL   = "mysql"
-	driverSQLLite = "sqlite3"
-)
-
-var _ effects.IoHandler = (*SqlHandler)(nil)
+// const (
+// 	dsnMYSQL      = "dave:football@tcp(192.168.40.1:3306)/test"
+// 	dsnSQLLite    = "./glow.db"
+// 	driverMYSQL   = "mysql"
+// 	driverSQLLite = "sqlite3"
+// )
 
 type SqlHandler struct {
 	folder string
@@ -38,15 +35,15 @@ type SqlHandler struct {
 	serializer effects.Serializer
 }
 
-func NewMySqlHandler() *SqlHandler {
-	return NewSqlHandler(driverMYSQL, dsnMYSQL)
-}
+// func NewMySqlHandler() *SqlHandler {
+// 	return NewSqlHandler(driverMYSQL, dsnMYSQL)
+// }
 
-func NewSqlLiteHandler() *SqlHandler {
-	return NewSqlHandler(driverSQLLite, dsnSQLLite)
-}
+// func NewSqlLiteHandler() *SqlHandler {
+// 	return NewSqlHandler(driverSQLLite, dsnSQLLite)
+// }
 
-func NewSqlHandler(driver, dsn string) *SqlHandler {
+func NewSqlHandler(driver, dsn string) (*SqlHandler, error) {
 	sqlh := &SqlHandler{
 		folder:     effects.Dots,
 		keyList:    make([]string, 0),
@@ -59,10 +56,9 @@ func NewSqlHandler(driver, dsn string) *SqlHandler {
 	sqlh.db, err = sql.Open(driver, dsn)
 	if err != nil {
 		fyne.LogError(resources.MsgParseEffectPath.Format(dsn), err)
-		os.Exit(1)
+		return nil, err
 	}
-	sqlh.Refresh()
-	return sqlh
+	return sqlh, nil
 }
 
 func (sqlh *SqlHandler) FolderName() string {
@@ -77,9 +73,8 @@ func (sqlh *SqlHandler) OnExit() {
 	sqlh.db.Close()
 }
 
-func (sqlh *SqlHandler) Refresh() []string {
-	list, _ := sqlh.RefreshFolder(effects.Dots)
-	return list
+func (sqlh *SqlHandler) Refresh() ([]string, error) {
+	return sqlh.RefreshFolder(effects.Dots)
 }
 
 func (sqlh *SqlHandler) Ping() error {

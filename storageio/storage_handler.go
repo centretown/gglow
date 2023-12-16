@@ -6,7 +6,6 @@ import (
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"io"
-	"os"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -28,29 +27,25 @@ type StorageHandler struct {
 	folder   string
 	title    string
 
-	folderRead string
-	titleRead  string
-	// preferences fyne.Preferences
 	serializer effects.Serializer
 }
 
-func NewStorageHandler(rootPath string) *StorageHandler {
+func NewStorageHandler(rootPath string) (*StorageHandler, error) {
 	path := scheme + rootPath
 
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		fyne.LogError(resources.MsgParseEffectPath.Format(path), err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	rootURI, err := storage.ListerForURI(uri)
 	if err != nil {
 		fyne.LogError(resources.MsgPathNotFolder.Format(path), err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	fh := &StorageHandler{
-		// preferences: preferences,
 		RootURI:    rootURI,
 		uriMap:     make(map[string]fyne.URI),
 		rootPath:   rootPath,
@@ -58,16 +53,14 @@ func NewStorageHandler(rootPath string) *StorageHandler {
 		serializer: &effects.JsonSerializer{},
 	}
 
-	fh.Refresh()
-
-	return fh
+	return fh, nil
 }
 
-func (fh *StorageHandler) Refresh() []string {
+func (fh *StorageHandler) Refresh() ([]string, error) {
 	fh.Current = fh.RootURI
 	fh.folder = ".."
-	fh.makeLookupList()
-	return fh.keyList
+	err := fh.makeLookupList()
+	return fh.keyList, err
 }
 
 func (fh *StorageHandler) IsFolder(key string) bool {
@@ -80,7 +73,7 @@ func (fh *StorageHandler) IsFolder(key string) bool {
 
 func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
 	if folder == effects.Dots {
-		return fh.Refresh(), nil
+		return fh.Refresh()
 	}
 
 	uri, ok := fh.uriMap[folder]
@@ -98,8 +91,8 @@ func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
 
 	fh.Current = listable
 	fh.folder = folder
-	fh.makeLookupList()
-	return fh.keyList, nil
+	err = fh.makeLookupList()
+	return fh.keyList, err
 }
 
 func (fh *StorageHandler) KeyList() []string {
@@ -116,7 +109,12 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 	}
 	fh.Current = currentUri
 
-	uriList, err := fh.Current.List()
+	var uriList []fyne.URI
+	uriList, err = fh.Current.List()
+	if err != nil {
+		return
+	}
+
 	fh.keyList = make([]string, 0, len(uriList)+1)
 	if !isRoot {
 		fh.keyList = append(fh.keyList, effects.Dots)
@@ -284,4 +282,8 @@ func (fh *StorageHandler) ValidateNewEffectName(title string) error {
 }
 
 func (fh *StorageHandler) OnExit() {
+}
+
+func (fh *StorageHandler) CreateNewDatabase() error {
+	return nil
 }
