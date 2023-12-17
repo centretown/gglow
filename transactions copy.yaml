@@ -1,8 +1,0 @@
-input:
-  method: "input-method"
-  path: "input-path"
-outputs:
-  - method: "output-method-1"
-    path: "output-path-1"
-  - method: "output-method-2"
-    path: "output-path-2"

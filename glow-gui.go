@@ -17,13 +17,31 @@ import (
 var parsed settings.Configuration
 
 func init() {
-	settings.ParseCommandLine(&parsed)
+	flag.StringVar(&parsed.Driver, "s", driverDefault, driverUsage+" (short form)")
+	flag.StringVar(&parsed.Driver, "storage", driverDefault, driverUsage)
+	flag.StringVar(&parsed.Path, "p", pathDefault, pathUsage+" (short form)")
+	flag.StringVar(&parsed.Path, "path", pathDefault, pathUsage)
+	flag.StringVar(&parsed.Folder, "f", folderDefault, folderUsage+" (short form)")
+	flag.StringVar(&parsed.Folder, "folder", folderDefault, folderUsage)
+	flag.StringVar(&parsed.Effect, "e", effectDefault, effectUsage+" (short form)")
+	flag.StringVar(&parsed.Effect, "effect", effectDefault, effectUsage)
 }
+
+const (
+	driverDefault = "sqlite3"
+	driverUsage   = "storage driver (sqlite3, mysql, file)"
+	pathUsage     = "path to data"
+	pathDefault   = ""
+	folderUsage   = "folder to access"
+	folderDefault = ""
+	effectUsage   = "effect to read"
+	effectDefault = ""
+)
 
 func main() {
 
 	flag.Parse()
-	fmt.Println("using storage method", parsed.Method, parsed.Path)
+	fmt.Println("using storage method", parsed.Driver, parsed.Path)
 
 	app := app.NewWithID(resources.AppID)
 	preferences := app.Preferences()

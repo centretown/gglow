@@ -176,7 +176,7 @@ func (m *EffectIo) HasChanged() bool {
 
 func (eff *EffectIo) OnExit() {
 	eff.IoHandler.OnExit()
-	eff.preferences.SetStringList(eff.config.Method,
+	eff.preferences.SetStringList(eff.config.Driver,
 		[]string{eff.config.Path, eff.folderName, eff.effectName})
 }
 

@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"glow-gui/resources"
-	"glow-gui/transaction"
+	"glow-gui/transactions"
 	"os"
 
 	"fyne.io/fyne/v2/app"
@@ -25,13 +25,19 @@ func init() {
 func main() {
 	app.NewWithID(resources.AppID)
 	flag.Parse()
-	logs, err := transaction.VerifyTransactions(transactionFile)
+
+	transaction, err := transactions.ReadTransaction(transactionFile)
+	if err != nil {
+		return
+	}
+
+	logs := transaction.Verify()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	transaction.ShowLogs(logs)
+	logs.ShowLogs()
 
 	// fmt.Println(transaction.Outputs)
 

@@ -20,12 +20,12 @@ func DataSource(config *settings.Configuration,
 	preferences fyne.Preferences,
 	refresh bool) (store effects.IoHandler, err error) {
 
-	if config.Method == "sqlite" {
-		config.Method = "sqlite3"
+	if config.Driver == "sqlite" {
+		config.Driver = "sqlite3"
 	}
 
 	if preferences != nil {
-		history := preferences.StringListWithFallback(config.Method, []string{"", "", ""})
+		history := preferences.StringListWithFallback(config.Driver, []string{"", "", ""})
 		if config.Path == "" {
 			config.Path = history[PathHistory]
 		}
@@ -37,15 +37,15 @@ func DataSource(config *settings.Configuration,
 		}
 	}
 
-	switch config.Method {
+	switch config.Driver {
 	case "file":
 		store, err = storageio.NewStorageHandler(config.Path)
 
 	case "sqlite3", "mysql":
-		store, err = sqlio.NewSqlHandler(config.Method, config.Path)
+		store, err = sqlio.NewSqlHandler(config.Driver, config.Path)
 
 	default:
-		err = fmt.Errorf("undefined storage method %s", config.Method)
+		err = fmt.Errorf("undefined storage method %s", config.Driver)
 	}
 
 	if err != nil {

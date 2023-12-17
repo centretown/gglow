@@ -85,7 +85,8 @@ func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
 
 	listable, err := storage.ListerForURI(uri)
 	if err != nil {
-		fyne.LogError(resources.MsgPathNotFolder.Format(folder), err)
+		err = fmt.Errorf(resources.MsgPathNotFolder.Format(folder))
+		fyne.LogError("RefreshFolder", err)
 		return fh.keyList, err
 	}
 
