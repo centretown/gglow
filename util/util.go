@@ -28,23 +28,18 @@ func main() {
 
 	transaction, err := transactions.ReadTransaction(transactionFile)
 	if err != nil {
-		return
-	}
-
-	logs := transaction.Verify()
-	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	logs.ShowLogs()
+	transaction.Process()
+	transaction.ShowLogs()
 
-	// fmt.Println(transaction.Outputs)
-
-	// app := app.NewWithID(resources.AppID)
-	// preferences := app.Preferences()
-	// dataIn := store.DataSource(preferences, &parsed)
-	// defer dataIn.OnExit()
+	// err = logs.Process()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	os.Exit(1)
+	// }
 
 	// f := func(dataIn effects.IoHandler, dataOut effects.IoHandler) error {
 	// 	err := dataOut.CreateNewDatabase()

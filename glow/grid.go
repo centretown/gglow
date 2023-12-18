@@ -193,3 +193,9 @@ func (grid *Grid) AdjustBounds(bound float32) uint16 {
 	}
 	return scaled / grid.Rows * grid.Rows
 }
+
+func (grid *Grid) MakeCode() string {
+	s := fmt.Sprintf("{%d,%d,%d,%d}",
+		grid.Length, grid.Rows, grid.Origin, grid.Orientation)
+	return s
+}

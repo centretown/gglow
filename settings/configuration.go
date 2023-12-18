@@ -6,3 +6,8 @@ type Configuration struct {
 	Folder string `yaml:"folder" json:"folder"`
 	Effect string `yaml:"effect" json:"effect"`
 }
+
+func NewConfiguration() *Configuration {
+	cf := &Configuration{}
+	return cf
+}

@@ -17,8 +17,7 @@ const (
 )
 
 func DataSource(config *settings.Configuration,
-	preferences fyne.Preferences,
-	refresh bool) (store effects.IoHandler, err error) {
+	preferences fyne.Preferences) (store effects.IoHandler, err error) {
 
 	if config.Driver == "sqlite" {
 		config.Driver = "sqlite3"
@@ -48,12 +47,5 @@ func DataSource(config *settings.Configuration,
 		err = fmt.Errorf("undefined storage method %s", config.Driver)
 	}
 
-	if err != nil {
-		return
-	}
-
-	if refresh {
-		_, err = store.Refresh()
-	}
 	return
 }

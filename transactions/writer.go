@@ -5,12 +5,12 @@ import (
 	"glow-gui/effects"
 )
 
-func WriteDatabase(dataIn effects.IoHandler, dataOut effects.IoHandler) error {
+func (action *Action) WriteDatabase(dataIn effects.IoHandler, dataOut effects.IoHandler) error {
 	list := dataIn.KeyList()
 
 	for _, item := range list {
-		fmt.Println(item, "item")
 		if dataIn.IsFolder(item) {
+			action.AddNote(fmt.Sprintf("add folder %s", item))
 			items, err := dataIn.RefreshFolder(item)
 			if err != nil {
 				fmt.Println("dataIn RefreshFolder", err)
@@ -23,7 +23,7 @@ func WriteDatabase(dataIn effects.IoHandler, dataOut effects.IoHandler) error {
 				return err
 			}
 
-			err = WriteFolder(items, dataIn, dataOut)
+			err = action.WriteFolder(items, dataIn, dataOut)
 			if err != nil {
 				fmt.Println("dataOut WriteFolder", err)
 				return err
@@ -34,7 +34,7 @@ func WriteDatabase(dataIn effects.IoHandler, dataOut effects.IoHandler) error {
 	return nil
 }
 
-func WriteFolder(list []string, source effects.IoHandler, dest effects.IoHandler) error {
+func (action *Action) WriteFolder(list []string, source effects.IoHandler, dest effects.IoHandler) error {
 	err := dest.WriteFolder(dest.FolderName())
 	if err != nil {
 		return err
@@ -42,6 +42,7 @@ func WriteFolder(list []string, source effects.IoHandler, dest effects.IoHandler
 
 	for _, item := range list {
 		if !source.IsFolder(item) {
+			action.AddNote(fmt.Sprintf("add effect %s", item))
 			frame, err := source.ReadEffect(item)
 			if err != nil {
 				return err

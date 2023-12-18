@@ -79,3 +79,17 @@ func (chroma *Chroma) UpdateColors() {
 func (chroma *Chroma) AddColors(hsv ...HSV) {
 	chroma.Colors = append(chroma.Colors, hsv...)
 }
+
+func (chroma *Chroma) MakeCode() string {
+	colors := func() string {
+		var s string
+		for _, hsv := range chroma.Colors {
+			s += hsv.MakeCode() + ",\n"
+		}
+		return s
+	}
+
+	s := fmt.Sprintf("{%d,\n{%s},\n%d",
+		chroma.Length, colors(), chroma.HueShift)
+	return s
+}

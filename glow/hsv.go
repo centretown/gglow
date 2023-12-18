@@ -1,6 +1,7 @@
 package glow
 
 import (
+	"fmt"
 	"image/color"
 	"math"
 
@@ -145,4 +146,10 @@ func (hsv *HSV) UnmarshalYAML(node *yaml.Node) (err error) {
 	mod.Saturation /= 100
 	mod.Value /= 100
 	return nil
+}
+
+func (hsv *HSV) MakeCode() string {
+	s := fmt.Sprintf("{%d,%d,%d}",
+		int(hsv.Hue), int(hsv.Saturation*100), int(hsv.Value*100))
+	return s
 }

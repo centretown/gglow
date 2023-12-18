@@ -51,11 +51,16 @@ func main() {
 	}
 
 	//storage
-	store, err := store.DataSource(&parsed, preferences, true)
+	store, err := store.DataSource(&parsed, preferences)
+	if err == nil {
+		_, err = store.Refresh()
+
+	}
 	if err != nil {
 		fyne.LogError("storage", err)
 		os.Exit(1)
 	}
+
 	effect := effects.NewEffectIo(store, preferences, &parsed)
 
 	//window

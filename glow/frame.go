@@ -75,3 +75,16 @@ func FrameDeepCopy(source *Frame) (frame *Frame, err error) {
 	}
 	return
 }
+
+func (frame *Frame) MakeCode() string {
+	layers := func() string {
+		var s string
+		for _, layer := range frame.Layers {
+			s += layer.MakeCode() + ",//\n"
+		}
+		return s
+	}
+	s := fmt.Sprintf("{%d,%d,%d,//\n{%s}}",
+		frame.Length, frame.Rows, frame.Interval, layers())
+	return s
+}

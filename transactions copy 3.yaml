@@ -1,8 +1,8 @@
 actions:
-  - method: "copy"
+  - method: "verify"
     input:
       driver: "file"
       path: "./cabinet/json"
     outputs:
       - driver: "sqlite3"
-        path: "./cabinet-2.db"
+        path: "./file-cabinet.db"

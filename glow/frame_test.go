@@ -84,4 +84,7 @@ func TestFrameBasic(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 	compareFrames(t, &frame, &frame2)
+
+	code := frame.MakeCode()
+	t.Log(code)
 }
