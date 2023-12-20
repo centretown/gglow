@@ -6,6 +6,7 @@ import (
 	"glow-gui/glow"
 	"glow-gui/resources"
 	"io"
+	"os"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -30,7 +31,18 @@ type StorageHandler struct {
 	serializer effects.Serializer
 }
 
-func NewStorageHandler(rootPath string) (*StorageHandler, error) {
+func makeFolder(folder string) (err error) {
+	var info os.FileInfo
+	info, err = os.Stat(folder)
+	if err != nil {
+		err = os.Mkdir(folder, os.ModeDir|os.ModePerm)
+	} else if !info.IsDir() {
+		err = fmt.Errorf("%s exists but is not a directory", folder)
+	}
+	return
+}
+
+func RootURI(rootPath string) (fyne.ListableURI, error) {
 	path := scheme + rootPath
 
 	uri, err := storage.ParseURI(path)
@@ -41,7 +53,17 @@ func NewStorageHandler(rootPath string) (*StorageHandler, error) {
 
 	rootURI, err := storage.ListerForURI(uri)
 	if err != nil {
-		fyne.LogError(resources.MsgPathNotFolder.Format(path), err)
+		err = makeFolder(rootPath)
+		if err == nil {
+			return RootURI(rootPath)
+		}
+	}
+	return rootURI, err
+}
+
+func NewStorageHandler(rootPath string) (*StorageHandler, error) {
+	rootURI, err := RootURI(rootPath)
+	if err != nil {
 		return nil, err
 	}
 
@@ -78,15 +100,25 @@ func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
 
 	uri, ok := fh.uriMap[folder]
 	if !ok {
-		err := fmt.Errorf(resources.MsgGetEffectLookup.Format(folder))
-		fyne.LogError("RefreshFolder", err)
-		return fh.keyList, err
+		path := fh.rootPath + "/" + folder
+		err := makeFolder(path)
+		if err != nil {
+			return fh.keyList, err
+		}
+		path = scheme + path
+		uri, err = storage.ParseURI(path)
+		if err != nil {
+			fyne.LogError("RefreshFolder", err)
+			return fh.keyList, err
+		}
+		fh.uriMap[folder] = uri
 	}
 
 	listable, err := storage.ListerForURI(uri)
 	if err != nil {
+		fyne.LogError("ListerForURI", err)
 		err = fmt.Errorf(resources.MsgPathNotFolder.Format(folder))
-		fyne.LogError("RefreshFolder", err)
+		fyne.LogError("ListerForURI", err)
 		return fh.keyList, err
 	}
 
@@ -163,14 +195,16 @@ func (fh *StorageHandler) CreateNewFolder(title string) error {
 	return fh.WriteFolder(title)
 }
 
-func (fh *StorageHandler) WriteFolder(title string) error {
-	title = strings.TrimSpace(title)
-	err := effects.ValidateFolderName(title)
+func (fh *StorageHandler) WriteFolder(folder string) error {
+	fh.folder = folder
+	fmt.Println(folder, "folder")
+	folder = strings.TrimSpace(folder)
+	err := effects.ValidateFolderName(folder)
 	if err != nil {
 		return err
 	}
 
-	path := scheme + fh.Current.Path() + "/" + title
+	path := scheme + fh.Current.Path() + "/" + folder
 	uri, err := storage.ParseURI(path)
 	if err != nil {
 		return err
@@ -285,6 +319,6 @@ func (fh *StorageHandler) ValidateNewEffectName(title string) error {
 func (fh *StorageHandler) OnExit() {
 }
 
-func (fh *StorageHandler) CreateNewDatabase() error {
-	return nil
+func (fh *StorageHandler) CreateNewDatabase(rootPath string) (err error) {
+	return
 }

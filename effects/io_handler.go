@@ -3,7 +3,7 @@ package effects
 import "glow-gui/glow"
 
 type IoHandler interface {
-	CreateNewDatabase() error
+	CreateNewDatabase(name string) error
 	FolderName() string
 	EffectName() string
 	ReadEffect(title string) (*glow.Frame, error)

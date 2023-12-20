@@ -2,10 +2,9 @@ package transactions
 
 import (
 	"fmt"
-	"glow-gui/effects"
 )
 
-func (action *Action) WriteDatabase(dataIn effects.IoHandler, dataOut effects.IoHandler) error {
+func (action *Action) WriteDatabase(dataIn ActionHandler, dataOut ActionHandler) error {
 	list := dataIn.KeyList()
 
 	for _, item := range list {
@@ -34,7 +33,7 @@ func (action *Action) WriteDatabase(dataIn effects.IoHandler, dataOut effects.Io
 	return nil
 }
 
-func (action *Action) WriteFolder(list []string, source effects.IoHandler, dest effects.IoHandler) error {
+func (action *Action) WriteFolder(list []string, source ActionHandler, dest ActionHandler) error {
 	err := dest.WriteFolder(dest.FolderName())
 	if err != nil {
 		return err

@@ -2,10 +2,31 @@ package transactions
 
 import (
 	"fmt"
-	"glow-gui/effects"
+	"glow-gui/glow"
 	"glow-gui/settings"
 	"glow-gui/store"
+	"strings"
 )
+
+const (
+	File    = "file"
+	SqlLite = "sqlite3"
+	MySql   = "mysql"
+)
+
+// ActionHandler
+type ActionHandler interface {
+	CreateNewDatabase(string) error
+	OnExit()
+	Refresh() ([]string, error)
+	RefreshFolder(string) ([]string, error)
+	KeyList() []string
+	IsFolder(string) bool
+	FolderName() string
+	ReadEffect(title string) (*glow.Frame, error)
+	WriteEffect(title string, frame *glow.Frame) error
+	WriteFolder(title string) error
+}
 
 type Action struct {
 	Method  string                    `yaml:"method" json:"method"`
@@ -25,8 +46,12 @@ func NewAction() *Action {
 	return a
 }
 
-func (a *Action) AddNote(note string) {
-	a.Notes = append(a.Notes, note)
+func (a *Action) AddNote(notes ...string) {
+	if len(notes) == 0 {
+		return
+	}
+	// note := fmt.Sprintf("%v", notes)
+	a.Notes = append(a.Notes, notes...)
 }
 
 func (a *Action) AddError(err error) error {
@@ -38,49 +63,70 @@ func (a *Action) HasErrors() bool {
 	return len(a.Errors) > 0
 }
 
-func (action *Action) copyDatabase(output *settings.Configuration) (err error) {
-	var dataIn, dataOut effects.IoHandler
-	dataIn, err = store.DataSource(action.Input, nil)
+func (a *Action) createDatabase(output *settings.Configuration, dataOut ActionHandler) (err error) {
+	a.AddNote("create database...", output.Database)
+	err = dataOut.CreateNewDatabase(output.Database)
 	if err != nil {
-		return action.AddError(err)
+		return a.AddError(err)
+	}
+	a.AddNote("created")
+	return
+}
+
+func (a *Action) connectDatabase(config *settings.Configuration) (handler ActionHandler, err error) {
+	a.AddNote("connecting...")
+	handler, err = store.DataSource(config, nil)
+	if err != nil {
+		a.AddError(err)
+		return
+	}
+	a.AddNote("connected")
+	return
+}
+
+func (a *Action) cloneDatabase(output *settings.Configuration) (err error) {
+	var dataIn, dataOut ActionHandler
+	dataIn, err = a.connectDatabase(a.Input)
+	if err != nil {
+		return
 	}
 	defer dataIn.OnExit()
 
-	dataOut, err = store.DataSource(output, nil)
+	dataOut, err = a.connectDatabase(output)
 	if err != nil {
-		return action.AddError(err)
+		return
 	}
+	defer dataOut.OnExit()
 
-	action.AddNote("database created")
-
-	err = dataOut.CreateNewDatabase()
+	err = a.createDatabase(output, dataOut)
 	if err != nil {
-		return action.AddError(err)
+		return
 	}
 
 	_, err = dataIn.Refresh()
 	if err != nil {
-		return action.AddError(err)
+		return a.AddError(err)
 	}
-	action.AddNote("input read")
+	a.AddNote("input read")
 
-	err = action.WriteDatabase(dataIn, dataOut)
+	a.AddNote("write database...")
+	err = a.WriteDatabase(dataIn, dataOut)
 	if err != nil {
-		return action.AddError(err)
+		return a.AddError(err)
 	}
-	action.AddNote("output written")
+	a.AddNote("output written")
 	return nil
 }
 
-func (action *Action) Copy() (err error) {
-	action.Verify()
-	if action.HasErrors() {
-		err = fmt.Errorf("action %s has errors", action.Method)
+func (a *Action) Clone() (err error) {
+	a.Verify()
+	if a.HasErrors() {
+		err = fmt.Errorf("action %s has errors", a.Method)
 		return
 	}
 
-	for _, output := range action.Outputs {
-		err = action.copyDatabase(output)
+	for _, output := range a.Outputs {
+		err = a.cloneDatabase(output)
 		if err != nil {
 			return
 		}
@@ -88,25 +134,46 @@ func (action *Action) Copy() (err error) {
 	return
 }
 
-func (action *Action) verifyConfiguration(config *settings.Configuration, refresh bool) error {
+func (a *Action) verifyConfiguration(config *settings.Configuration, refresh bool) error {
 	st, err := store.DataSource(config, nil)
 	if err != nil {
-		return action.AddError(err)
+		return a.AddError(err)
 	}
 	defer st.OnExit()
 
 	if refresh {
 		_, err = st.Refresh()
 		if err != nil {
-			return action.AddError(err)
+			return a.AddError(err)
 		}
 	}
 	return nil
 }
 
-func (action *Action) Verify() {
-	action.verifyConfiguration(action.Input, true)
-	for _, output := range action.Outputs {
-		action.verifyConfiguration(output, false)
+func (a *Action) Verify() {
+	a.verifyConfiguration(a.Input, true)
+	for _, output := range a.Outputs {
+		a.verifyConfiguration(output, false)
+	}
+}
+
+func (a *Action) Update() {
+}
+
+func (a *Action) Generate() {
+}
+
+func (a *Action) Process() {
+	switch strings.ToLower(a.Method) {
+	case "verify":
+		a.Verify()
+	case "clone":
+		a.Clone()
+	case "update":
+		a.Update()
+	case "generate":
+		a.Generate()
+	default:
+		a.AddError(fmt.Errorf("unknown method %s", a.Method))
 	}
 }

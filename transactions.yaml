@@ -1,8 +1,10 @@
 actions:
-  - method: "copy"
+  - method: "clone"
     input:
-      driver: "file"
-      path: "./cabinet/json"
+      driver: "sqlite3"
+      path: "./glow.db"
     outputs:
       - driver: "sqlite3"
-        path: "./cabinet-2.db"
+        path: "./cabinet2.db"
+      - driver: "file"
+        path: "/home/dave/src/glow-gui/cabinet2"

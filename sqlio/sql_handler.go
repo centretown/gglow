@@ -265,7 +265,7 @@ func (sqlh *SqlHandler) KeyList() []string {
 	return sqlh.keyList
 }
 
-func (sqlh *SqlHandler) CreateNewDatabase() error {
+func (sqlh *SqlHandler) CreateNewDatabase(name string) error {
 	var sql_create = []string{
 		"DROP VIEW IF EXISTS palettes;",
 		"DROP VIEW IF EXISTS folders;",
@@ -288,6 +288,21 @@ ORDER BY folder;
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+
+	if len(name) > 0 {
+		query := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", name)
+		_, err := sqlh.db.ExecContext(ctx, query)
+		if err != nil {
+			fyne.LogError("CreateNewDatabase", err)
+			return err
+		}
+		query = fmt.Sprintf("USE %s;", name)
+		_, err = sqlh.db.ExecContext(ctx, query)
+		if err != nil {
+			fyne.LogError("USE", err)
+			return err
+		}
+	}
 
 	for _, query := range sql_create {
 		_, err := sqlh.db.ExecContext(ctx, query)

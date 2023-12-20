@@ -64,72 +64,9 @@ func (tl *Transaction) HasErrors() bool {
 	return false
 }
 
-// func (tr *Transaction) verifyConfig(config *settings.Configuration, refresh bool) {
-// 	st, err := store.DataSource(config, nil)
-// 	if err != nil {
-// 		config.AddError(err)
-// 		return
-// 	}
-// 	defer st.OnExit()
-
-// 	if refresh {
-// 		_, err = st.Refresh()
-// 		if err != nil {
-// 			config.AddError(err)
-// 		}
-// 	}
-// }
-
-// func (tr *Transaction) Verify() {
-// 	for _, action := range tr.Actions {
-// 		tr.verifyConfig(action.Input, true)
-
-// 		for _, output := range action.Outputs {
-// 			tr.verifyConfig(output, false)
-// 		}
-// 	}
-// }
-
-// func (tr *Transaction) copyDatabase(action *Action, output *settings.Configuration) (err error) {
-// 	var dataIn, dataOut effects.IoHandler
-// 	dataIn, err = store.DataSource(action.Input, nil)
-// 	if err != nil {
-// 		action.Input.AddError(err)
-// 		return err
-// 	}
-// 	action.AddNote("source action.Input")
-// 	defer dataIn.OnExit()
-
-// 	dataOut, err = store.DataSource(output, nil)
-// 	if err != nil {
-// 		output.AddError(err)
-// 	}
-
-// 	err = dataOut.CreateNewDatabase()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	_, err = dataIn.Refresh()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	err = WriteDatabase(dataIn, dataOut)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
 func (tr *Transaction) Process() (err error) {
 	for _, action := range tr.Actions {
-		switch action.Method {
-		case "verify":
-			action.Verify()
-		case "copy":
-			action.Copy()
-		}
+		action.Process()
 	}
 	return
 }

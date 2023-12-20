@@ -34,34 +34,4 @@ func main() {
 
 	transaction.Process()
 	transaction.ShowLogs()
-
-	// err = logs.Process()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	os.Exit(1)
-	// }
-
-	// f := func(dataIn effects.IoHandler, dataOut effects.IoHandler) error {
-	// 	err := dataOut.CreateNewDatabase()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	err = WriteDatabase(dataIn, dataOut)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	dataOut.OnExit()
-	// 	return nil
-	// }
-
-	// err := f(dataIn, sqlio.NewSqlLiteHandler())
-	// if err != nil {
-	// 	return
-	// }
-	// f(dataIn, sqlio.NewMySqlHandler())
-	// if err != nil {
-	// 	return
-	// }
-	// fmt.Println("Complete!")
 }
