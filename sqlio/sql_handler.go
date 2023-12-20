@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"glow-gui/effects"
 	"glow-gui/glow"
+	"glow-gui/glowio"
 	"glow-gui/resources"
 	"log"
 	"time"
@@ -15,7 +16,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var _ effects.IoHandler = (*SqlHandler)(nil)
+var _ glowio.IoHandler = (*SqlHandler)(nil)
 
 // const (
 // 	dsnMYSQL      = "dave:football@tcp(192.168.40.1:3306)/test"
@@ -261,7 +262,7 @@ func (sqlh *SqlHandler) RefreshFolder(folder string) ([]string, error) {
 	return sqlh.keyList, err
 }
 
-func (sqlh *SqlHandler) KeyList() []string {
+func (sqlh *SqlHandler) ListCurrentFolder() []string {
 	return sqlh.keyList
 }
 

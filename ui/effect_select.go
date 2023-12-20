@@ -17,7 +17,7 @@ func NewEffectSelect(effect effects.Effect) *widget.Select {
 	fs := &EffectSelect{
 		effect: effect,
 	}
-	fs.Select = widget.NewSelect(effect.KeyList(), fs.onChange)
+	fs.Select = widget.NewSelect(effect.ListCurrentFolder(), fs.onChange)
 	effect.AddFrameListener(binding.NewDataListener(func() {
 		selected := fs.Select.Selected
 		if selected != effect.EffectName() {
@@ -31,12 +31,13 @@ func NewEffectSelect(effect effects.Effect) *widget.Select {
 func (fs *EffectSelect) onChange(title string) {
 	if fs.effect.IsFolder(title) {
 		fs.auto = false
-		fs.Select.SetOptions(fs.effect.RefreshFolder(title))
+		opt := fs.effect.LoadFolder(title)
+		fs.Select.SetOptions(opt)
 		return
 	}
 	if fs.auto {
 		fs.auto = false
 	} else {
-		fs.effect.ReadEffect(title)
+		fs.effect.LoadEffect(title)
 	}
 }

@@ -1,4 +1,4 @@
-package effects
+package glowio
 
 import "glow-gui/glow"
 
@@ -8,7 +8,7 @@ type IoHandler interface {
 	EffectName() string
 	ReadEffect(title string) (*glow.Frame, error)
 	IsFolder(key string) bool
-	KeyList() []string
+	ListCurrentFolder() []string
 	Refresh() ([]string, error)
 	RefreshFolder(key string) ([]string, error)
 	WriteEffect(title string, frame *glow.Frame) error

@@ -2,7 +2,7 @@ package store
 
 import (
 	"fmt"
-	"glow-gui/effects"
+	"glow-gui/glowio"
 	"glow-gui/settings"
 	"glow-gui/sqlio"
 	"glow-gui/storageio"
@@ -17,7 +17,7 @@ const (
 )
 
 func DataSource(config *settings.Configuration,
-	preferences fyne.Preferences) (store effects.IoHandler, err error) {
+	preferences fyne.Preferences) (store glowio.IoHandler, err error) {
 
 	if config.Driver == "sqlite" {
 		config.Driver = "sqlite3"

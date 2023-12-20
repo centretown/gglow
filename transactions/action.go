@@ -2,7 +2,7 @@ package transactions
 
 import (
 	"fmt"
-	"glow-gui/glow"
+	"glow-gui/glowio"
 	"glow-gui/settings"
 	"glow-gui/store"
 	"strings"
@@ -16,16 +16,17 @@ const (
 
 // ActionHandler
 type ActionHandler interface {
-	CreateNewDatabase(string) error
-	OnExit()
-	Refresh() ([]string, error)
-	RefreshFolder(string) ([]string, error)
-	KeyList() []string
-	IsFolder(string) bool
-	FolderName() string
-	ReadEffect(title string) (*glow.Frame, error)
-	WriteEffect(title string, frame *glow.Frame) error
-	WriteFolder(title string) error
+	glowio.IoHandler
+	// CreateNewDatabase(string) error
+	// OnExit()
+	// Refresh() ([]string, error)
+	// RefreshFolder(string) ([]string, error)
+	// KeyList() []string
+	// IsFolder(string) bool
+	// FolderName() string
+	// ReadEffect(title string) (*glow.Frame, error)
+	// WriteEffect(title string, frame *glow.Frame) error
+	// WriteFolder(title string) error
 }
 
 type Action struct {

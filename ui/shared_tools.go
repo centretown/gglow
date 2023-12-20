@@ -58,7 +58,7 @@ func (tl *SharedTools) AddItems(items ...widget.ToolbarItem) {
 }
 
 func (tl *SharedTools) save() {
-	tl.effect.WriteEffect()
+	tl.effect.SaveEffect()
 }
 
 func (tl *SharedTools) apply() {

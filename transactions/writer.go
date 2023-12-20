@@ -5,7 +5,7 @@ import (
 )
 
 func (action *Action) WriteDatabase(dataIn ActionHandler, dataOut ActionHandler) error {
-	list := dataIn.KeyList()
+	list := dataIn.ListCurrentFolder()
 
 	for _, item := range list {
 		if dataIn.IsFolder(item) {

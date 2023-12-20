@@ -3,6 +3,7 @@ package effects
 import (
 	"fmt"
 	"glow-gui/glow"
+	"glow-gui/glowio"
 	"glow-gui/settings"
 
 	"fyne.io/fyne/v2"
@@ -24,7 +25,7 @@ func defaultFrame() (frame *glow.Frame) {
 }
 
 type EffectIo struct {
-	IoHandler
+	glowio.IoHandler
 	effectName       string
 	folderName       string
 	Frame            binding.Untyped
@@ -47,7 +48,7 @@ type EffectIo struct {
 	// changeDetected bool
 }
 
-func NewEffectIo(io IoHandler, preferences fyne.Preferences, config *settings.Configuration) *EffectIo {
+func NewEffectIo(io glowio.IoHandler, preferences fyne.Preferences, config *settings.Configuration) *EffectIo {
 
 	eff := &EffectIo{
 		IoHandler:        io,
@@ -75,7 +76,7 @@ func NewEffectIo(io IoHandler, preferences fyne.Preferences, config *settings.Co
 	}
 	// effect := preferences.StringWithFallback(settings.Effect.String(), "")
 	if len(effect) > 0 {
-		eff.ReadEffect(effect)
+		eff.LoadEffect(effect)
 	} else {
 		eff.setFrame(defaultFrame(), 0)
 	}
@@ -92,7 +93,7 @@ func NewEffectIo(io IoHandler, preferences fyne.Preferences, config *settings.Co
 	return eff
 }
 
-func (eff *EffectIo) RefreshFolder(folder string) []string {
+func (eff *EffectIo) LoadFolder(folder string) []string {
 	keys, _ := eff.IoHandler.RefreshFolder(folder)
 	return keys
 }
@@ -180,7 +181,7 @@ func (eff *EffectIo) OnExit() {
 		[]string{eff.config.Path, eff.folderName, eff.effectName})
 }
 
-func (eff *EffectIo) ReadEffect(title string) error {
+func (eff *EffectIo) LoadEffect(title string) error {
 	frame, err := eff.IoHandler.ReadEffect(title)
 	if err != nil {
 		return err
@@ -195,7 +196,7 @@ func (eff *EffectIo) ReadEffect(title string) error {
 	return nil
 }
 
-func (st *EffectIo) WriteEffect() error {
+func (st *EffectIo) SaveEffect() error {
 	title, frame := st.EffectName(), st.GetFrame()
 	err := ValidateEffectName(title)
 	if err != nil {

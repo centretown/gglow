@@ -13,7 +13,7 @@ import (
 	"fyne.io/fyne/v2/storage"
 )
 
-var _ effects.IoHandler = (*StorageHandler)(nil)
+// var _ io.IoHandler = (*StorageHandler)(nil)
 
 const (
 	scheme = "file://"
@@ -128,7 +128,7 @@ func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
 	return fh.keyList, err
 }
 
-func (fh *StorageHandler) KeyList() []string {
+func (fh *StorageHandler) ListCurrentFolder() []string {
 	return fh.keyList
 }
 
