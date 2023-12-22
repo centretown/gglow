@@ -13,17 +13,11 @@ import (
 
 	"fyne.io/fyne/v2"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 var _ glowio.IoHandler = (*SqlHandler)(nil)
-
-// const (
-// 	dsnMYSQL      = "dave:football@tcp(192.168.40.1:3306)/test"
-// 	dsnSQLLite    = "./glow.db"
-// 	driverMYSQL   = "mysql"
-// 	driverSQLLite = "sqlite3"
-// )
 
 type SqlHandler struct {
 	folder string
@@ -35,14 +29,6 @@ type SqlHandler struct {
 	driver     string
 	serializer effects.Serializer
 }
-
-// func NewMySqlHandler() *SqlHandler {
-// 	return NewSqlHandler(driverMYSQL, dsnMYSQL)
-// }
-
-// func NewSqlLiteHandler() *SqlHandler {
-// 	return NewSqlHandler(driverSQLLite, dsnSQLLite)
-// }
 
 func NewSqlHandler(driver, dsn string) (*SqlHandler, error) {
 	sqlh := &SqlHandler{
@@ -291,18 +277,18 @@ ORDER BY folder;
 	defer cancel()
 
 	if len(name) > 0 {
-		query := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", name)
-		_, err := sqlh.db.ExecContext(ctx, query)
-		if err != nil {
-			fyne.LogError("CreateNewDatabase", err)
-			return err
-		}
-		query = fmt.Sprintf("USE %s;", name)
-		_, err = sqlh.db.ExecContext(ctx, query)
-		if err != nil {
-			fyne.LogError("USE", err)
-			return err
-		}
+		// query := fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s;", name)
+		// _, err := sqlh.db.ExecContext(ctx, query)
+		// if err != nil {
+		// 	fyne.LogError("CreateNewDatabase", err)
+		// 	return err
+		// }
+		// query = fmt.Sprintf("USE %s;", name)
+		// _, err = sqlh.db.ExecContext(ctx, query)
+		// if err != nil {
+		// 	fyne.LogError("USE", err)
+		// 	return err
+		// }
 	}
 
 	for _, query := range sql_create {

@@ -14,17 +14,17 @@ import (
 	"fyne.io/fyne/v2/app"
 )
 
-var parsed settings.Configuration
+var config settings.Configuration
 
 func init() {
-	flag.StringVar(&parsed.Driver, "s", driverDefault, driverUsage+" (short form)")
-	flag.StringVar(&parsed.Driver, "storage", driverDefault, driverUsage)
-	flag.StringVar(&parsed.Path, "p", pathDefault, pathUsage+" (short form)")
-	flag.StringVar(&parsed.Path, "path", pathDefault, pathUsage)
-	flag.StringVar(&parsed.Folder, "f", folderDefault, folderUsage+" (short form)")
-	flag.StringVar(&parsed.Folder, "folder", folderDefault, folderUsage)
-	flag.StringVar(&parsed.Effect, "e", effectDefault, effectUsage+" (short form)")
-	flag.StringVar(&parsed.Effect, "effect", effectDefault, effectUsage)
+	flag.StringVar(&config.Driver, "s", driverDefault, driverUsage+" (short form)")
+	flag.StringVar(&config.Driver, "storage", driverDefault, driverUsage)
+	flag.StringVar(&config.Path, "p", pathDefault, pathUsage+" (short form)")
+	flag.StringVar(&config.Path, "path", pathDefault, pathUsage)
+	flag.StringVar(&config.Folder, "f", folderDefault, folderUsage+" (short form)")
+	flag.StringVar(&config.Folder, "folder", folderDefault, folderUsage)
+	flag.StringVar(&config.Effect, "e", effectDefault, effectUsage+" (short form)")
+	flag.StringVar(&config.Effect, "effect", effectDefault, effectUsage)
 }
 
 const (
@@ -38,10 +38,16 @@ const (
 	effectDefault = ""
 )
 
+const (
+	PathHistory int = iota
+	FolderHistory
+	EffectHistory
+)
+
 func main() {
 
 	flag.Parse()
-	fmt.Println("using storage method", parsed.Driver, parsed.Path)
+	fmt.Println("using storage method", config.Driver, config.Path)
 
 	app := app.NewWithID(resources.AppID)
 	preferences := app.Preferences()
@@ -50,8 +56,19 @@ func main() {
 		app.SetIcon(icon)
 	}
 
+	history := preferences.StringListWithFallback(config.Driver, []string{"", "", ""})
+	if config.Path == "" {
+		config.Path = history[PathHistory]
+	}
+	if config.Folder == "" {
+		config.Folder = history[FolderHistory]
+	}
+	if config.Effect == "" {
+		config.Effect = history[EffectHistory]
+	}
+
 	//storage
-	store, err := store.DataSource(&parsed, preferences)
+	store, err := store.NewIoHandler(&config)
 	if err == nil {
 		_, err = store.Refresh()
 
@@ -61,7 +78,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	effect := effects.NewEffectIo(store, preferences, &parsed)
+	effect := effects.NewEffectIo(store, preferences, &config)
 
 	//window
 	theme := settings.NewGlowTheme(preferences)

@@ -55,8 +55,8 @@ func (tr *Transaction) ShowLogs() {
 	}
 }
 
-func (tl *Transaction) HasErrors() bool {
-	for _, a := range tl.Actions {
+func (tr *Transaction) HasErrors() bool {
+	for _, a := range tr.Actions {
 		if a.HasErrors() {
 			return true
 		}

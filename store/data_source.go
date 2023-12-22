@@ -5,47 +5,39 @@ import (
 	"glow-gui/glowio"
 	"glow-gui/settings"
 	"glow-gui/sqlio"
-	"glow-gui/storageio"
-
-	"fyne.io/fyne/v2"
 )
 
-const (
-	PathHistory int = iota
-	FolderHistory
-	EffectHistory
-)
+func makeDSN(config *settings.Configuration) (dsn string) {
+	fmt.Println("config", config)
+	switch config.Driver {
+	case "sqlite3":
+		dsn = config.Path
+	case "mysql":
+		if config.Path == "" {
+			dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+				config.User, config.Password, config.Host, config.Port, config.Database)
+		} else {
+			dsn = config.Path
+		}
+	case "postgres":
+		if config.Path == "" {
+			dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+				config.Host, config.Port, config.User, config.Password, config.Database)
+		} else {
+			dsn = config.Path
+		}
+	default:
+	}
+	fmt.Println("dsn", dsn)
+	return
+}
 
-func DataSource(config *settings.Configuration,
-	preferences fyne.Preferences) (store glowio.IoHandler, err error) {
+func NewIoHandler(config *settings.Configuration) (store glowio.IoHandler, err error) {
 
 	if config.Driver == "sqlite" {
 		config.Driver = "sqlite3"
 	}
 
-	if preferences != nil {
-		history := preferences.StringListWithFallback(config.Driver, []string{"", "", ""})
-		if config.Path == "" {
-			config.Path = history[PathHistory]
-		}
-		if config.Folder == "" {
-			config.Folder = history[FolderHistory]
-		}
-		if config.Effect == "" {
-			config.Effect = history[EffectHistory]
-		}
-	}
-
-	switch config.Driver {
-	case "file":
-		store, err = storageio.NewStorageHandler(config.Path)
-
-	case "sqlite3", "mysql":
-		store, err = sqlio.NewSqlHandler(config.Driver, config.Path)
-
-	default:
-		err = fmt.Errorf("undefined storage method %s", config.Driver)
-	}
-
+	store, err = sqlio.NewSqlHandler(config.Driver, makeDSN(config))
 	return
 }

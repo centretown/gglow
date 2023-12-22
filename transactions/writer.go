@@ -2,9 +2,10 @@ package transactions
 
 import (
 	"fmt"
+	"glow-gui/glowio"
 )
 
-func (action *Action) WriteDatabase(dataIn ActionHandler, dataOut ActionHandler) error {
+func (action *Action) WriteDatabase(dataIn glowio.IoHandler, dataOut glowio.IoHandler) error {
 	list := dataIn.ListCurrentFolder()
 
 	for _, item := range list {
@@ -33,7 +34,7 @@ func (action *Action) WriteDatabase(dataIn ActionHandler, dataOut ActionHandler)
 	return nil
 }
 
-func (action *Action) WriteFolder(list []string, source ActionHandler, dest ActionHandler) error {
+func (action *Action) WriteFolder(list []string, source glowio.IoHandler, dest glowio.IoHandler) error {
 	err := dest.WriteFolder(dest.FolderName())
 	if err != nil {
 		return err

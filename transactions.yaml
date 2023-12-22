@@ -1,10 +1,13 @@
 actions:
   - method: "clone"
     input:
-      driver: "sqlite3"
-      path: "./glow.db"
+      driver: "postgres"
+      user: "dave"
+      password: "football"
+      host: "localhost"
+      port: "5432"
+      database: "test"
+      path: ""
     outputs:
       - driver: "sqlite3"
-        path: "./cabinet2.db"
-      - driver: "file"
-        path: "/home/dave/src/glow-gui/cabinet2"
+        path: "./postgres.db"

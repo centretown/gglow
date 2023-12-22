@@ -14,21 +14,6 @@ const (
 	MySql   = "mysql"
 )
 
-// ActionHandler
-type ActionHandler interface {
-	glowio.IoHandler
-	// CreateNewDatabase(string) error
-	// OnExit()
-	// Refresh() ([]string, error)
-	// RefreshFolder(string) ([]string, error)
-	// KeyList() []string
-	// IsFolder(string) bool
-	// FolderName() string
-	// ReadEffect(title string) (*glow.Frame, error)
-	// WriteEffect(title string, frame *glow.Frame) error
-	// WriteFolder(title string) error
-}
-
 type Action struct {
 	Method  string                    `yaml:"method" json:"method"`
 	Input   *settings.Configuration   `yaml:"input" json:"input"`
@@ -64,7 +49,7 @@ func (a *Action) HasErrors() bool {
 	return len(a.Errors) > 0
 }
 
-func (a *Action) createDatabase(output *settings.Configuration, dataOut ActionHandler) (err error) {
+func (a *Action) createDatabase(output *settings.Configuration, dataOut glowio.IoHandler) (err error) {
 	a.AddNote("create database...", output.Database)
 	err = dataOut.CreateNewDatabase(output.Database)
 	if err != nil {
@@ -74,9 +59,9 @@ func (a *Action) createDatabase(output *settings.Configuration, dataOut ActionHa
 	return
 }
 
-func (a *Action) connectDatabase(config *settings.Configuration) (handler ActionHandler, err error) {
+func (a *Action) connectDatabase(config *settings.Configuration) (handler glowio.IoHandler, err error) {
 	a.AddNote("connecting...")
-	handler, err = store.DataSource(config, nil)
+	handler, err = store.NewIoHandler(config)
 	if err != nil {
 		a.AddError(err)
 		return
@@ -86,7 +71,7 @@ func (a *Action) connectDatabase(config *settings.Configuration) (handler Action
 }
 
 func (a *Action) cloneDatabase(output *settings.Configuration) (err error) {
-	var dataIn, dataOut ActionHandler
+	var dataIn, dataOut glowio.IoHandler
 	dataIn, err = a.connectDatabase(a.Input)
 	if err != nil {
 		return
@@ -136,7 +121,7 @@ func (a *Action) Clone() (err error) {
 }
 
 func (a *Action) verifyConfiguration(config *settings.Configuration, refresh bool) error {
-	st, err := store.DataSource(config, nil)
+	st, err := store.NewIoHandler(config)
 	if err != nil {
 		return a.AddError(err)
 	}
