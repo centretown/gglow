@@ -67,23 +67,21 @@ func main() {
 		config.Effect = history[EffectHistory]
 	}
 
-	//storage
-	store, err := store.NewHandler(&config)
+	storeHandler, err := store.NewHandler(&config)
 	if err == nil {
-		_, err = store.Refresh()
-
+		_, err = storeHandler.Refresh()
 	}
 	if err != nil {
 		fyne.LogError("storage", err)
 		os.Exit(1)
 	}
 
-	effect := effects.NewEffectIo(store, preferences, &config)
-
-	//window
 	theme := settings.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
+
 	window := app.NewWindow(resources.GlowLabel.String())
+	effect := effects.NewEffectIo(storeHandler, preferences, &config)
+
 	ui := ui.NewUi(app, window, effect, theme)
 
 	window.SetCloseIntercept(func() {
