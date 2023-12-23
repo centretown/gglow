@@ -3,7 +3,7 @@ package effects
 import (
 	"fmt"
 	"glow-gui/glow"
-	"glow-gui/glowio"
+	"glow-gui/iohandler"
 	"glow-gui/settings"
 
 	"fyne.io/fyne/v2"
@@ -25,7 +25,7 @@ func defaultFrame() (frame *glow.Frame) {
 }
 
 type EffectIo struct {
-	glowio.IoHandler
+	iohandler.IoHandler
 	effectName       string
 	folderName       string
 	Frame            binding.Untyped
@@ -48,7 +48,7 @@ type EffectIo struct {
 	// changeDetected bool
 }
 
-func NewEffectIo(io glowio.IoHandler, preferences fyne.Preferences, config *settings.Configuration) *EffectIo {
+func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *settings.Configuration) *EffectIo {
 
 	eff := &EffectIo{
 		IoHandler:        io,

@@ -2,13 +2,13 @@ package effects
 
 import (
 	"glow-gui/glow"
-	"glow-gui/glowio"
+	"glow-gui/iohandler"
 
 	"fyne.io/fyne/v2/data/binding"
 )
 
 type Effect interface {
-	glowio.IoHandler
+	iohandler.IoHandler
 	FolderName() string
 	EffectName() string
 	GetFrame() *glow.Frame

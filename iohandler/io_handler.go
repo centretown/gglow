@@ -1,4 +1,4 @@
-package glowio
+package iohandler
 
 import "glow-gui/glow"
 

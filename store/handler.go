@@ -2,13 +2,12 @@ package store
 
 import (
 	"fmt"
-	"glow-gui/glowio"
+	"glow-gui/iohandler"
 	"glow-gui/settings"
 	"glow-gui/sqlio"
 )
 
 func makeDSN(config *settings.Configuration) (dsn string) {
-	fmt.Println("config", config)
 	switch config.Driver {
 	case "sqlite3":
 		dsn = config.Path
@@ -28,16 +27,10 @@ func makeDSN(config *settings.Configuration) (dsn string) {
 		}
 	default:
 	}
-	fmt.Println("dsn", dsn)
 	return
 }
 
-func NewIoHandler(config *settings.Configuration) (store glowio.IoHandler, err error) {
-
-	if config.Driver == "sqlite" {
-		config.Driver = "sqlite3"
-	}
-
-	store, err = sqlio.NewSqlHandler(config.Driver, makeDSN(config))
+func NewHandler(config *settings.Configuration) (handler iohandler.IoHandler, err error) {
+	handler, err = sqlio.NewSqlHandler(config.Driver, makeDSN(config))
 	return
 }

@@ -68,7 +68,7 @@ func main() {
 	}
 
 	//storage
-	store, err := store.NewIoHandler(&config)
+	store, err := store.NewHandler(&config)
 	if err == nil {
 		_, err = store.Refresh()
 

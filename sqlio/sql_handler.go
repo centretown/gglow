@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"glow-gui/effects"
 	"glow-gui/glow"
-	"glow-gui/glowio"
+	"glow-gui/iohandler"
 	"glow-gui/resources"
 	"log"
 	"time"
@@ -17,7 +17,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var _ glowio.IoHandler = (*SqlHandler)(nil)
+var _ iohandler.IoHandler = (*SqlHandler)(nil)
 
 type SqlHandler struct {
 	folder string

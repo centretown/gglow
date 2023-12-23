@@ -2,7 +2,7 @@ package transactions
 
 import (
 	"fmt"
-	"glow-gui/glowio"
+	"glow-gui/iohandler"
 	"glow-gui/settings"
 	"glow-gui/store"
 	"strings"
@@ -49,7 +49,7 @@ func (a *Action) HasErrors() bool {
 	return len(a.Errors) > 0
 }
 
-func (a *Action) createDatabase(output *settings.Configuration, dataOut glowio.IoHandler) (err error) {
+func (a *Action) createDatabase(output *settings.Configuration, dataOut iohandler.IoHandler) (err error) {
 	a.AddNote("create database...", output.Database)
 	err = dataOut.CreateNewDatabase(output.Database)
 	if err != nil {
@@ -59,9 +59,9 @@ func (a *Action) createDatabase(output *settings.Configuration, dataOut glowio.I
 	return
 }
 
-func (a *Action) connectDatabase(config *settings.Configuration) (handler glowio.IoHandler, err error) {
+func (a *Action) connectDatabase(config *settings.Configuration) (handler iohandler.IoHandler, err error) {
 	a.AddNote("connecting...")
-	handler, err = store.NewIoHandler(config)
+	handler, err = store.NewHandler(config)
 	if err != nil {
 		a.AddError(err)
 		return
@@ -71,7 +71,7 @@ func (a *Action) connectDatabase(config *settings.Configuration) (handler glowio
 }
 
 func (a *Action) cloneDatabase(output *settings.Configuration) (err error) {
-	var dataIn, dataOut glowio.IoHandler
+	var dataIn, dataOut iohandler.IoHandler
 	dataIn, err = a.connectDatabase(a.Input)
 	if err != nil {
 		return
@@ -121,7 +121,7 @@ func (a *Action) Clone() (err error) {
 }
 
 func (a *Action) verifyConfiguration(config *settings.Configuration, refresh bool) error {
-	st, err := store.NewIoHandler(config)
+	st, err := store.NewHandler(config)
 	if err != nil {
 		return a.AddError(err)
 	}

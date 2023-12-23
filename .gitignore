@@ -1,7 +1,6 @@
 wasm
 *.wasm
 *.sql
-db
 fyne-cross
 *.yaml
 *.db

@@ -1,15 +1,16 @@
 package settings
 
 type Configuration struct {
-	Driver   string `yaml:"driver" json:"driver"`
-	Path     string `yaml:"path" json:"path"`
+	Driver   string
+	Path     string
 	User     string
 	Password string
 	Host     string
 	Port     string
 	Database string
-	Folder   string `yaml:"folder" json:"folder"`
-	Effect   string `yaml:"effect" json:"effect"`
+	Folder   string
+
+	Effect string
 }
 
 func NewConfiguration() *Configuration {
