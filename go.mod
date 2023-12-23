@@ -1,4 +1,4 @@
-module glow-gui
+module gglow
 
 go 1.21.1
 

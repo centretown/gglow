@@ -3,9 +3,9 @@ package ui
 import (
 	"encoding/json"
 	"fmt"
-	"glow-gui/effects"
-	"glow-gui/glow"
-	"glow-gui/resources"
+	"gglow/effects"
+	"gglow/glow"
+	"gglow/resources"
 	"image/color"
 
 	"fyne.io/fyne/v2"

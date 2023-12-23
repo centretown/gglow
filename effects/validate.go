@@ -2,7 +2,7 @@ package effects
 
 import (
 	"fmt"
-	"glow-gui/resources"
+	"gglow/resources"
 	"strings"
 	"unicode"
 )

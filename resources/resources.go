@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"glow-gui/glow"
+	"gglow/glow"
 	"path"
 
 	"fyne.io/fyne/v2"

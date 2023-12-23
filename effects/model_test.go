@@ -2,8 +2,8 @@ package effects
 
 // import (
 // 	"fmt"
-// 	"glow-gui/fileio"
-// 	"glow-gui/glow"
+// 	"gglow/fileio"
+// 	"gglow/glow"
 // 	"testing"
 
 // 	"fyne.io/fyne/v2/test"

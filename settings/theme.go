@@ -1,7 +1,7 @@
 package settings
 
 import (
-	"glow-gui/resources"
+	"gglow/resources"
 	"image/color"
 
 	"fyne.io/fyne/v2"

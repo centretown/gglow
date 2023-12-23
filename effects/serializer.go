@@ -2,7 +2,7 @@ package effects
 
 import (
 	"encoding/json"
-	"glow-gui/glow"
+	"gglow/glow"
 	"strings"
 
 	"fyne.io/fyne/v2"

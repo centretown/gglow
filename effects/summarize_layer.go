@@ -2,8 +2,8 @@ package effects
 
 import (
 	"fmt"
-	"glow-gui/glow"
-	"glow-gui/resources"
+	"gglow/glow"
+	"gglow/resources"
 	"strings"
 )
 

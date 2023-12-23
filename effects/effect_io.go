@@ -2,9 +2,9 @@ package effects
 
 import (
 	"fmt"
-	"glow-gui/glow"
-	"glow-gui/iohandler"
-	"glow-gui/settings"
+	"gglow/glow"
+	"gglow/iohandler"
+	"gglow/settings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"

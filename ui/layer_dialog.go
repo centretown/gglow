@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"glow-gui/resources"
+	"gglow/resources"
 	"image/color"
 
 	"fyne.io/fyne/v2"

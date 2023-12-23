@@ -1,6 +1,6 @@
 package iohandler
 
-import "glow-gui/glow"
+import "gglow/glow"
 
 type IoHandler interface {
 	CreateNewDatabase(name string) error

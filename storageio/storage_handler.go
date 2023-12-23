@@ -2,9 +2,9 @@ package storageio
 
 import (
 	"fmt"
-	"glow-gui/effects"
-	"glow-gui/glow"
-	"glow-gui/resources"
+	"gglow/effects"
+	"gglow/glow"
+	"gglow/resources"
 	"io"
 	"os"
 	"strings"

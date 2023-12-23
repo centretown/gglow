@@ -2,9 +2,9 @@ package transactions
 
 import (
 	"fmt"
-	"glow-gui/iohandler"
-	"glow-gui/settings"
-	"glow-gui/store"
+	"gglow/iohandler"
+	"gglow/settings"
+	"gglow/store"
 	"strings"
 )
 

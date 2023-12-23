@@ -1,7 +1,7 @@
 package effects
 
 import (
-	"glow-gui/glow"
+	"gglow/glow"
 
 	"fyne.io/fyne/v2/data/binding"
 )

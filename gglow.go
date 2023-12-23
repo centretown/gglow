@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"glow-gui/effects"
-	"glow-gui/resources"
-	"glow-gui/settings"
-	"glow-gui/store"
-	"glow-gui/ui"
+	"gglow/effects"
+	"gglow/resources"
+	"gglow/settings"
+	"gglow/store"
+	"gglow/ui"
 	"os"
 
 	"fyne.io/fyne/v2"

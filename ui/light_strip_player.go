@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"glow-gui/effects"
-	"glow-gui/glow"
+	"gglow/effects"
+	"gglow/glow"
 	"time"
 
 	"fyne.io/fyne/v2"

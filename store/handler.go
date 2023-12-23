@@ -2,9 +2,9 @@ package store
 
 import (
 	"fmt"
-	"glow-gui/iohandler"
-	"glow-gui/settings"
-	"glow-gui/sqlio"
+	"gglow/iohandler"
+	"gglow/settings"
+	"gglow/sqlio"
 )
 
 func makeDSN(config *settings.Configuration) (dsn string) {

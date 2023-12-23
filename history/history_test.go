@@ -1,7 +1,7 @@
 package history
 
 // import (
-// 	"glow-gui/glow"
+// 	"gglow/glow"
 // 	"testing"
 
 // 	"fyne.io/fyne/v2/test"

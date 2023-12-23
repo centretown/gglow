@@ -2,7 +2,7 @@ package transactions
 
 import (
 	"fmt"
-	"glow-gui/iohandler"
+	"gglow/iohandler"
 )
 
 func (action *Action) WriteDatabase(dataIn iohandler.IoHandler, dataOut iohandler.IoHandler) error {

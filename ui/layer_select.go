@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"glow-gui/effects"
-	"glow-gui/resources"
+	"gglow/effects"
+	"gglow/resources"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"

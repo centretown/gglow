@@ -1,9 +1,9 @@
 package ui
 
 import (
-	"glow-gui/effects"
-	"glow-gui/glow"
-	"glow-gui/resources"
+	"gglow/effects"
+	"gglow/glow"
+	"gglow/resources"
 	"strconv"
 
 	"fyne.io/fyne/v2"

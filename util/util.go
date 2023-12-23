@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"glow-gui/resources"
-	"glow-gui/transactions"
+	"gglow/resources"
+	"gglow/transactions"
 	"os"
 
 	"fyne.io/fyne/v2/app"

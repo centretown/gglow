@@ -1,1 +1,1 @@
-# glow-gui
+# gglow
