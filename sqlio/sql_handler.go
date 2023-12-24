@@ -230,6 +230,7 @@ func (sqlh *SqlHandler) RefreshFolder(folder string) ([]string, error) {
 		fyne.LogError("unable to execute search query", err)
 		return sqlh.keyList, err
 	}
+	defer rows.Close()
 
 	sqlh.folder = folder
 	sqlh.keyList = make([]string, 0)
