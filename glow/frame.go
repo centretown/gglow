@@ -80,11 +80,12 @@ func (frame *Frame) MakeCode() string {
 	layers := func() string {
 		var s string
 		for _, layer := range frame.Layers {
-			s += layer.MakeCode() + ",//\n"
+			s += layer.MakeCode()
 		}
 		return s
 	}
-	s := fmt.Sprintf("{%d,%d,%d,//\n{%s}}",
+
+	s := fmt.Sprintf("{%d,%d,%d,{%s}},\n",
 		frame.Length, frame.Rows, frame.Interval, layers())
 	return s
 }

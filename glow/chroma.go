@@ -84,12 +84,12 @@ func (chroma *Chroma) MakeCode() string {
 	colors := func() string {
 		var s string
 		for _, hsv := range chroma.Colors {
-			s += hsv.MakeCode() + ",\n"
+			s += hsv.MakeCode() + ","
 		}
 		return s
 	}
 
-	s := fmt.Sprintf("{%d,\n{%s},\n%d",
+	s := fmt.Sprintf("{%d,{%s},%d}",
 		chroma.Length, colors(), chroma.HueShift)
 	return s
 }

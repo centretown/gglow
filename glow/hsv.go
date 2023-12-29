@@ -150,6 +150,6 @@ func (hsv *HSV) UnmarshalYAML(node *yaml.Node) (err error) {
 
 func (hsv *HSV) MakeCode() string {
 	s := fmt.Sprintf("{%d,%d,%d}",
-		int(hsv.Hue), int(hsv.Saturation*100), int(hsv.Value*100))
+		int(hsv.Hue*1530/360), int(hsv.Saturation*255), int(hsv.Value*255))
 	return s
 }

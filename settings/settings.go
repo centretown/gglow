@@ -10,9 +10,7 @@ const (
 	ContentSplit
 	GlowThemeVariant
 	GlowThemeScale
-	Effect
-	EffectPath
-	EffectFolder
+	AccessFile
 )
 
 var settings = []string{
@@ -23,9 +21,7 @@ var settings = []string{
 	"content_split",
 	"theme_variant",
 	"theme_scale",
-	"effect",
-	"effect_path",
-	"effect_folder",
+	"access_file",
 }
 
 func (s Settings) String() string {

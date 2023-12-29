@@ -4,3 +4,4 @@ wasm
 fyne-cross
 *.yaml
 *.db
+generated_test

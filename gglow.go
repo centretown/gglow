@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"gglow/effects"
+	"gglow/iohandler"
 	"gglow/resources"
 	"gglow/settings"
 	"gglow/store"
@@ -14,78 +15,54 @@ import (
 	"fyne.io/fyne/v2/app"
 )
 
-var config settings.Configuration
+const (
+	pathUsage   = "path to data accessor"
+	pathDefault = "accessor.yaml"
+)
 
-func init() {
-	flag.StringVar(&config.Driver, "s", driverDefault, driverUsage+" (short form)")
-	flag.StringVar(&config.Driver, "storage", driverDefault, driverUsage)
-	flag.StringVar(&config.Path, "p", pathDefault, pathUsage+" (short form)")
-	flag.StringVar(&config.Path, "path", pathDefault, pathUsage)
-	flag.StringVar(&config.Folder, "f", folderDefault, folderUsage+" (short form)")
-	flag.StringVar(&config.Folder, "folder", folderDefault, folderUsage)
-	flag.StringVar(&config.Effect, "e", effectDefault, effectUsage+" (short form)")
-	flag.StringVar(&config.Effect, "effect", effectDefault, effectUsage)
+var accessor = &settings.Accessor{
+	Driver: "sqlite3",
+	Path:   "glow.db",
 }
 
-const (
-	driverDefault = "sqlite3"
-	driverUsage   = "storage driver (sqlite3, mysql, file)"
-	pathUsage     = "path to data"
-	pathDefault   = ""
-	folderUsage   = "folder to access"
-	folderDefault = ""
-	effectUsage   = "effect to read"
-	effectDefault = ""
-)
+var accessPath string
 
-const (
-	PathHistory int = iota
-	FolderHistory
-	EffectHistory
-)
+func init() {
+	flag.StringVar(&accessPath, "p", "", pathUsage+" (short form)")
+	flag.StringVar(&accessPath, "path", "", pathUsage)
+}
 
 func main() {
 
-	flag.Parse()
-	fmt.Println("using storage method", config.Driver, config.Path)
-
 	app := app.NewWithID(resources.AppID)
 	preferences := app.Preferences()
+
+	storageHandler, accessor := loadStorage(preferences)
+	fmt.Println(accessPath, accessor.Driver, accessor.Path)
+
 	icon, err := resources.DarkGanderImage.Load()
 	if err == nil {
 		app.SetIcon(icon)
-	}
-
-	history := preferences.StringListWithFallback(config.Driver, []string{"", "", ""})
-	if config.Path == "" {
-		config.Path = history[PathHistory]
-	}
-	if config.Folder == "" {
-		config.Folder = history[FolderHistory]
-	}
-	if config.Effect == "" {
-		config.Effect = history[EffectHistory]
-	}
-
-	storeHandler, err := store.NewHandler(&config)
-	if err == nil {
-		_, err = storeHandler.Refresh()
-	}
-	if err != nil {
-		fyne.LogError("storage", err)
-		os.Exit(1)
 	}
 
 	theme := settings.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
 
 	window := app.NewWindow(resources.GlowLabel.String())
-	effect := effects.NewEffectIo(storeHandler, preferences, &config)
+	effect := effects.NewEffectIo(storageHandler, preferences, accessor)
 
 	ui := ui.NewUi(app, window, effect, theme)
 
 	window.SetCloseIntercept(func() {
-		effect.OnExit()
+		accessor.Folder = effect.FolderName()
+		accessor.Effect = effect.EffectName()
+		err = settings.SaveAccessor(accessPath, accessor)
+		if err != nil {
+			fyne.LogError("SaveAccessor", err)
+		} else {
+			preferences.SetString(settings.AccessFile.String(), accessPath)
+		}
+
 		ui.OnExit()
 		size := window.Canvas().Size()
 		preferences.SetInt(settings.ContentWidth.String(), int(size.Width))
@@ -102,4 +79,42 @@ func main() {
 	window.Show()
 	effect.SetActive()
 	app.Run()
+}
+
+func loadStorage(preferences fyne.Preferences) (iohandler.IoHandler, *settings.Accessor) {
+	flag.Parse()
+
+	if accessPath == "" {
+		accessPath = preferences.StringWithFallback(settings.AccessFile.String(), "")
+	}
+
+	if accessPath == "" {
+		accessPath = pathDefault
+	}
+
+	info, err := os.Stat(accessPath)
+	if err == nil {
+		if info.IsDir() {
+			fyne.LogError("loadStorage",
+				fmt.Errorf("path '%s' is a folder", accessPath))
+			os.Exit(1)
+		}
+		accessor, err = settings.LoadAccessor(accessPath)
+		if err != nil {
+			fyne.LogError("load accessor file", err)
+			os.Exit(1)
+		}
+	}
+
+	storeHandler, err := store.NewIoHandler(accessor)
+	if err == nil {
+		_, err = storeHandler.RootFolder()
+	}
+
+	if err != nil {
+		fyne.LogError("loadStorage", err)
+		os.Exit(1)
+	}
+
+	return storeHandler, accessor
 }

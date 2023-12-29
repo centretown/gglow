@@ -15,17 +15,17 @@ const (
 )
 
 type Action struct {
-	Method  string                    `yaml:"method" json:"method"`
-	Input   *settings.Configuration   `yaml:"input" json:"input"`
-	Outputs []*settings.Configuration `yaml:"outputs" json:"outputs"`
+	Method  string               `yaml:"method" json:"method"`
+	Input   *settings.Accessor   `yaml:"input" json:"input"`
+	Outputs []*settings.Accessor `yaml:"outputs" json:"outputs"`
 	Notes   []string
 	Errors  []string
 }
 
 func NewAction() *Action {
 	a := &Action{
-		Input:   &settings.Configuration{},
-		Outputs: make([]*settings.Configuration, 0),
+		Input:   &settings.Accessor{},
+		Outputs: make([]*settings.Accessor, 0),
 		Notes:   make([]string, 0),
 		Errors:  make([]string, 0),
 	}
@@ -49,9 +49,9 @@ func (a *Action) HasErrors() bool {
 	return len(a.Errors) > 0
 }
 
-func (a *Action) createDatabase(output *settings.Configuration, dataOut iohandler.IoHandler) (err error) {
+func (a *Action) createDatabase(output *settings.Accessor, dataOut iohandler.OutHandler) (err error) {
 	a.AddNote("create database...", output.Database)
-	err = dataOut.CreateNewDatabase(output.Database)
+	err = dataOut.Create(output.Database)
 	if err != nil {
 		return a.AddError(err)
 	}
@@ -59,9 +59,9 @@ func (a *Action) createDatabase(output *settings.Configuration, dataOut iohandle
 	return
 }
 
-func (a *Action) connectDatabase(config *settings.Configuration) (handler iohandler.IoHandler, err error) {
+func (a *Action) connectIn(config *settings.Accessor) (handler iohandler.IoHandler, err error) {
 	a.AddNote("connecting...")
-	handler, err = store.NewHandler(config)
+	handler, err = store.NewIoHandler(config)
 	if err != nil {
 		a.AddError(err)
 		return
@@ -70,15 +70,27 @@ func (a *Action) connectDatabase(config *settings.Configuration) (handler iohand
 	return
 }
 
-func (a *Action) cloneDatabase(output *settings.Configuration) (err error) {
-	var dataIn, dataOut iohandler.IoHandler
-	dataIn, err = a.connectDatabase(a.Input)
+func (a *Action) connectOut(config *settings.Accessor) (handler iohandler.OutHandler, err error) {
+	a.AddNote("connecting...")
+	handler, err = store.NewOutHandler(config)
+	if err != nil {
+		a.AddError(err)
+		return
+	}
+	a.AddNote("connected")
+	return
+}
+
+func (a *Action) cloneDatabase(output *settings.Accessor) (err error) {
+	var dataIn iohandler.IoHandler
+	dataIn, err = a.connectIn(a.Input)
 	if err != nil {
 		return
 	}
 	defer dataIn.OnExit()
 
-	dataOut, err = a.connectDatabase(output)
+	var dataOut iohandler.OutHandler
+	dataOut, err = a.connectOut(output)
 	if err != nil {
 		return
 	}
@@ -89,7 +101,7 @@ func (a *Action) cloneDatabase(output *settings.Configuration) (err error) {
 		return
 	}
 
-	_, err = dataIn.Refresh()
+	_, err = dataIn.RootFolder()
 	if err != nil {
 		return a.AddError(err)
 	}
@@ -120,15 +132,15 @@ func (a *Action) Clone() (err error) {
 	return
 }
 
-func (a *Action) verifyConfiguration(config *settings.Configuration, refresh bool) error {
-	st, err := store.NewHandler(config)
+func (a *Action) verifyConfiguration(config *settings.Accessor, refresh bool) error {
+	st, err := store.NewIoHandler(config)
 	if err != nil {
 		return a.AddError(err)
 	}
 	defer st.OnExit()
 
 	if refresh {
-		_, err = st.Refresh()
+		_, err = st.RootFolder()
 		if err != nil {
 			return a.AddError(err)
 		}
@@ -146,20 +158,35 @@ func (a *Action) Verify() {
 func (a *Action) Update() {
 }
 
-func (a *Action) Generate() {
+func (a *Action) Generate() (err error) {
+	a.Verify()
+	if a.HasErrors() {
+		err = fmt.Errorf("action %s has errors", a.Method)
+		return
+	}
+
+	for _, output := range a.Outputs {
+		err = a.cloneDatabase(output)
+		if err != nil {
+			return
+		}
+	}
+	return
 }
 
-func (a *Action) Process() {
+func (a *Action) Process() (err error) {
 	switch strings.ToLower(a.Method) {
 	case "verify":
 		a.Verify()
 	case "clone":
-		a.Clone()
+		err = a.Clone()
 	case "update":
 		a.Update()
 	case "generate":
-		a.Generate()
+		err = a.Generate()
 	default:
 		a.AddError(fmt.Errorf("unknown method %s", a.Method))
 	}
+
+	return
 }

@@ -60,8 +60,8 @@ func (sqlh *SqlHandler) OnExit() {
 	sqlh.db.Close()
 }
 
-func (sqlh *SqlHandler) Refresh() ([]string, error) {
-	return sqlh.RefreshFolder(effects.Dots)
+func (sqlh *SqlHandler) RootFolder() ([]string, error) {
+	return sqlh.SetFolder(effects.Dots)
 }
 
 func (sqlh *SqlHandler) Ping() error {
@@ -214,7 +214,7 @@ func (sqlh *SqlHandler) findEffect(folder, title string) error {
 	return err
 }
 
-func (sqlh *SqlHandler) RefreshFolder(folder string) ([]string, error) {
+func (sqlh *SqlHandler) SetFolder(folder string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	var query string
@@ -253,7 +253,7 @@ func (sqlh *SqlHandler) ListCurrentFolder() []string {
 	return sqlh.keyList
 }
 
-func (sqlh *SqlHandler) CreateNewDatabase(name string) error {
+func (sqlh *SqlHandler) Create(name string) error {
 	var sql_create = []string{
 		"DROP VIEW IF EXISTS palettes;",
 		"DROP VIEW IF EXISTS folders;",

@@ -1,0 +1,262 @@
+
+
+- addressable_lambda: 
+    name: "effects_Black_and_White"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EFFECTS_BLACK_AND_WHITE));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 78);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "effects_Rainbow_Horizontal"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EFFECTS_RAINBOW_HORIZONTAL));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 93);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "effects_Scan_Complementary"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EFFECTS_SCAN_COMPLEMENTARY));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 58);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "effects_Scan_Double"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EFFECTS_SCAN_DOUBLE));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "effects_Scan_Gradient"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EFFECTS_SCAN_GRADIENT));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 52);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_AAA_Spotlight"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_AAA_SPOTLIGHT));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 299);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_Black_and_White"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_BLACK_AND_WHITE));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_Rainbow_Diagonal"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_RAINBOW_DIAGONAL));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 16);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_Rainbow_Horizontal"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_RAINBOW_HORIZONTAL));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_Rainbow_Vertical"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_RAINBOW_VERTICAL));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_Scan_Complementary"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_SCAN_COMPLEMENTARY));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_Scan_Double"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_SCAN_DOUBLE));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_Scan_Gradient"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_SCAN_GRADIENT));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_Split_in_Three"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_SPLIT_IN_THREE));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "examples_Split_in_Two"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::EXAMPLES_SPLIT_IN_TWO));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "grid100_AAA_Spotlight"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::GRID100_AAA_SPOTLIGHT));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 38);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "grid100_Black_and_White"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::GRID100_BLACK_AND_WHITE));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 100);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "grid100_Scan_Double"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::GRID100_SCAN_DOUBLE));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 96);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "special_Split_in_Three"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::SPECIAL_SPLIT_IN_THREE));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+
+- addressable_lambda: 
+    name: "special_Split_in_Two"
+    update_interval: 16ms
+    lambda: |-
+      #include "glow/catalog.h"
+      static glow::Frame frame(glow::from_catalog(glow::SPECIAL_SPLIT_IN_TWO));
+      if (initial_run) {
+        frame.setup(it.size(), 4, 48);
+      }
+      if (frame.is_ready()) {
+        frame.spin(it);
+      }
+

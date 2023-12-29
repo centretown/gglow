@@ -116,10 +116,11 @@ func (layer *Layer) updateScanPosition() (startAt, endAt uint16) {
 }
 
 func (layer *Layer) MakeCode() string {
-	s := fmt.Sprintf("{%d,%d,%s,%s,%d,%d,%d}",
-		layer.Length, layer.Rows,
+	s := fmt.Sprintf("{%d,%d,%s,%s,%d,%d,%d,%d},",
+		layer.Length,
+		layer.Rows,
 		layer.Grid.MakeCode(),
 		layer.Chroma.MakeCode(),
-		layer.Scan, layer.Begin, layer.End)
+		layer.HueShift, layer.Scan, layer.Begin, layer.End)
 	return s
 }

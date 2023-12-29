@@ -33,7 +33,7 @@ type EffectIo struct {
 	LayerSummaryList binding.StringList
 	layerIndex       int
 
-	preferences fyne.Preferences
+	// preferences fyne.Preferences
 
 	// history *History
 	// CanUndo binding.Bool
@@ -44,11 +44,11 @@ type EffectIo struct {
 	isActive   bool
 
 	saveActions []func(*glow.Frame)
-	config      *settings.Configuration
+	config      *settings.Accessor
 	// changeDetected bool
 }
 
-func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *settings.Configuration) *EffectIo {
+func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *settings.Accessor) *EffectIo {
 
 	eff := &EffectIo{
 		IoHandler:        io,
@@ -59,8 +59,8 @@ func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *s
 		// CanUndo:    binding.NewBool(),
 		// CanSave:    binding.NewBool(),
 
-		preferences: preferences,
-		backup:      &glow.Frame{},
+		// preferences: preferences,
+		backup: &glow.Frame{},
 		// history:     NewHistory(),
 		saveActions: make([]func(*glow.Frame), 0),
 		config:      config,
@@ -72,7 +72,7 @@ func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *s
 
 	// folder := preferences.StringWithFallback(settings.EffectFolder.String(), "")
 	if folder != "" {
-		eff.RefreshFolder(folder)
+		eff.SetFolder(folder)
 	}
 	// effect := preferences.StringWithFallback(settings.Effect.String(), "")
 	if len(effect) > 0 {
@@ -94,7 +94,7 @@ func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *s
 }
 
 func (eff *EffectIo) LoadFolder(folder string) []string {
-	keys, _ := eff.IoHandler.RefreshFolder(folder)
+	keys, _ := eff.IoHandler.SetFolder(folder)
 	return keys
 }
 
@@ -177,8 +177,6 @@ func (m *EffectIo) HasChanged() bool {
 
 func (eff *EffectIo) OnExit() {
 	eff.IoHandler.OnExit()
-	eff.preferences.SetStringList(eff.config.Driver,
-		[]string{eff.config.Path, eff.folderName, eff.effectName})
 }
 
 func (eff *EffectIo) LoadEffect(title string) error {
