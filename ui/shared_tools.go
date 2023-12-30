@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"gglow/effects"
+	"gglow/iohandler"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
@@ -13,10 +13,10 @@ type SharedTools struct {
 	saveButton  *ButtonItem
 	applyButton *ButtonItem
 	undoButton  *ButtonItem
-	effect      effects.Effect
+	effect      iohandler.EffectIoHandler
 }
 
-func NewSharedTools(effect effects.Effect) *SharedTools {
+func NewSharedTools(effect iohandler.EffectIoHandler) *SharedTools {
 	tl := &SharedTools{
 		Toolbar: widget.NewToolbar(),
 		effect:  effect,

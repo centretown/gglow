@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"gglow/effects"
+	"gglow/iohandler"
 
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -12,7 +12,7 @@ type LayerTools struct {
 	RemoveButton *ButtonItem
 }
 
-func NewLayerTools(effect effects.Effect) *LayerTools {
+func NewLayerTools(effect iohandler.EffectIoHandler) *LayerTools {
 	lt := &LayerTools{}
 
 	lt.InsertButton = NewButtonItem(

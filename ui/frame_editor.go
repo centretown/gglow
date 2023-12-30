@@ -3,6 +3,7 @@ package ui
 import (
 	"gglow/effects"
 	"gglow/glow"
+	"gglow/iohandler"
 	"gglow/resources"
 	"strconv"
 
@@ -15,7 +16,7 @@ import (
 
 type FrameEditor struct {
 	*fyne.Container
-	effect      effects.Effect
+	effect      iohandler.EffectIoHandler
 	layerSelect *widget.Select
 	fields      *effects.FrameFields
 	rateBounds  *IntEntryBounds
@@ -23,7 +24,7 @@ type FrameEditor struct {
 	tools       *FrameTools
 }
 
-func NewFrameEditor(effect effects.Effect, window fyne.Window,
+func NewFrameEditor(effect iohandler.EffectIoHandler, window fyne.Window,
 	sharedTools *SharedTools) *FrameEditor {
 
 	fe := &FrameEditor{

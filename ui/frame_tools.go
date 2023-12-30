@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"gglow/effects"
+	"gglow/iohandler"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
@@ -19,10 +19,10 @@ type FrameTools struct {
 
 	toolBar *widget.Toolbar
 	popUp   *widget.PopUp
-	effect  effects.Effect
+	effect  iohandler.EffectIoHandler
 }
 
-func NewFrameTools(effect effects.Effect, window fyne.Window) *FrameTools {
+func NewFrameTools(effect iohandler.EffectIoHandler, window fyne.Window) *FrameTools {
 	ft := &FrameTools{
 		effect: effect,
 	}

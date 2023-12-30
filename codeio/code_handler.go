@@ -13,10 +13,7 @@ var _ iohandler.OutHandler = (*CodeHandler)(nil)
 var emptyList []string
 
 type CodeHandler struct {
-	path   string
-	folder string
-	title  string
-
+	path           string
 	folders        []*FolderList
 	currentFolder  *FolderList
 	currentEffects []*EffectItem
@@ -44,30 +41,34 @@ func (ch *CodeHandler) Create(path string) (err error) {
 }
 
 func (ch *CodeHandler) WriteEffect(title string, frame *glow.Frame) error {
-	ch.title = title
 	ch.currentFolder.AddItem(NewEffectItem(title, frame))
 	return nil
 }
 
 func (ch *CodeHandler) WriteFolder(title string) error {
-	ch.folder = title
+	ch.currentEffects = make([]*EffectItem, 0)
 	ch.currentFolder = NewFolderList(title, ch.currentEffects)
 	ch.folders = append(ch.folders, ch.currentFolder)
 	return nil
 }
 
-func (ch *CodeHandler) FolderName() string {
-	return ch.folder
-}
-
 func (ch *CodeHandler) SetFolder(key string) ([]string, error) {
-	ch.folder = key
 	return emptyList, nil
 }
 
-func (ch *CodeHandler) OnExit() {
+func (ch *CodeHandler) OnExit() (err error) {
 
-	err := os.Chdir(ch.path)
+	dir, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	restoreDir := func() {
+		os.Chdir(dir)
+	}
+	defer restoreDir()
+
+	err = os.Chdir(ch.path)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -100,7 +101,7 @@ func (ch *CodeHandler) OnExit() {
 	}
 
 	esphome := NewEffectGenerator()
-	err = esphome.Open("grid_effects.yml")
+	err = esphome.Open("catalog_effects.yml")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -111,4 +112,5 @@ func (ch *CodeHandler) OnExit() {
 		fmt.Println(err)
 		return
 	}
+	return
 }

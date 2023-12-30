@@ -56,8 +56,8 @@ func (sqlh *SqlHandler) EffectName() string {
 	return sqlh.title
 }
 
-func (sqlh *SqlHandler) OnExit() {
-	sqlh.db.Close()
+func (sqlh *SqlHandler) OnExit() error {
+	return sqlh.db.Close()
 }
 
 func (sqlh *SqlHandler) RootFolder() ([]string, error) {

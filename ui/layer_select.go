@@ -1,14 +1,14 @@
 package ui
 
 import (
-	"gglow/effects"
+	"gglow/iohandler"
 	"gglow/resources"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 )
 
-func NewLayerSelect(effect effects.Effect) (sel *widget.Select) {
+func NewLayerSelect(effect iohandler.EffectIoHandler) (sel *widget.Select) {
 	sel = widget.NewSelect([]string{}, func(s string) {})
 	sel.PlaceHolder = resources.LayersLabel.PlaceHolder() + "..."
 	// sel.Alignment = fyne.TextAlignCenter

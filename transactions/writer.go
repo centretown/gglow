@@ -23,7 +23,7 @@ func (action *Action) WriteDatabase(dataIn iohandler.IoHandler, dataOut iohandle
 				return err
 			}
 
-			err = action.WriteFolder(items, dataIn, dataOut)
+			err = action.WriteFolder(item, items, dataIn, dataOut)
 			if err != nil {
 				fmt.Println("dataOut WriteFolder", err)
 				return err
@@ -34,10 +34,10 @@ func (action *Action) WriteDatabase(dataIn iohandler.IoHandler, dataOut iohandle
 	return nil
 }
 
-func (action *Action) WriteFolder(items []string, dataIn iohandler.IoHandler,
+func (action *Action) WriteFolder(folder string, items []string, dataIn iohandler.IoHandler,
 	dataOut iohandler.OutHandler) error {
 
-	err := dataOut.WriteFolder(dataOut.FolderName())
+	err := dataOut.WriteFolder(folder)
 	if err != nil {
 		return err
 	}

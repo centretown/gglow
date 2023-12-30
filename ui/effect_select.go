@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"gglow/effects"
+	"gglow/iohandler"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
@@ -9,11 +9,11 @@ import (
 
 type EffectSelect struct {
 	*widget.Select
-	effect effects.Effect
+	effect iohandler.EffectIoHandler
 	auto   bool
 }
 
-func NewEffectSelect(effect effects.Effect) *widget.Select {
+func NewEffectSelect(effect iohandler.EffectIoHandler) *widget.Select {
 	fs := &EffectSelect{
 		effect: effect,
 	}

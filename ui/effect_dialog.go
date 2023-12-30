@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"gglow/effects"
 	"gglow/glow"
+	"gglow/iohandler"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -17,12 +17,12 @@ import (
 type EffectDialog struct {
 	*dialog.CustomDialog
 	title  binding.String
-	effect effects.Effect
+	effect iohandler.EffectIoHandler
 
 	applyButton *widget.Button
 }
 
-func NewEffectDialog(effect effects.Effect, window fyne.Window) (ef *EffectDialog) {
+func NewEffectDialog(effect iohandler.EffectIoHandler, window fyne.Window) (ef *EffectDialog) {
 	ef = &EffectDialog{
 		effect: effect,
 		title:  binding.NewString(),

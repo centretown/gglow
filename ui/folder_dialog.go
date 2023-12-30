@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"gglow/effects"
+	"gglow/iohandler"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -16,11 +16,11 @@ import (
 type FolderDialog struct {
 	*dialog.CustomDialog
 	title       binding.String
-	effect      effects.Effect
+	effect      iohandler.EffectIoHandler
 	applyButton *widget.Button
 }
 
-func NewFolderDialog(effect effects.Effect, window fyne.Window) *FolderDialog {
+func NewFolderDialog(effect iohandler.EffectIoHandler, window fyne.Window) *FolderDialog {
 	fd := &FolderDialog{
 		effect: effect,
 		title:  binding.NewString(),

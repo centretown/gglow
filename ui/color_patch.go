@@ -3,8 +3,8 @@ package ui
 import (
 	"encoding/json"
 	"fmt"
-	"gglow/effects"
 	"gglow/glow"
+	"gglow/iohandler"
 	"gglow/resources"
 	"image/color"
 
@@ -36,10 +36,10 @@ type ColorPatch struct {
 	unused           bool
 
 	Editing bool
-	effect  effects.Effect
+	effect  iohandler.EffectIoHandler
 }
 
-func NewColorPatch(effect effects.Effect) (patch *ColorPatch) {
+func NewColorPatch(effect iohandler.EffectIoHandler) (patch *ColorPatch) {
 	var hsv glow.HSV
 	hsv.FromColor(theme.DisabledColor())
 	patch = NewColorPatchWithColor(hsv, effect, nil)
@@ -47,7 +47,7 @@ func NewColorPatch(effect effects.Effect) (patch *ColorPatch) {
 	return
 }
 
-func NewColorPatchWithColor(hsv glow.HSV, effect effects.Effect, tapped func()) *ColorPatch {
+func NewColorPatchWithColor(hsv glow.HSV, effect iohandler.EffectIoHandler, tapped func()) *ColorPatch {
 	cp := &ColorPatch{
 		background: canvas.NewRectangle(theme.ButtonColor()),
 		rectangle:  canvas.NewRectangle(hsv.ToRGB()),

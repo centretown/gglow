@@ -6,9 +6,8 @@ type OutHandler interface {
 	Create(name string) error
 	WriteEffect(title string, frame *glow.Frame) error
 	WriteFolder(title string) error
-	FolderName() string
 	SetFolder(key string) ([]string, error)
-	OnExit()
+	OnExit() error
 }
 
 type InHandler interface {
@@ -21,12 +20,12 @@ type InHandler interface {
 	IsFolder(key string) bool
 	ListCurrentFolder() []string
 	RootFolder() ([]string, error)
-	OnExit()
+	OnExit() error
 }
 
 type IoHandler interface {
+	InHandler
 	OutHandler
 	CreateNewEffect(title string, frame *glow.Frame) error
 	CreateNewFolder(title string) error
-	InHandler
 }

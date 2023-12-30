@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"gglow/effects"
+	"gglow/iohandler"
 	"gglow/resources"
 	"gglow/settings"
 
@@ -18,7 +18,7 @@ type Ui struct {
 	window      fyne.Window
 	app         fyne.App
 	preferences fyne.Preferences
-	effect      effects.Effect
+	effect      iohandler.EffectIoHandler
 	theme       *settings.GlowTheme
 	sourceStrip binding.Untyped
 
@@ -43,7 +43,7 @@ type Ui struct {
 	isMobile      bool
 }
 
-func NewUi(app fyne.App, window fyne.Window, effect effects.Effect, theme *settings.GlowTheme) *Ui {
+func NewUi(app fyne.App, window fyne.Window, effect iohandler.EffectIoHandler, theme *settings.GlowTheme) *Ui {
 	ui := &Ui{
 		window:      window,
 		app:         app,

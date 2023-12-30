@@ -10,7 +10,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 )
 
-var _ Effect = (*EffectIo)(nil)
+var _ iohandler.EffectIoHandler = (*EffectIo)(nil)
 
 const Dots = ".."
 
@@ -158,16 +158,16 @@ func (st *EffectIo) SetChanged() {
 	st.hasChanged.Set(true)
 }
 
-func (st *EffectIo) AddFrameListener(listener binding.DataListener) {
-	st.Frame.AddListener(listener)
+func (st *EffectIo) AddFrameListener(listener interface{}) {
+	st.Frame.AddListener(listener.(binding.DataListener))
 }
 
-func (st *EffectIo) AddLayerListener(listener binding.DataListener) {
-	st.Layer.AddListener(listener)
+func (st *EffectIo) AddLayerListener(listener interface{}) {
+	st.Layer.AddListener(listener.(binding.DataListener))
 }
 
-func (st *EffectIo) AddChangeListener(listener binding.DataListener) {
-	st.hasChanged.AddListener(listener)
+func (st *EffectIo) AddChangeListener(listener interface{}) {
+	st.hasChanged.AddListener(listener.(binding.DataListener))
 }
 
 func (m *EffectIo) HasChanged() bool {
@@ -175,9 +175,9 @@ func (m *EffectIo) HasChanged() bool {
 	return b
 }
 
-func (eff *EffectIo) OnExit() {
-	eff.IoHandler.OnExit()
-}
+// func (eff *EffectIo) OnExit() {
+// 	eff.IoHandler.OnExit()
+// }
 
 func (eff *EffectIo) LoadEffect(title string) error {
 	frame, err := eff.IoHandler.ReadEffect(title)

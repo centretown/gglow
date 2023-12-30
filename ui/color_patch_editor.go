@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"gglow/effects"
 	"gglow/glow"
+	"gglow/iohandler"
 	"gglow/resources"
 	"image/color"
 
@@ -16,7 +16,7 @@ import (
 
 type ColorPatchEditor struct {
 	*dialog.CustomDialog
-	effect effects.Effect
+	effect iohandler.EffectIoHandler
 	window fyne.Window
 
 	source      *ColorPatch
@@ -31,7 +31,7 @@ type ColorPatchEditor struct {
 }
 
 func NewColorPatchEditor(source *ColorPatch,
-	effect effects.Effect,
+	effect iohandler.EffectIoHandler,
 	window fyne.Window) *ColorPatchEditor {
 
 	pe := &ColorPatchEditor{

@@ -3,6 +3,7 @@ package ui
 import (
 	"gglow/effects"
 	"gglow/glow"
+	"gglow/iohandler"
 	"gglow/resources"
 	"strconv"
 
@@ -15,7 +16,7 @@ import (
 
 type LayerEditor struct {
 	*fyne.Container
-	effect effects.Effect
+	effect iohandler.EffectIoHandler
 	layer  *glow.Layer
 	fields *effects.LayerFields
 	window fyne.Window
@@ -44,7 +45,7 @@ type LayerEditor struct {
 	tools *LayerTools
 }
 
-func NewLayerEditor(effect effects.Effect, window fyne.Window,
+func NewLayerEditor(effect iohandler.EffectIoHandler, window fyne.Window,
 	sharedTools *SharedTools) *LayerEditor {
 
 	le := &LayerEditor{

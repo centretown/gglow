@@ -1,14 +1,11 @@
-package effects
+package iohandler
 
 import (
 	"gglow/glow"
-	"gglow/iohandler"
-
-	"fyne.io/fyne/v2/data/binding"
 )
 
-type Effect interface {
-	iohandler.IoHandler
+type EffectIoHandler interface {
+	IoHandler
 	FolderName() string
 	EffectName() string
 	GetFrame() *glow.Frame
@@ -20,9 +17,9 @@ type Effect interface {
 	SetCurrentLayer(i int)
 	LayerIndex() int
 
-	AddFrameListener(listener binding.DataListener)
-	AddLayerListener(listener binding.DataListener)
-	AddChangeListener(listener binding.DataListener)
+	AddFrameListener(listener interface{})
+	AddLayerListener(listener interface{})
+	AddChangeListener(listener interface{})
 
 	SetChanged()
 	HasChanged() bool

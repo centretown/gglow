@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"gglow/effects"
 	"gglow/glow"
+	"gglow/iohandler"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -14,7 +14,7 @@ import (
 type LightStripPlayer struct {
 	*widget.Toolbar
 
-	effect effects.Effect
+	effect iohandler.EffectIoHandler
 	// sourceFrame binding.Untyped
 	sourceStrip binding.Untyped
 	strip       *LightStrip
@@ -38,7 +38,7 @@ type LightStripPlayer struct {
 	isActive  bool
 }
 
-func NewLightStripPlayer(sourceStrip binding.Untyped, effect effects.Effect,
+func NewLightStripPlayer(sourceStrip binding.Untyped, effect iohandler.EffectIoHandler,
 	lightStripLayout *LightStripLayout) *LightStripPlayer {
 
 	sb := &LightStripPlayer{

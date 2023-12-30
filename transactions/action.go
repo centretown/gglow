@@ -83,18 +83,35 @@ func (a *Action) connectOut(config *settings.Accessor) (handler iohandler.OutHan
 
 func (a *Action) cloneDatabase(output *settings.Accessor) (err error) {
 	var dataIn iohandler.IoHandler
+	var dataOut iohandler.OutHandler
+
+	onExit := func() {
+		if dataIn != nil {
+			err = dataIn.OnExit()
+			if err != nil {
+				a.AddError(err)
+			}
+		}
+
+		if dataOut != nil {
+			err = dataOut.OnExit()
+			if err != nil {
+				a.AddError(err)
+			}
+		}
+	}
+
+	defer onExit()
+
 	dataIn, err = a.connectIn(a.Input)
 	if err != nil {
 		return
 	}
-	defer dataIn.OnExit()
 
-	var dataOut iohandler.OutHandler
 	dataOut, err = a.connectOut(output)
 	if err != nil {
 		return
 	}
-	defer dataOut.OnExit()
 
 	err = a.createDatabase(output, dataOut)
 	if err != nil {
@@ -148,30 +165,23 @@ func (a *Action) verifyConfiguration(config *settings.Accessor, refresh bool) er
 	return nil
 }
 
+func (a *Action) verifyOutConfiguration(config *settings.Accessor) error {
+	// st, err := store.NewOutHandler(config)
+	// if err != nil {
+	// 	return a.AddError(err)
+	// }
+	// defer st.OnExit()
+	return nil
+}
+
 func (a *Action) Verify() {
 	a.verifyConfiguration(a.Input, true)
 	for _, output := range a.Outputs {
-		a.verifyConfiguration(output, false)
+		a.verifyOutConfiguration(output)
 	}
 }
 
 func (a *Action) Update() {
-}
-
-func (a *Action) Generate() (err error) {
-	a.Verify()
-	if a.HasErrors() {
-		err = fmt.Errorf("action %s has errors", a.Method)
-		return
-	}
-
-	for _, output := range a.Outputs {
-		err = a.cloneDatabase(output)
-		if err != nil {
-			return
-		}
-	}
-	return
 }
 
 func (a *Action) Process() (err error) {
@@ -183,9 +193,9 @@ func (a *Action) Process() (err error) {
 	case "update":
 		a.Update()
 	case "generate":
-		err = a.Generate()
+		err = a.Clone()
 	default:
-		a.AddError(fmt.Errorf("unknown method %s", a.Method))
+		err = a.AddError(fmt.Errorf("unknown method %s", a.Method))
 	}
 
 	return

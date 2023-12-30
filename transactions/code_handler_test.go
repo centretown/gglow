@@ -9,13 +9,20 @@ import (
 
 func TestCodeHandler(t *testing.T) {
 	accessorIn := &settings.Accessor{
-		Driver: "sqlite3",
-		Path:   "../glow.db",
+		// Driver: "sqlite3",
+		// Path:   "../glow.db",
+		Driver:   "postgres",
+		User:     "dave",
+		Password: "football",
+		Host:     "localhost",
+		Port:     "5432",
+		Database: "test",
 	}
+	// input:
 
 	accessorOut := &settings.Accessor{
 		Driver: "code",
-		Path:   "../generated_test",
+		Path:   "../generated_test_postgres",
 	}
 
 	dataIn, err := store.NewIoHandler(accessorIn)
@@ -51,13 +58,13 @@ func TestCodeHandler(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		writeFolder(t, items, dataIn, dataOut)
+		writeFolder(t, item, items, dataIn, dataOut)
 	}
 }
 
-func writeFolder(t *testing.T, items []string, dataIn iohandler.IoHandler,
+func writeFolder(t *testing.T, folder string, items []string, dataIn iohandler.IoHandler,
 	dataOut iohandler.OutHandler) {
-	err := dataOut.WriteFolder(dataOut.FolderName())
+	err := dataOut.WriteFolder(folder)
 	if err != nil {
 		t.Fatal(err)
 	}
