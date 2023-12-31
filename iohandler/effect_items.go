@@ -1,4 +1,4 @@
-package codeio
+package iohandler
 
 import "gglow/glow"
 
@@ -16,19 +16,19 @@ func NewEffectItem(title string, frame *glow.Frame) *EffectItem {
 	return ei
 }
 
-type FolderList struct {
+type EffectItems struct {
 	Title string
 	List  []*EffectItem
 }
 
-func NewFolderList(title string, list []*EffectItem) *FolderList {
-	fl := &FolderList{
+func NewFolderList(title string, list []*EffectItem) *EffectItems {
+	fl := &EffectItems{
 		Title: title,
 		List:  list,
 	}
 	return fl
 }
 
-func (fl *FolderList) AddItem(item *EffectItem) {
+func (fl *EffectItems) AddItem(item *EffectItem) {
 	fl.List = append(fl.List, item)
 }

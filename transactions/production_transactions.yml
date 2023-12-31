@@ -1,0 +1,18 @@
+actions:
+  - method: clone
+    input:
+      driver: postgres
+      user: dave
+      password: football
+      host: localhost
+      port: 5432
+      database: test
+    outputs:
+    # glow command line player
+      - driver: code
+        path: /home/dave/src/glow/generated
+        database: /home/dave/src/glow/generated
+    # glow esphome custom
+      - driver: code
+        path: /home/dave/src/glow-home/custom/glow
+        database: /home/dave/src/glow-home/custom/glow

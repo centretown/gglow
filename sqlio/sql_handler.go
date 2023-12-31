@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"gglow/effects"
+	"gglow/effectio"
 	"gglow/glow"
 	"gglow/iohandler"
 	"gglow/resources"
@@ -27,15 +27,15 @@ type SqlHandler struct {
 	keyList    []string
 	keyMap     map[string]bool
 	driver     string
-	serializer effects.Serializer
+	serializer iohandler.Serializer
 }
 
 func NewSqlHandler(driver, dsn string) (*SqlHandler, error) {
 	sqlh := &SqlHandler{
-		folder:     effects.Dots,
+		folder:     effectio.Dots,
 		keyList:    make([]string, 0),
 		keyMap:     make(map[string]bool),
-		serializer: &effects.JsonSerializer{},
+		serializer: &iohandler.JsonSerializer{},
 		driver:     driver,
 	}
 
@@ -61,7 +61,7 @@ func (sqlh *SqlHandler) OnExit() error {
 }
 
 func (sqlh *SqlHandler) RootFolder() ([]string, error) {
-	return sqlh.SetFolder(effects.Dots)
+	return sqlh.SetFolder(effectio.Dots)
 }
 
 func (sqlh *SqlHandler) Ping() error {
@@ -102,16 +102,16 @@ func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 }
 
 func (sqlh *SqlHandler) IsFolder(title string) bool {
-	return title == effects.Dots || sqlh.folder == effects.Dots
+	return title == effectio.Dots || sqlh.folder == effectio.Dots
 }
 
 func (sqlh *SqlHandler) WriteFolder(folder string) error {
 	sqlh.folder = folder
-	return sqlh.WriteEffect(effects.Dots, nil)
+	return sqlh.WriteEffect(effectio.Dots, nil)
 }
 
 func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
-	err := effects.ValidateFolderName(title)
+	err := effectio.ValidateFolderName(title)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
 	return err
 }
 func (sqlh *SqlHandler) ValidateNewEffectName(title string) error {
-	err := effects.ValidateEffectName(title)
+	err := effectio.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func (sqlh *SqlHandler) ValidateNewEffectName(title string) error {
 }
 
 func (sqlh *SqlHandler) isDuplicateFolder(folder string) error {
-	err := sqlh.findEffect(folder, effects.Dots)
+	err := sqlh.findEffect(folder, effectio.Dots)
 	if err == sql.ErrNoRows {
 		return nil
 	}
@@ -218,7 +218,7 @@ func (sqlh *SqlHandler) SetFolder(folder string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	var query string
-	if folder == "" || folder == effects.Dots {
+	if folder == "" || folder == effectio.Dots {
 		query = "SELECT folder FROM folders;"
 	} else {
 		query = fmt.Sprintf("SELECT title FROM effects WHERE folder = '%s' ORDER BY folder;",

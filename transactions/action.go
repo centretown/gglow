@@ -3,29 +3,25 @@ package transactions
 import (
 	"fmt"
 	"gglow/iohandler"
-	"gglow/settings"
 	"gglow/store"
 	"strings"
 )
 
-const (
-	File    = "file"
-	SqlLite = "sqlite3"
-	MySql   = "mysql"
-)
-
 type Action struct {
-	Method  string               `yaml:"method" json:"method"`
-	Input   *settings.Accessor   `yaml:"input" json:"input"`
-	Outputs []*settings.Accessor `yaml:"outputs" json:"outputs"`
-	Notes   []string
-	Errors  []string
+	Method    string
+	Input     *iohandler.Accessor
+	Filters   []Filter
+	Outputs   []*iohandler.Accessor
+	Notes     []string
+	Errors    []string
+	filterMap map[string]map[string]bool
 }
 
 func NewAction() *Action {
 	a := &Action{
-		Input:   &settings.Accessor{},
-		Outputs: make([]*settings.Accessor, 0),
+		Input:   &iohandler.Accessor{},
+		Filters: make([]Filter, 0),
+		Outputs: make([]*iohandler.Accessor, 0),
 		Notes:   make([]string, 0),
 		Errors:  make([]string, 0),
 	}
@@ -33,11 +29,15 @@ func NewAction() *Action {
 }
 
 func (a *Action) AddNote(notes ...string) {
-	if len(notes) == 0 {
-		return
+	var note string
+	last := len(notes) - 1
+	for i, s := range notes {
+		if i < last {
+			s += " "
+		}
+		note += s
 	}
-	// note := fmt.Sprintf("%v", notes)
-	a.Notes = append(a.Notes, notes...)
+	a.Notes = append(a.Notes, note)
 }
 
 func (a *Action) AddError(err error) error {
@@ -49,43 +49,47 @@ func (a *Action) HasErrors() bool {
 	return len(a.Errors) > 0
 }
 
-func (a *Action) createDatabase(output *settings.Accessor, dataOut iohandler.OutHandler) (err error) {
-	a.AddNote("create database...", output.Database)
+func (a *Action) createDatabase(output *iohandler.Accessor, dataOut iohandler.OutHandler) (err error) {
+	a.AddNote("create database", output.Database)
 	err = dataOut.Create(output.Database)
 	if err != nil {
 		return a.AddError(err)
 	}
-	a.AddNote("created")
+	a.AddNote("created", output.Database)
 	return
 }
 
-func (a *Action) connectIn(config *settings.Accessor) (handler iohandler.IoHandler, err error) {
-	a.AddNote("connecting...")
+func (a *Action) connectIn(config *iohandler.Accessor) (handler iohandler.IoHandler, err error) {
+	a.AddNote("connecting to input", config.Database)
 	handler, err = store.NewIoHandler(config)
 	if err != nil {
 		a.AddError(err)
 		return
 	}
-	a.AddNote("connected")
+	a.AddNote("connected to", config.Database)
 	return
 }
 
-func (a *Action) connectOut(config *settings.Accessor) (handler iohandler.OutHandler, err error) {
-	a.AddNote("connecting...")
+func (a *Action) connectOut(config *iohandler.Accessor) (handler iohandler.OutHandler, err error) {
+	a.AddNote("connecting to output", config.Database)
 	handler, err = store.NewOutHandler(config)
 	if err != nil {
 		a.AddError(err)
 		return
 	}
-	a.AddNote("connected")
+	a.AddNote("connected to", config.Database)
 	return
 }
 
-func (a *Action) cloneDatabase(output *settings.Accessor) (err error) {
+func (a *Action) cloneDatabase(output *iohandler.Accessor) (err error) {
 	var dataIn iohandler.IoHandler
 	var dataOut iohandler.OutHandler
 
 	onExit := func() {
+		if err != nil {
+			a.AddError(err)
+		}
+
 		if dataIn != nil {
 			err = dataIn.OnExit()
 			if err != nil {
@@ -120,16 +124,16 @@ func (a *Action) cloneDatabase(output *settings.Accessor) (err error) {
 
 	_, err = dataIn.RootFolder()
 	if err != nil {
-		return a.AddError(err)
+		return
 	}
-	a.AddNote("input read")
+	a.AddNote("input read from", a.Input.Database)
 
-	a.AddNote("write database...")
+	a.AddNote("write database")
 	err = a.WriteDatabase(dataIn, dataOut)
 	if err != nil {
-		return a.AddError(err)
+		return
 	}
-	a.AddNote("output written")
+	a.AddNote("output written to", output.Database)
 	return nil
 }
 
@@ -149,7 +153,7 @@ func (a *Action) Clone() (err error) {
 	return
 }
 
-func (a *Action) verifyConfiguration(config *settings.Accessor, refresh bool) error {
+func (a *Action) verifyConfiguration(config *iohandler.Accessor, refresh bool) error {
 	st, err := store.NewIoHandler(config)
 	if err != nil {
 		return a.AddError(err)
@@ -165,12 +169,11 @@ func (a *Action) verifyConfiguration(config *settings.Accessor, refresh bool) er
 	return nil
 }
 
-func (a *Action) verifyOutConfiguration(config *settings.Accessor) error {
-	// st, err := store.NewOutHandler(config)
-	// if err != nil {
-	// 	return a.AddError(err)
-	// }
-	// defer st.OnExit()
+func (a *Action) verifyOutConfiguration(config *iohandler.Accessor) error {
+	_, err := store.NewOutHandler(config)
+	if err != nil {
+		return a.AddError(err)
+	}
 	return nil
 }
 

@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gglow/effects"
+	"gglow/effectio"
 	"gglow/iohandler"
 	"gglow/resources"
 	"gglow/settings"
@@ -20,7 +20,7 @@ const (
 	pathDefault = "accessor.yaml"
 )
 
-var accessor = &settings.Accessor{
+var accessor = &iohandler.Accessor{
 	Driver: "sqlite3",
 	Path:   "glow.db",
 }
@@ -49,14 +49,14 @@ func main() {
 	app.Settings().SetTheme(theme)
 
 	window := app.NewWindow(resources.GlowLabel.String())
-	effect := effects.NewEffectIo(storageHandler, preferences, accessor)
+	effect := effectio.NewEffectIo(storageHandler, preferences, accessor)
 
 	ui := ui.NewUi(app, window, effect, theme)
 
 	window.SetCloseIntercept(func() {
 		accessor.Folder = effect.FolderName()
 		accessor.Effect = effect.EffectName()
-		err = settings.SaveAccessor(accessPath, accessor)
+		err = iohandler.SaveAccessor(accessPath, accessor)
 		if err != nil {
 			fyne.LogError("SaveAccessor", err)
 		} else {
@@ -81,7 +81,7 @@ func main() {
 	app.Run()
 }
 
-func loadStorage(preferences fyne.Preferences) (iohandler.IoHandler, *settings.Accessor) {
+func loadStorage(preferences fyne.Preferences) (iohandler.IoHandler, *iohandler.Accessor) {
 	flag.Parse()
 
 	if accessPath == "" {
@@ -99,7 +99,7 @@ func loadStorage(preferences fyne.Preferences) (iohandler.IoHandler, *settings.A
 				fmt.Errorf("path '%s' is a folder", accessPath))
 			os.Exit(1)
 		}
-		accessor, err = settings.LoadAccessor(accessPath)
+		accessor, err = iohandler.LoadAccessor(accessPath)
 		if err != nil {
 			fyne.LogError("load accessor file", err)
 			os.Exit(1)

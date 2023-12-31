@@ -3,11 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gglow/resources"
 	"gglow/transactions"
 	"os"
-
-	"fyne.io/fyne/v2/app"
 )
 
 var transactionFile string
@@ -23,12 +20,17 @@ func init() {
 }
 
 func main() {
-	app.NewWithID(resources.AppID)
 	flag.Parse()
+
+	if transactionFile == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	transaction, err := transactions.ReadTransaction(transactionFile)
 	if err != nil {
-		fmt.Println(err)
+		flag.Usage()
+		fmt.Println(transactionFile, err)
 		os.Exit(1)
 	}
 

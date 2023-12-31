@@ -1,11 +1,11 @@
 package codeio
 
 import (
-	"fmt"
 	"gglow/glow"
 	"gglow/iohandler"
 	"io/fs"
 	"os"
+	"path/filepath"
 )
 
 var _ iohandler.OutHandler = (*CodeHandler)(nil)
@@ -14,15 +14,15 @@ var emptyList []string
 
 type CodeHandler struct {
 	path           string
-	folders        []*FolderList
-	currentFolder  *FolderList
-	currentEffects []*EffectItem
+	folders        []*iohandler.EffectItems
+	currentFolder  *iohandler.EffectItems
+	currentEffects []*iohandler.EffectItem
 }
 
 func NewCodeHandler(path string) (*CodeHandler, error) {
 	ch := &CodeHandler{
 		path:    path,
-		folders: make([]*FolderList, 0),
+		folders: make([]*iohandler.EffectItems, 0),
 	}
 
 	return ch, nil
@@ -41,13 +41,13 @@ func (ch *CodeHandler) Create(path string) (err error) {
 }
 
 func (ch *CodeHandler) WriteEffect(title string, frame *glow.Frame) error {
-	ch.currentFolder.AddItem(NewEffectItem(title, frame))
+	ch.currentFolder.AddItem(iohandler.NewEffectItem(title, frame))
 	return nil
 }
 
 func (ch *CodeHandler) WriteFolder(title string) error {
-	ch.currentEffects = make([]*EffectItem, 0)
-	ch.currentFolder = NewFolderList(title, ch.currentEffects)
+	ch.currentEffects = make([]*iohandler.EffectItem, 0)
+	ch.currentFolder = iohandler.NewFolderList(title, ch.currentEffects)
 	ch.folders = append(ch.folders, ch.currentFolder)
 	return nil
 }
@@ -57,60 +57,26 @@ func (ch *CodeHandler) SetFolder(key string) ([]string, error) {
 }
 
 func (ch *CodeHandler) OnExit() (err error) {
+	return ch.process()
+}
 
-	dir, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	restoreDir := func() {
-		os.Chdir(dir)
-	}
-	defer restoreDir()
-
-	err = os.Chdir(ch.path)
-	if err != nil {
-		fmt.Println(err)
+func (ch *CodeHandler) process() (err error) {
+	generate := func(gen iohandler.Generator, fileName string) (err error) {
+		err = gen.Open(filepath.Join(ch.path, fileName))
+		if err != nil {
+			return
+		}
+		defer gen.Close()
+		err = gen.Write(ch.folders)
 		return
 	}
 
-	header := NewHeaderGenerator()
-	err = header.Open("catalog.h")
-	if err != nil {
-		fmt.Println(err)
-		return
+	err = generate(NewHeaderGenerator(), "catalog.h")
+	if err == nil {
+		err = generate(NewSourceGenerator(), "catalog.cpp")
 	}
-	defer header.Close()
-	err = header.Write(ch.folders)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	source := NewSourceGenerator()
-	err = source.Open("catalog.cpp")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer source.Close()
-	err = source.Write(ch.folders)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	esphome := NewEffectGenerator()
-	err = esphome.Open("catalog_effects.yml")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer esphome.Close()
-	err = esphome.Write(ch.folders)
-	if err != nil {
-		fmt.Println(err)
-		return
+	if err == nil {
+		err = generate(NewEffectGenerator(), "catalog_effects.yml")
 	}
 	return
 }

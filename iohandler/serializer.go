@@ -1,11 +1,10 @@
-package effects
+package iohandler
 
 import (
 	"encoding/json"
 	"gglow/glow"
 	"strings"
 
-	"fyne.io/fyne/v2"
 	"gopkg.in/yaml.v3"
 )
 
@@ -45,8 +44,8 @@ func (jsn *JsonSerializer) FileName(title string) string {
 	return strings.ReplaceAll(title, " ", "_") + ".json"
 }
 
-func UriSerializer(uri fyne.URI) Serializer {
-	switch uri.Extension() {
+func UriSerializer(extension string) Serializer {
+	switch extension {
 	case ".yaml":
 		return &YamlSerializer{}
 	}

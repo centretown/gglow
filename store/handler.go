@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"gglow/codeio"
 	"gglow/iohandler"
-	"gglow/settings"
 	"gglow/sqlio"
 )
 
-func makeDSN(config *settings.Accessor) (dsn string) {
+func makeDSN(config *iohandler.Accessor) (dsn string) {
 	switch config.Driver {
 	case "sqlite3":
 		dsn = config.Path
@@ -31,12 +30,12 @@ func makeDSN(config *settings.Accessor) (dsn string) {
 	return
 }
 
-func NewIoHandler(config *settings.Accessor) (handler iohandler.IoHandler, err error) {
+func NewIoHandler(config *iohandler.Accessor) (handler iohandler.IoHandler, err error) {
 	handler, err = sqlio.NewSqlHandler(config.Driver, makeDSN(config))
 	return
 }
 
-func NewOutHandler(config *settings.Accessor) (handler iohandler.OutHandler, err error) {
+func NewOutHandler(config *iohandler.Accessor) (handler iohandler.OutHandler, err error) {
 	if config.Driver == "code" {
 		handler, err = codeio.NewCodeHandler(config.Path)
 		return

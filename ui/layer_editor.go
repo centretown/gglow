@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"gglow/effects"
+	"gglow/effectio"
 	"gglow/glow"
 	"gglow/iohandler"
 	"gglow/resources"
@@ -18,7 +18,7 @@ type LayerEditor struct {
 	*fyne.Container
 	effect iohandler.EffectIoHandler
 	layer  *glow.Layer
-	fields *effects.LayerFields
+	fields *effectio.LayerFields
 	window fyne.Window
 
 	patches []*ColorPatch
@@ -54,7 +54,7 @@ func NewLayerEditor(effect iohandler.EffectIoHandler, window fyne.Window,
 		effect: effect,
 		layer:  effect.GetCurrentLayer(),
 
-		fields: effects.NewLayerFields(),
+		fields: effectio.NewLayerFields(),
 		tools:  NewLayerTools(effect),
 
 		rateBounds: RateBounds,
@@ -82,8 +82,8 @@ func NewLayerEditor(effect iohandler.EffectIoHandler, window fyne.Window,
 }
 
 func (le *LayerEditor) createPatches() {
-	le.patches = make([]*ColorPatch, effects.MaxLayerColors)
-	for i := 0; i < effects.MaxLayerColors; i++ {
+	le.patches = make([]*ColorPatch, effectio.MaxLayerColors)
+	for i := 0; i < effectio.MaxLayerColors; i++ {
 		patch := NewColorPatch(le.effect)
 		patch.SetTapped(le.selectColor(patch))
 		le.patches[i] = patch

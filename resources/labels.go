@@ -30,7 +30,7 @@ const (
 	DynamicLabel
 	StaticLabel
 	GradientLabel
-	RevertLabel
+	CancelLabel
 	ApplyLabel
 	RateLabel
 	OverrideLabel
@@ -39,6 +39,7 @@ const (
 	PasteLabel
 	EditLabel
 	PickerLabel
+	GridLayout
 )
 
 var entryLabels = []string{
@@ -51,9 +52,10 @@ var entryLabels = []string{
 	"Saturation", "Value",
 	"Effects",
 	"Dynamic", "Static", "Gradient",
-	"Revert", "Apply",
+	"Cancel", "Apply",
 	"Interval (ms)", "Override",
 	"Cut", "Copy", "Paste", "Edit", "Picker",
+	"Layout",
 }
 
 func (id LabelID) String() string {

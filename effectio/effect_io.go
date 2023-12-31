@@ -1,10 +1,9 @@
-package effects
+package effectio
 
 import (
 	"fmt"
 	"gglow/glow"
 	"gglow/iohandler"
-	"gglow/settings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
@@ -44,11 +43,11 @@ type EffectIo struct {
 	isActive   bool
 
 	saveActions []func(*glow.Frame)
-	config      *settings.Accessor
+	config      *iohandler.Accessor
 	// changeDetected bool
 }
 
-func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *settings.Accessor) *EffectIo {
+func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *iohandler.Accessor) *EffectIo {
 
 	eff := &EffectIo{
 		IoHandler:        io,

@@ -2,8 +2,9 @@ package storageio
 
 import (
 	"fmt"
-	"gglow/effects"
+	"gglow/effectio"
 	"gglow/glow"
+	"gglow/iohandler"
 	"gglow/resources"
 	"io"
 	"os"
@@ -28,7 +29,7 @@ type StorageHandler struct {
 	folder   string
 	title    string
 
-	serializer effects.Serializer
+	serializer iohandler.Serializer
 }
 
 func makeFolder(folder string) (err error) {
@@ -72,7 +73,7 @@ func NewStorageHandler(rootPath string) (*StorageHandler, error) {
 		uriMap:     make(map[string]fyne.URI),
 		rootPath:   rootPath,
 		keyList:    make([]string, 0),
-		serializer: &effects.JsonSerializer{},
+		serializer: &iohandler.JsonSerializer{},
 	}
 
 	return fh, nil
@@ -94,7 +95,7 @@ func (fh *StorageHandler) IsFolder(key string) bool {
 }
 
 func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
-	if folder == effects.Dots {
+	if folder == effectio.Dots {
 		return fh.Refresh()
 	}
 
@@ -138,7 +139,7 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 	currentUri := fh.Current
 	isRoot := currentUri == fh.RootURI
 	if !isRoot {
-		fh.uriMap[effects.Dots] = fh.Current
+		fh.uriMap[effectio.Dots] = fh.Current
 	}
 	fh.Current = currentUri
 
@@ -150,7 +151,7 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 
 	fh.keyList = make([]string, 0, len(uriList)+1)
 	if !isRoot {
-		fh.keyList = append(fh.keyList, effects.Dots)
+		fh.keyList = append(fh.keyList, effectio.Dots)
 	}
 
 	for _, uri := range uriList {
@@ -199,7 +200,7 @@ func (fh *StorageHandler) WriteFolder(folder string) error {
 	fh.folder = folder
 	fmt.Println(folder, "folder")
 	folder = strings.TrimSpace(folder)
-	err := effects.ValidateFolderName(folder)
+	err := effectio.ValidateFolderName(folder)
 	if err != nil {
 		return err
 	}
@@ -277,7 +278,7 @@ func (fh *StorageHandler) ReadEffect(title string) (*glow.Frame, error) {
 		return frame, err
 	}
 
-	serializer := effects.UriSerializer(uri)
+	serializer := iohandler.UriSerializer(uri.Extension())
 	err = serializer.Scan(buffer, frame)
 	if err != nil {
 		fyne.LogError(resources.MsgGetFrame.Format(title), err)
@@ -298,7 +299,7 @@ func (fh *StorageHandler) EffectName() string {
 }
 
 func (fh *StorageHandler) ValidateNewFolderName(title string) error {
-	err := effects.ValidateFolderName(title)
+	err := effectio.ValidateFolderName(title)
 	if err != nil {
 		return err
 	}
@@ -308,7 +309,7 @@ func (fh *StorageHandler) ValidateNewFolderName(title string) error {
 }
 
 func (fh *StorageHandler) ValidateNewEffectName(title string) error {
-	err := effects.ValidateEffectName(title)
+	err := effectio.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}

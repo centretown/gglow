@@ -51,7 +51,9 @@ func (tr *Transaction) ShowLogs() {
 	}
 	fmt.Println(string(b))
 	if tr.HasErrors() {
-		fmt.Println("Transaction has errors")
+		fmt.Println("Transaction has errors!!")
+	} else {
+		fmt.Println("Transaction successfully completed!")
 	}
 }
 

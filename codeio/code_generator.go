@@ -1,30 +1,31 @@
 package codeio
 
 import (
+	"gglow/iohandler"
 	"os"
 	"strings"
 	"text/template"
 )
 
-type Generator struct {
+type CodeGenerator struct {
 	file *os.File
 }
 
-func (gen *Generator) Open(name string) (err error) {
+func (gen *CodeGenerator) Open(name string) (err error) {
 	gen.file, err = os.Create(name)
 	return
 }
 
-func (gen *Generator) Close() error {
+func (gen *CodeGenerator) Close() error {
 	return gen.file.Close()
 }
 
-func (gen *Generator) makeList(folders []*FolderList) []EffectItem {
-	var gen_list = make([]EffectItem, 0)
+func (gen *CodeGenerator) makeList(folders []*iohandler.EffectItems) []iohandler.EffectItem {
+	var gen_list = make([]iohandler.EffectItem, 0)
 	for _, folder := range folders {
 		for _, s := range folder.List {
 			gen_list = append(gen_list,
-				EffectItem{
+				iohandler.EffectItem{
 					Title:    MakeTitle(folder.Title, s.Title),
 					Constant: MakeConstant(folder.Title, s.Title),
 					Frame:    s.Frame})
@@ -33,8 +34,10 @@ func (gen *Generator) makeList(folders []*FolderList) []EffectItem {
 	return gen_list
 }
 
+var _ iohandler.Generator = (*HeaderGenerator)(nil)
+
 type HeaderGenerator struct {
-	Generator
+	CodeGenerator
 }
 
 func NewHeaderGenerator() *HeaderGenerator {
@@ -56,15 +59,17 @@ extern const char *catalog_name(CATALOG_INDEX index);
 } // namespace glow
 `
 
-func (hg *HeaderGenerator) Write(folders []*FolderList) (err error) {
+func (hg *HeaderGenerator) Write(folders []*iohandler.EffectItems) (err error) {
 	t := template.Must(template.New("header").Parse(templHeader))
 	var gen_list = hg.makeList(folders)
-	err = t.Execute(hg.Generator.file, gen_list)
+	err = t.Execute(hg.CodeGenerator.file, gen_list)
 	return
 }
 
+var _ iohandler.Generator = (*SourceGenerator)(nil)
+
 type SourceGenerator struct {
-	Generator
+	CodeGenerator
 }
 
 func NewSourceGenerator() *SourceGenerator {
@@ -85,15 +90,17 @@ const char *catalog_name(CATALOG_INDEX index){return catalog_names[index%FRAME_C
 } // namespace glow
 `
 
-func (sg *SourceGenerator) Write(folders []*FolderList) (err error) {
+func (sg *SourceGenerator) Write(folders []*iohandler.EffectItems) (err error) {
 	t := template.Must(template.New("source").Parse(templSource))
 	var gen_list = sg.makeList(folders)
-	err = t.Execute(sg.Generator.file, gen_list)
+	err = t.Execute(sg.CodeGenerator.file, gen_list)
 	return
 }
 
+var _ iohandler.Generator = (*EffectGenerator)(nil)
+
 type EffectGenerator struct {
-	Generator
+	CodeGenerator
 }
 
 func NewEffectGenerator() *EffectGenerator {
@@ -118,10 +125,10 @@ const templEffect = `
 {{end}}
 `
 
-func (eg *EffectGenerator) Write(folders []*FolderList) (err error) {
+func (eg *EffectGenerator) Write(folders []*iohandler.EffectItems) (err error) {
 	t := template.Must(template.New("effect").Parse(templEffect))
 	var gen_list = eg.makeList(folders)
-	err = t.Execute(eg.Generator.file, gen_list)
+	err = t.Execute(eg.CodeGenerator.file, gen_list)
 	return
 }
 

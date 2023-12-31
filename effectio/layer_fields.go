@@ -1,4 +1,4 @@
-package effects
+package effectio
 
 import (
 	"gglow/glow"

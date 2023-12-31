@@ -2,57 +2,58 @@ package codeio
 
 import (
 	"gglow/glow"
+	"gglow/iohandler"
 	"testing"
 )
 
 func TestGenerate(t *testing.T) {
-	list := []*EffectItem{
-		{"black white scan", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+	list := []*iohandler.EffectItem{
+		{Title: "black white scan", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"complementary scan", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "complementary scan", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"double scan", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "double scan", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"gradient scan", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "gradient scan", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"rainbow diagonal", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "rainbow diagonal", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"rainbow horizontal", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "rainbow horizontal", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"rainbow vertical", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "rainbow vertical", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"split in three", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "split in three", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"split in two", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "split in two", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"spotlight", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "spotlight", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{
 				{Length: 16, Rows: 2, HueShift: -1, Begin: 0, End: 100, Rate: 0,
 					Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
@@ -65,13 +66,13 @@ func TestGenerate(t *testing.T) {
 			},
 		}},
 	}
-	list2 := []*EffectItem{
-		{"black white scan", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+	list2 := []*iohandler.EffectItem{
+		{Title: "black white scan", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{{Length: 16, Rows: 2,
 				Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
 				Chroma: glow.Chroma{Length: 16, HueShift: -1,
 					Colors: []glow.HSV{{Hue: 0, Saturation: 255, Value: 127}}}}}}},
-		{"spotlight", "", &glow.Frame{Length: 16, Rows: 2, Interval: 48,
+		{Title: "spotlight", Constant: "", Frame: &glow.Frame{Length: 16, Rows: 2, Interval: 48,
 			Layers: []glow.Layer{
 				{Length: 16, Rows: 2, HueShift: -1, Begin: 0, End: 100, Rate: 0,
 					Grid: glow.Grid{Length: 16, Rows: 2, Origin: glow.TopLeft, Orientation: glow.Horizontal},
@@ -86,9 +87,9 @@ func TestGenerate(t *testing.T) {
 	}
 
 	var hg HeaderGenerator
-	var folderList []*FolderList = make([]*FolderList, 0)
+	var folderList []*iohandler.EffectItems = make([]*iohandler.EffectItems, 0)
 
-	folderList = append(folderList, NewFolderList("a", list), NewFolderList("b", list2))
+	folderList = append(folderList, iohandler.NewFolderList("a", list), iohandler.NewFolderList("b", list2))
 	err := hg.Write(folderList)
 	if err != nil {
 		t.Fatal(err)

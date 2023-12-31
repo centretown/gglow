@@ -2,13 +2,12 @@ package transactions
 
 import (
 	"gglow/iohandler"
-	"gglow/settings"
 	"gglow/store"
 	"testing"
 )
 
 func TestCodeHandler(t *testing.T) {
-	accessorIn := &settings.Accessor{
+	accessorIn := &iohandler.Accessor{
 		// Driver: "sqlite3",
 		// Path:   "../glow.db",
 		Driver:   "postgres",
@@ -20,7 +19,7 @@ func TestCodeHandler(t *testing.T) {
 	}
 	// input:
 
-	accessorOut := &settings.Accessor{
+	accessorOut := &iohandler.Accessor{
 		Driver: "code",
 		Path:   "../generated_test_postgres",
 	}

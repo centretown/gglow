@@ -14,8 +14,7 @@ import (
 type LightStripPlayer struct {
 	*widget.Toolbar
 
-	effect iohandler.EffectIoHandler
-	// sourceFrame binding.Untyped
+	effect      iohandler.EffectIoHandler
 	sourceStrip binding.Untyped
 	strip       *LightStrip
 
@@ -42,7 +41,6 @@ func NewLightStripPlayer(sourceStrip binding.Untyped, effect iohandler.EffectIoH
 	lightStripLayout *LightStripLayout) *LightStripPlayer {
 
 	sb := &LightStripPlayer{
-		// sourceFrame:  sourceFrame,
 		effect:       effect,
 		sourceStrip:  sourceStrip,
 		stopChan:     make(chan int),
@@ -78,11 +76,6 @@ func NewLightStripPlayer(sourceStrip binding.Untyped, effect iohandler.EffectIoH
 	sb.effect.AddFrameListener(binding.NewDataListener(sb.frameListener))
 	return sb
 }
-
-// func (sb *LightStripPlayer) getFrame() *glow.Frame {
-// 	frame, _ := sb.sourceFrame.Get()
-// 	return frame.(*glow.Frame)
-// }
 
 func (sb *LightStripPlayer) getStrip() *LightStrip {
 	strip, _ := sb.sourceStrip.Get()
