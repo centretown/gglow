@@ -42,7 +42,8 @@ type LayerEditor struct {
 	hueBounds  *IntEntryBounds
 	scanBounds *IntEntryBounds
 
-	tools *LayerTools
+	tools     *LayerTools
+	isEditing bool
 }
 
 func NewLayerEditor(effect iohandler.EffectIoHandler, window fyne.Window,
@@ -77,22 +78,29 @@ func NewLayerEditor(effect iohandler.EffectIoHandler, window fyne.Window,
 	le.effect.AddLayerListener(binding.NewDataListener(le.setFields))
 
 	sharedTools.AddItems(le.tools.Items()...)
-	effect.OnApply(le.apply)
+	effect.OnSave(le.apply)
 	return le
+}
+
+func (le *LayerEditor) setChanged() {
+	if le.isEditing {
+		le.effect.SetChanged()
+	}
 }
 
 func (le *LayerEditor) createPatches() {
 	le.patches = make([]*ColorPatch, effectio.MaxLayerColors)
 	for i := 0; i < effectio.MaxLayerColors; i++ {
-		patch := NewColorPatch(le.effect)
-		patch.SetTapped(le.selectColor(patch))
+		patch := NewColorPatch()
+		patch.SetOnTapped(le.selectColor(patch))
+		patch.SetOnChanged(le.setChanged)
 		le.patches[i] = patch
 	}
 }
 
 func (le *LayerEditor) selectColor(patch *ColorPatch) func() {
 	return func() {
-		ce := NewColorPatchEditor(patch, le.effect, le.window)
+		ce := NewColorPatchEditor(patch, le.window, le.setChanged)
 		ce.Show()
 	}
 }
@@ -104,7 +112,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrigin.SelectedIndex()
 		if glow.Origin(selected) != current {
 			le.fields.Origin.Set(selected)
-			le.effect.SetChanged()
+			le.setChanged()
 		}
 	}
 
@@ -114,7 +122,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		selected := le.selectOrientation.SelectedIndex()
 		if glow.Orientation(selected) != current {
 			le.fields.Orientation.Set(selected)
-			le.effect.SetChanged()
+			le.setChanged()
 		}
 	}
 
@@ -124,7 +132,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.fields.Scan.AddListener(binding.NewDataListener(func() {
 		scan, _ := le.fields.Scan.Get()
 		if uint16(scan) != le.layer.Scan {
-			le.effect.SetChanged()
+			le.setChanged()
 		}
 	}))
 	le.checkScan = widget.NewCheck("", checkRangeBox(le.scanBox, le.fields.Scan))
@@ -138,7 +146,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.fields.HueShift.AddListener(binding.NewDataListener(func() {
 		shift, _ := le.fields.HueShift.Get()
 		if int16(shift) != le.layer.HueShift {
-			le.effect.SetChanged()
+			le.setChanged()
 		}
 	}))
 	le.checkHue = widget.NewCheck("", checkRangeBox(le.hueBox, le.fields.HueShift))
@@ -149,7 +157,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	le.fields.Rate.AddListener(binding.NewDataListener(func() {
 		rate, _ := le.fields.Rate.Get()
 		if uint32(rate) != le.layer.Rate {
-			le.effect.SetChanged()
+			le.setChanged()
 		}
 	}))
 	le.checkRate = widget.NewCheck("", checkRangeBox(le.rateBox, le.fields.Rate))
@@ -177,6 +185,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 }
 
 func (le *LayerEditor) setFields() {
+	le.isEditing = false
 	le.layer = le.effect.GetCurrentLayer()
 	le.fields.FromLayer(le.layer)
 
@@ -205,6 +214,7 @@ func (le *LayerEditor) setFields() {
 			p.SetUnused(true)
 		}
 	}
+	le.isEditing = true
 }
 
 func (le *LayerEditor) apply(frame *glow.Frame) {

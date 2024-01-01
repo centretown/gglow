@@ -8,24 +8,58 @@ import (
 )
 
 type Action struct {
-	Method    string
-	Input     *iohandler.Accessor
-	Filters   []Filter
-	Outputs   []*iohandler.Accessor
-	Notes     []string
-	Errors    []string
-	filterMap map[string]map[string]bool
+	Method      string
+	Input       *iohandler.Accessor
+	FilterItems []FilterItem
+	Outputs     []*iohandler.Accessor
+	Notes       []string
+	Errors      []string
+	filter      Filter
 }
 
 func NewAction() *Action {
 	a := &Action{
-		Input:   &iohandler.Accessor{},
-		Filters: make([]Filter, 0),
-		Outputs: make([]*iohandler.Accessor, 0),
-		Notes:   make([]string, 0),
-		Errors:  make([]string, 0),
+		Input:       &iohandler.Accessor{},
+		FilterItems: make([]FilterItem, 0),
+		Outputs:     make([]*iohandler.Accessor, 0),
+		Notes:       make([]string, 0),
+		Errors:      make([]string, 0),
 	}
 	return a
+}
+
+func (a *Action) Process() (err error) {
+	switch strings.ToLower(a.Method) {
+	case "verify":
+		a.Verify()
+	case "update", "clone":
+		err = a.Copy()
+	default:
+		err = a.AddError(fmt.Errorf("unknown method %s", a.Method))
+	}
+	return
+}
+
+func (a *Action) Copy() (err error) {
+	a.Verify()
+	if a.HasErrors() {
+		err = fmt.Errorf("action %s has errors", a.Method)
+		return
+	}
+	for _, output := range a.Outputs {
+		err = a.updateDatabase(output)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (a *Action) Verify() {
+	a.verifyInput(a.Input, true)
+	for _, output := range a.Outputs {
+		a.verifyOutput(output)
+	}
 }
 
 func (a *Action) AddNote(notes ...string) {
@@ -49,39 +83,7 @@ func (a *Action) HasErrors() bool {
 	return len(a.Errors) > 0
 }
 
-func (a *Action) createDatabase(output *iohandler.Accessor, dataOut iohandler.OutHandler) (err error) {
-	a.AddNote("create database", output.Database)
-	err = dataOut.Create(output.Database)
-	if err != nil {
-		return a.AddError(err)
-	}
-	a.AddNote("created", output.Database)
-	return
-}
-
-func (a *Action) connectIn(config *iohandler.Accessor) (handler iohandler.IoHandler, err error) {
-	a.AddNote("connecting to input", config.Database)
-	handler, err = store.NewIoHandler(config)
-	if err != nil {
-		a.AddError(err)
-		return
-	}
-	a.AddNote("connected to", config.Database)
-	return
-}
-
-func (a *Action) connectOut(config *iohandler.Accessor) (handler iohandler.OutHandler, err error) {
-	a.AddNote("connecting to output", config.Database)
-	handler, err = store.NewOutHandler(config)
-	if err != nil {
-		a.AddError(err)
-		return
-	}
-	a.AddNote("connected to", config.Database)
-	return
-}
-
-func (a *Action) cloneDatabase(output *iohandler.Accessor) (err error) {
+func (a *Action) updateDatabase(output *iohandler.Accessor) (err error) {
 	var dataIn iohandler.IoHandler
 	var dataOut iohandler.OutHandler
 
@@ -107,53 +109,40 @@ func (a *Action) cloneDatabase(output *iohandler.Accessor) (err error) {
 
 	defer onExit()
 
-	dataIn, err = a.connectIn(a.Input)
+	a.AddNote("connecting to input", a.Input.Database)
+	dataIn, err = store.NewIoHandler(a.Input)
 	if err != nil {
-		return
+		return a.AddError(err)
 	}
 
-	dataOut, err = a.connectOut(output)
+	a.AddNote("connecting to output", output.Database)
+	dataOut, err = store.NewOutHandler(output)
 	if err != nil {
-		return
+		return a.AddError(err)
 	}
 
-	err = a.createDatabase(output, dataOut)
-	if err != nil {
-		return
+	if a.Method == "clone" {
+		a.AddNote("create database", output.Database)
+		err = dataOut.Create(output.Database)
+		if err != nil {
+			return a.AddError(err)
+		}
 	}
 
 	_, err = dataIn.RootFolder()
 	if err != nil {
-		return
+		return a.AddError(err)
 	}
-	a.AddNote("input read from", a.Input.Database)
-
-	a.AddNote("write database")
-	err = a.WriteDatabase(dataIn, dataOut)
+	a.AddNote("writing database")
+	err = a.writeDatabase(dataIn, dataOut)
 	if err != nil {
-		return
+		return a.AddError(err)
 	}
 	a.AddNote("output written to", output.Database)
 	return nil
 }
 
-func (a *Action) Clone() (err error) {
-	a.Verify()
-	if a.HasErrors() {
-		err = fmt.Errorf("action %s has errors", a.Method)
-		return
-	}
-
-	for _, output := range a.Outputs {
-		err = a.cloneDatabase(output)
-		if err != nil {
-			return
-		}
-	}
-	return
-}
-
-func (a *Action) verifyConfiguration(config *iohandler.Accessor, refresh bool) error {
+func (a *Action) verifyInput(config *iohandler.Accessor, refresh bool) error {
 	st, err := store.NewIoHandler(config)
 	if err != nil {
 		return a.AddError(err)
@@ -169,7 +158,7 @@ func (a *Action) verifyConfiguration(config *iohandler.Accessor, refresh bool) e
 	return nil
 }
 
-func (a *Action) verifyOutConfiguration(config *iohandler.Accessor) error {
+func (a *Action) verifyOutput(config *iohandler.Accessor) error {
 	_, err := store.NewOutHandler(config)
 	if err != nil {
 		return a.AddError(err)
@@ -177,29 +166,63 @@ func (a *Action) verifyOutConfiguration(config *iohandler.Accessor) error {
 	return nil
 }
 
-func (a *Action) Verify() {
-	a.verifyConfiguration(a.Input, true)
-	for _, output := range a.Outputs {
-		a.verifyOutConfiguration(output)
-	}
-}
-
-func (a *Action) Update() {
-}
-
-func (a *Action) Process() (err error) {
-	switch strings.ToLower(a.Method) {
-	case "verify":
-		a.Verify()
-	case "clone":
-		err = a.Clone()
-	case "update":
-		a.Update()
-	case "generate":
-		err = a.Clone()
-	default:
-		err = a.AddError(fmt.Errorf("unknown method %s", a.Method))
+func (action *Action) writeDatabase(dataIn iohandler.IoHandler, dataOut iohandler.OutHandler) error {
+	folders, err := dataIn.RootFolder()
+	if err != nil {
+		err = fmt.Errorf("dataIn RootFolder %s", err)
+		return err
 	}
 
-	return
+	action.filter = NewFilter(action.FilterItems)
+
+	for _, folder := range folders {
+
+		if dataIn.IsFolder(folder) && action.filter.IsSelected(folder) {
+			action.AddNote(fmt.Sprintf("add folder %s", folder))
+			items, err := dataIn.SetFolder(folder)
+			if err != nil {
+				err = fmt.Errorf("set input %s", err)
+				return err
+			}
+
+			_, err = dataOut.SetFolder(folder)
+			if err != nil {
+				err = fmt.Errorf("set output %s", err)
+				return err
+			}
+
+			err = action.writeFolder(folder, items, dataIn, dataOut)
+			if err != nil {
+				err = fmt.Errorf("write folder %s", err)
+				return err
+			}
+			dataIn.RootFolder()
+		}
+	}
+	return nil
+}
+
+func (action *Action) writeFolder(folder string, items []string, dataIn iohandler.IoHandler,
+	dataOut iohandler.OutHandler) error {
+
+	err := dataOut.WriteFolder(folder)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range items {
+		if !dataIn.IsFolder(item) && action.filter.IsSelected(folder, item) {
+			action.AddNote(fmt.Sprintf("add effect %s.%s", folder, item))
+			frame, err := dataIn.ReadEffect(item)
+			if err != nil {
+				return err
+			}
+
+			err = dataOut.WriteEffect(item, frame)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

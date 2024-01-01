@@ -265,7 +265,9 @@ title VARCHAR(80) NOT NULL,
 effect TEXT,
 PRIMARY KEY (folder, title)
 );`,
+
 		"CREATE INDEX effect_title ON effects (title);",
+
 		`CREATE VIEW folders(folder, title) AS
 SELECT folder, title
 FROM effects

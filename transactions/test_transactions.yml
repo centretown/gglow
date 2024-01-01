@@ -62,3 +62,39 @@ actions:
         database: /home/dave/src/gglow/generated_test_tranactions_3
     filters:
       - folder: "special"
+  - method: clone
+    input:
+      driver: postgres
+      user: dave
+      password: football
+      host: localhost
+      port: 5432
+      database: test
+    outputs:
+    # test
+      - driver: sqlite3
+        path: /home/dave/src/gglow/generated_test_tranactions_4/test4.db
+        database: /home/dave/src/gglow/generated_test_tranactions_4/test4.db
+    filters:
+      - folder: special
+      - folder: effects
+      - folder: examples
+        effects:
+          - AAA Spotlight
+          - Scan Double
+          - Split in Three
+  - method: clone
+    input:
+      driver: postgres
+      user: dave
+      password: football
+      host: localhost
+      port: 5432
+      database: test
+    outputs:
+    # test
+      - driver: sqlite3
+        path: /home/dave/src/gglow/generated_test_tranactions_4/examples5.db
+        database: /home/dave/src/gglow/generated_test_tranactions_4/examples5.db
+    filters:
+      - folder: "examples"

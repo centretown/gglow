@@ -10,10 +10,8 @@ import (
 
 type SharedTools struct {
 	*widget.Toolbar
-	saveButton  *ButtonItem
-	applyButton *ButtonItem
-	undoButton  *ButtonItem
-	effect      iohandler.EffectIoHandler
+	saveButton *ButtonItem
+	effect     iohandler.EffectIoHandler
 }
 
 func NewSharedTools(effect iohandler.EffectIoHandler) *SharedTools {
@@ -24,32 +22,17 @@ func NewSharedTools(effect iohandler.EffectIoHandler) *SharedTools {
 
 	tl.saveButton = NewButtonItem(
 		widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), tl.save))
-	tl.undoButton = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.ContentUndoIcon(), tl.undo))
-	tl.applyButton = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.ConfirmIcon(), tl.apply))
 
 	tl.effect.AddChangeListener(binding.NewDataListener(func() {
 		if tl.effect.HasChanged() {
 			tl.saveButton.Enable()
-			tl.undoButton.Enable()
-			tl.applyButton.Enable()
 			return
 		}
-		if !tl.effect.CanUndo() {
-			tl.undoButton.Disable()
-		}
 		tl.saveButton.Disable()
-		tl.applyButton.Disable()
 	}))
 
-	// tl.effect.AddUndoListener(binding.NewDataListener(func() {
-	// 	if tl.effect.CanUndo() {
-	// 	} else {
-	// 	}
-	// }))
-
-	tl.AddItems(tl.saveButton, tl.applyButton, tl.undoButton)
+	sep := widget.NewToolbarSeparator()
+	tl.AddItems(tl.saveButton, sep)
 	return tl
 }
 
@@ -59,12 +42,14 @@ func (tl *SharedTools) AddItems(items ...widget.ToolbarItem) {
 
 func (tl *SharedTools) save() {
 	tl.effect.SaveEffect()
+	tl.saveButton.Disable()
+	// tl.saveButton.Refresh()
 }
 
-func (tl *SharedTools) apply() {
-	tl.effect.Apply()
-}
+// func (tl *SharedTools) apply() {
+// 	tl.effect.Apply()
+// }
 
-func (tl *SharedTools) undo() {
-	tl.effect.UndoEffect()
-}
+// func (tl *SharedTools) undo() {
+// 	tl.effect.UndoEffect()
+// }

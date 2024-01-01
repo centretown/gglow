@@ -2,7 +2,6 @@ package ui
 
 import (
 	"gglow/glow"
-	"gglow/iohandler"
 	"gglow/resources"
 	"image/color"
 
@@ -16,8 +15,8 @@ import (
 
 type ColorPatchEditor struct {
 	*dialog.CustomDialog
-	effect iohandler.EffectIoHandler
-	window fyne.Window
+	window   fyne.Window
+	onUpdate func()
 
 	source      *ColorPatch
 	patch       *ColorPatch
@@ -31,14 +30,13 @@ type ColorPatchEditor struct {
 }
 
 func NewColorPatchEditor(source *ColorPatch,
-	effect iohandler.EffectIoHandler,
-	window fyne.Window) *ColorPatchEditor {
+	window fyne.Window, onUpdate func()) *ColorPatchEditor {
 
 	pe := &ColorPatchEditor{
-		source: source,
-		patch:  NewColorPatchWithColor(source.GetHSVColor(), effect, func() {}),
-		effect: effect,
-		window: window,
+		source:   source,
+		patch:    NewColorPatchWithColor(source.GetHSVColor(), func() {}, func() {}),
+		window:   window,
+		onUpdate: onUpdate,
 
 		hue:        binding.NewFloat(),
 		saturation: binding.NewFloat(),
@@ -118,7 +116,6 @@ func (pe *ColorPatchEditor) setValue() {
 
 func (pe *ColorPatchEditor) setColor(hsv glow.HSV) {
 	pe.patch.SetHSVColor(hsv)
-	pe.effect.SetChanged()
 }
 
 func (pe *ColorPatchEditor) remove() {
@@ -128,6 +125,7 @@ func (pe *ColorPatchEditor) remove() {
 
 func (pe *ColorPatchEditor) apply() {
 	pe.source.CopyPatch(pe.patch)
+	pe.onUpdate()
 	pe.CustomDialog.Hide()
 }
 
@@ -136,7 +134,6 @@ func (le *ColorPatchEditor) selectColorPicker(patch *ColorPatch) func() {
 		picker := dialog.NewColorPicker("Color Picker", "color", func(c color.Color) {
 			if c != patch.GetColor() {
 				patch.SetColor(c)
-				le.effect.SetChanged()
 			}
 		}, le.window)
 		picker.Advanced = true

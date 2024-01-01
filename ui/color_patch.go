@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"gglow/glow"
-	"gglow/iohandler"
 	"gglow/resources"
 	"image/color"
 
@@ -27,7 +26,8 @@ var _ fyne.Shortcutable = (*ColorPatch)(nil)
 
 type ColorPatch struct {
 	widget.BaseWidget
-	tapped     func() `json:"-"`
+	onTapped   func() `json:"-"`
+	onChanged  func() `json:"-"`
 	rectangle  *canvas.Rectangle
 	background *canvas.Rectangle
 	colorHSV   glow.HSV
@@ -36,23 +36,22 @@ type ColorPatch struct {
 	unused           bool
 
 	Editing bool
-	effect  iohandler.EffectIoHandler
 }
 
-func NewColorPatch(effect iohandler.EffectIoHandler) (patch *ColorPatch) {
+func NewColorPatch() (patch *ColorPatch) {
 	var hsv glow.HSV
 	hsv.FromColor(theme.DisabledColor())
-	patch = NewColorPatchWithColor(hsv, effect, nil)
+	patch = NewColorPatchWithColor(hsv, nil, nil)
 	patch.unused = true
 	return
 }
 
-func NewColorPatchWithColor(hsv glow.HSV, effect iohandler.EffectIoHandler, tapped func()) *ColorPatch {
+func NewColorPatchWithColor(hsv glow.HSV, onTapped func(), onChanged func()) *ColorPatch {
 	cp := &ColorPatch{
 		background: canvas.NewRectangle(theme.ButtonColor()),
 		rectangle:  canvas.NewRectangle(hsv.ToRGB()),
-		tapped:     tapped,
-		effect:     effect,
+		onChanged:  onChanged,
+		onTapped:   onTapped,
 	}
 	cp.colorHSV = hsv
 	cp.ExtendBaseWidget(cp)
@@ -95,8 +94,18 @@ func (cp *ColorPatch) paste(s string) {
 	if err != nil {
 		return
 	}
-	cp.effect.SetChanged()
+	cp.setChanged()
 	cp.SetHSVColor(hsv)
+}
+
+func (cp *ColorPatch) setChanged() {
+	if cp.onChanged != nil {
+		cp.onChanged()
+	}
+}
+
+func (cp *ColorPatch) SetOnChanged(onChanged func()) {
+	cp.onChanged = onChanged
 }
 
 // Shortcutable
@@ -165,14 +174,14 @@ func (cp *ColorPatch) FocusLost() {
 	cp.applyPatchTheme()
 } // fyne.Focusable
 
-func (cp *ColorPatch) SetTapped(tapped func()) {
-	cp.tapped = tapped
+func (cp *ColorPatch) SetOnTapped(tapped func()) {
+	cp.onTapped = tapped
 }
 
 func (cp *ColorPatch) SetUnused(b bool) {
 	cp.unused = b
 	cp.setFill(theme.DisabledColor())
-	cp.effect.SetChanged()
+	cp.setChanged()
 }
 
 func (cp *ColorPatch) Unused() bool {
@@ -215,8 +224,8 @@ func (cp *ColorPatch) setFill(color color.Color) {
 }
 
 func (cp *ColorPatch) Tapped(_ *fyne.PointEvent) {
-	if cp.tapped != nil {
-		cp.tapped()
+	if cp.onTapped != nil {
+		cp.onTapped()
 	}
 }
 

@@ -26,12 +26,8 @@ type EffectIoHandler interface {
 
 	LoadFolder(title string) []string
 
-	OnApply(f func(*glow.Frame))
-	Apply()
+	OnSave(f func(*glow.Frame))
 
 	SaveEffect() (err error)
 	LoadEffect(title string) (err error)
-
-	CanUndo() bool
-	UndoEffect()
 }
