@@ -1,8 +1,0 @@
-actions:
-  - method: "verify"
-    input:
-      driver: "file"
-      path: "./cabinet/json"
-    outputs:
-      - driver: "sqlite3"
-        path: "./file-cabinet.db"

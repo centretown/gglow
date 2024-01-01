@@ -1,7 +1,6 @@
 package effectio
 
 import (
-	"fmt"
 	"gglow/glow"
 	"gglow/iohandler"
 
@@ -124,12 +123,10 @@ func (eff *EffectIo) SetChanged() {
 	if !eff.isActive {
 		return
 	}
-	fmt.Println("SetChanged")
 	eff.hasChanged.Set(true)
 }
 
 func (eff *EffectIo) SetUnchanged() {
-	fmt.Println("SetUnchanged")
 	eff.hasChanged.Set(false)
 }
 

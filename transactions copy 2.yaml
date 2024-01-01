@@ -1,8 +1,0 @@
-actions:
-  - method: "verify"
-    input:
-      driver: "sqlite3"
-      path: "./glow.db"
-    outputs:
-      - driver: "sqlite3"
-        path: "./cabinet.db"
