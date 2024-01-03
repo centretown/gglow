@@ -21,6 +21,9 @@ type EffectIoHandler interface {
 	AddLayerListener(listener interface{})
 	AddChangeListener(listener interface{})
 
+	AddEffect(*glow.Frame) error
+	AddLayer(*glow.Layer) error
+
 	SetChanged()
 	HasChanged() bool
 

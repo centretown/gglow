@@ -2,7 +2,7 @@ package storageio
 
 import (
 	"fmt"
-	"gglow/effectio"
+	"gglow/fyio"
 	"gglow/glow"
 	"gglow/iohandler"
 	"gglow/resources"
@@ -95,7 +95,7 @@ func (fh *StorageHandler) IsFolder(key string) bool {
 }
 
 func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
-	if folder == effectio.Dots {
+	if folder == fyio.Dots {
 		return fh.Refresh()
 	}
 
@@ -139,7 +139,7 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 	currentUri := fh.Current
 	isRoot := currentUri == fh.RootURI
 	if !isRoot {
-		fh.uriMap[effectio.Dots] = fh.Current
+		fh.uriMap[fyio.Dots] = fh.Current
 	}
 	fh.Current = currentUri
 
@@ -151,7 +151,7 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 
 	fh.keyList = make([]string, 0, len(uriList)+1)
 	if !isRoot {
-		fh.keyList = append(fh.keyList, effectio.Dots)
+		fh.keyList = append(fh.keyList, fyio.Dots)
 	}
 
 	for _, uri := range uriList {
@@ -200,7 +200,7 @@ func (fh *StorageHandler) WriteFolder(folder string) error {
 	fh.folder = folder
 	fmt.Println(folder, "folder")
 	folder = strings.TrimSpace(folder)
-	err := effectio.ValidateFolderName(folder)
+	err := fyio.ValidateFolderName(folder)
 	if err != nil {
 		return err
 	}
@@ -299,7 +299,7 @@ func (fh *StorageHandler) EffectName() string {
 }
 
 func (fh *StorageHandler) ValidateNewFolderName(title string) error {
-	err := effectio.ValidateFolderName(title)
+	err := fyio.ValidateFolderName(title)
 	if err != nil {
 		return err
 	}
@@ -309,7 +309,7 @@ func (fh *StorageHandler) ValidateNewFolderName(title string) error {
 }
 
 func (fh *StorageHandler) ValidateNewEffectName(title string) error {
-	err := effectio.ValidateEffectName(title)
+	err := fyio.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}

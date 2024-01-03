@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"gglow/effectio"
+	"gglow/fyio"
 	"gglow/glow"
 	"gglow/iohandler"
 	"gglow/resources"
@@ -28,17 +28,18 @@ type SqlHandler struct {
 	keyMap     map[string]bool
 	driver     string
 	serializer iohandler.Serializer
+	schema     *Schema
 }
 
 func NewSqlHandler(driver, dsn string) (*SqlHandler, error) {
 	sqlh := &SqlHandler{
-		folder:     effectio.Dots,
+		folder:     fyio.Dots,
 		keyList:    make([]string, 0),
 		keyMap:     make(map[string]bool),
 		serializer: &iohandler.JsonSerializer{},
 		driver:     driver,
+		schema:     Schemas[0],
 	}
-
 	var err error
 	sqlh.db, err = sql.Open(driver, dsn)
 	if err != nil {
@@ -61,7 +62,7 @@ func (sqlh *SqlHandler) OnExit() error {
 }
 
 func (sqlh *SqlHandler) RootFolder() ([]string, error) {
-	return sqlh.SetFolder(effectio.Dots)
+	return sqlh.SetFolder(fyio.Dots)
 }
 
 func (sqlh *SqlHandler) Ping() error {
@@ -78,8 +79,7 @@ func (sqlh *SqlHandler) Ping() error {
 func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	q := fmt.Sprintf("SELECT * FROM effects WHERE folder = '%s' AND title = '%s'",
-		sqlh.folder, title)
+	q := fmt.Sprintf(sqlh.schema.ReadEffect, sqlh.folder, title)
 	var folder, name string
 	var source []byte
 	row := sqlh.db.QueryRowContext(ctx, q)
@@ -102,16 +102,16 @@ func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 }
 
 func (sqlh *SqlHandler) IsFolder(title string) bool {
-	return title == effectio.Dots || sqlh.folder == effectio.Dots
+	return title == fyio.Dots || sqlh.folder == fyio.Dots
 }
 
 func (sqlh *SqlHandler) WriteFolder(folder string) error {
 	sqlh.folder = folder
-	return sqlh.WriteEffect(effectio.Dots, nil)
+	return sqlh.WriteEffect(fyio.Dots, nil)
 }
 
 func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
-	err := effectio.ValidateFolderName(title)
+	err := fyio.ValidateFolderName(title)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
 	return err
 }
 func (sqlh *SqlHandler) ValidateNewEffectName(title string) error {
-	err := effectio.ValidateEffectName(title)
+	err := fyio.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func (sqlh *SqlHandler) ValidateNewEffectName(title string) error {
 }
 
 func (sqlh *SqlHandler) isDuplicateFolder(folder string) error {
-	err := sqlh.findEffect(folder, effectio.Dots)
+	err := sqlh.findEffect(folder, fyio.Dots)
 	if err == sql.ErrNoRows {
 		return nil
 	}
@@ -156,12 +156,17 @@ func (sqlh *SqlHandler) isDuplicate(title string) error {
 	return nil
 }
 
-func (sqlh *SqlHandler) CreateNewEffect(title string, frame *glow.Frame) error {
-	err := sqlh.isDuplicate(title)
+func (sqlh *SqlHandler) CreateNewEffect(title string, frame *glow.Frame) (err error) {
+	err = sqlh.isDuplicate(title)
 	if err != nil {
-		return err
+		return
 	}
-	return sqlh.WriteEffect(title, frame)
+
+	err = sqlh.WriteEffect(title, frame)
+	if err == nil {
+		sqlh.title = title
+	}
+	return
 }
 
 func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
@@ -185,10 +190,10 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 	}
 
 	if update {
-		query = fmt.Sprintf("UPDATE effects SET effect = '%s' WHERE folder = '%s' AND title = '%s'",
+		query = fmt.Sprintf(sqlh.schema.UpdateEffect,
 			string(source), sqlh.folder, title)
 	} else {
-		query = fmt.Sprintf("INSERT INTO effects (folder, title, effect) VALUES('%s', '%s', '%s')",
+		query = fmt.Sprintf(sqlh.schema.InsertEffect,
 			sqlh.folder, title, string(source))
 	}
 
@@ -198,16 +203,19 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 		return err
 	}
 
-	sqlh.keyList = append(sqlh.keyList, title)
-	sqlh.keyMap[title] = false
+	if !update {
+		sqlh.keyList = append(sqlh.keyList, title)
+		sqlh.keyMap[title] = false
+		//refresh the list and make this current
+	}
+
 	return nil
 }
 
 func (sqlh *SqlHandler) findEffect(folder, title string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	q := fmt.Sprintf("SELECT title FROM effects WHERE folder = '%s' AND title = '%s';",
-		folder, title)
+	q := fmt.Sprintf(sqlh.schema.FindEffect, folder, title)
 	row := sqlh.db.QueryRowContext(ctx, q)
 	var result string
 	err := row.Scan(&result)
@@ -218,11 +226,10 @@ func (sqlh *SqlHandler) SetFolder(folder string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	var query string
-	if folder == "" || folder == effectio.Dots {
-		query = "SELECT folder FROM folders;"
+	if folder == "" || folder == fyio.Dots {
+		query = sqlh.schema.Folder
 	} else {
-		query = fmt.Sprintf("SELECT title FROM effects WHERE folder = '%s' ORDER BY folder;",
-			folder)
+		query = fmt.Sprintf(sqlh.schema.ListEffects, folder)
 	}
 
 	rows, err := sqlh.db.QueryContext(ctx, query)
@@ -254,28 +261,6 @@ func (sqlh *SqlHandler) ListCurrentFolder() []string {
 }
 
 func (sqlh *SqlHandler) Create(name string) error {
-	var sql_create = []string{
-		"DROP VIEW IF EXISTS palettes;",
-		"DROP VIEW IF EXISTS folders;",
-		"DROP TABLE IF EXISTS effects;",
-		"DROP TABLE IF EXISTS colors;",
-		`CREATE TABLE effects (
-folder VARCHAR(80) NOT NULL,
-title VARCHAR(80) NOT NULL,
-effect TEXT,
-PRIMARY KEY (folder, title)
-);`,
-
-		"CREATE INDEX effect_title ON effects (title);",
-
-		`CREATE VIEW folders(folder, title) AS
-SELECT folder, title
-FROM effects
-WHERE title = '..'
-ORDER BY folder;
-`,
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -294,7 +279,7 @@ ORDER BY folder;
 		// }
 	}
 
-	for _, query := range sql_create {
+	for _, query := range sqlh.schema.Create {
 		_, err := sqlh.db.ExecContext(ctx, query)
 		if err != nil {
 			fyne.LogError("CreateNewDatabase", err)

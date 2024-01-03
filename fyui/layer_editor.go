@@ -1,7 +1,7 @@
 package fyui
 
 import (
-	"gglow/effectio"
+	"gglow/fyio"
 	"gglow/glow"
 	"gglow/iohandler"
 	"gglow/resources"
@@ -18,7 +18,7 @@ type LayerEditor struct {
 	*fyne.Container
 	effect iohandler.EffectIoHandler
 	layer  *glow.Layer
-	fields *effectio.LayerFields
+	fields *fyio.LayerFields
 	window fyne.Window
 
 	patches []*ColorPatch
@@ -55,7 +55,7 @@ func NewLayerEditor(effect iohandler.EffectIoHandler, window fyne.Window,
 		effect: effect,
 		layer:  effect.GetCurrentLayer(),
 
-		fields: effectio.NewLayerFields(),
+		fields: fyio.NewLayerFields(),
 		tools:  NewLayerTools(effect),
 
 		rateBounds: RateBounds,
@@ -89,8 +89,8 @@ func (le *LayerEditor) setChanged() {
 }
 
 func (le *LayerEditor) createPatches() {
-	le.patches = make([]*ColorPatch, effectio.MaxLayerColors)
-	for i := 0; i < effectio.MaxLayerColors; i++ {
+	le.patches = make([]*ColorPatch, fyio.MaxLayerColors)
+	for i := 0; i < fyio.MaxLayerColors; i++ {
 		patch := NewColorPatch()
 		patch.SetOnTapped(le.selectColor(patch))
 		patch.SetOnChanged(le.setChanged)

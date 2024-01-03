@@ -10,7 +10,7 @@ import (
 var transactionFile string
 
 const (
-	transactionDefault = "transactions.yaml"
+	transactionDefault = "transaction.yaml"
 	transactionUsage   = "transaction file"
 )
 

@@ -19,6 +19,16 @@ type Frame struct {
 	Layers   []Layer `yaml:"layers" json:"layers"`
 }
 
+func NewFrame() (frame *Frame) {
+	frame = &Frame{}
+	frame.Interval = 48
+	var layer Layer
+	layer.Chroma.Colors = append(layer.Chroma.Colors,
+		HSV{Hue: 0, Saturation: 0, Value: 100})
+	frame.Layers = append(frame.Layers, layer)
+	return
+}
+
 func (frame *Frame) updateLayers() {
 	for i := range frame.Layers {
 		frame.Layers[i].SetupLength(frame.Length, frame.Rows)

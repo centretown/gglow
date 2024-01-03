@@ -50,14 +50,22 @@ func NewEffectDialog(effect iohandler.EffectIoHandler, window fyne.Window) (ef *
 }
 
 func (ef *EffectDialog) apply() {
+	ef.CustomDialog.Hide()
 	title, _ := ef.title.Get()
-	frame := &glow.Frame{}
+	frame := glow.NewFrame()
 	frame.Interval = uint32(RateBounds.OnVal)
 	err := ef.effect.CreateNewEffect(title, frame)
 	if err != nil {
 		fyne.LogError(title, err)
 	}
-	ef.CustomDialog.Hide()
+
+	//refresh the current folder
+	ef.effect.LoadFolder(ef.effect.FolderName())
+
+	err = ef.effect.LoadEffect(title)
+	if err != nil {
+		fyne.LogError(title, err)
+	}
 }
 
 func (ef *EffectDialog) validateFileName(s string) error {

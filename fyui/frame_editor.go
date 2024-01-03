@@ -1,7 +1,7 @@
 package fyui
 
 import (
-	"gglow/effectio"
+	"gglow/fyio"
 	"gglow/glow"
 	"gglow/iohandler"
 	"gglow/resources"
@@ -18,7 +18,7 @@ type FrameEditor struct {
 	*fyne.Container
 	effect      iohandler.EffectIoHandler
 	layerSelect *widget.Select
-	fields      *effectio.FrameFields
+	fields      *fyio.FrameFields
 	rateBounds  *IntEntryBounds
 	rateBox     *RangeIntBox
 	tools       *FrameTools
@@ -32,7 +32,7 @@ func NewFrameEditor(effect iohandler.EffectIoHandler, window fyne.Window,
 		effect:      effect,
 		layerSelect: NewLayerSelect(effect),
 		rateBounds:  RateBounds,
-		fields:      effectio.NewFrameFields(),
+		fields:      fyio.NewFrameFields(),
 	}
 
 	fe.layerSelect = NewLayerSelect(fe.effect)

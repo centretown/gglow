@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gglow/effectio"
+	"gglow/fyio"
 	"gglow/fyresource"
 	"gglow/fyui"
 	"gglow/iohandler"
@@ -50,7 +50,7 @@ func main() {
 	app.Settings().SetTheme(theme)
 
 	window := app.NewWindow(resources.GlowLabel.String())
-	effect := effectio.NewEffectIo(storageHandler, preferences, accessor)
+	effect := fyio.NewEffectIo(storageHandler, preferences, accessor)
 
 	ui := fyui.NewUi(app, window, effect, theme)
 
