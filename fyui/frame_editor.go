@@ -3,7 +3,6 @@ package fyui
 import (
 	"gglow/fyio"
 	"gglow/glow"
-	"gglow/iohandler"
 	"gglow/resources"
 	"strconv"
 
@@ -16,7 +15,7 @@ import (
 
 type FrameEditor struct {
 	*fyne.Container
-	effect      iohandler.EffectIoHandler
+	effect      *fyio.EffectIo
 	layerSelect *widget.Select
 	fields      *fyio.FrameFields
 	rateBounds  *IntEntryBounds
@@ -25,7 +24,7 @@ type FrameEditor struct {
 	isEditing   bool
 }
 
-func NewFrameEditor(effect iohandler.EffectIoHandler, window fyne.Window,
+func NewFrameEditor(effect *fyio.EffectIo, window fyne.Window,
 	sharedTools *SharedTools) *FrameEditor {
 
 	fe := &FrameEditor{

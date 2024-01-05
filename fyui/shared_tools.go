@@ -1,7 +1,7 @@
 package fyui
 
 import (
-	"gglow/iohandler"
+	"gglow/fyio"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
@@ -11,10 +11,10 @@ import (
 type SharedTools struct {
 	*widget.Toolbar
 	saveButton *ButtonItem
-	effect     iohandler.EffectIoHandler
+	effect     *fyio.EffectIo
 }
 
-func NewSharedTools(effect iohandler.EffectIoHandler) *SharedTools {
+func NewSharedTools(effect *fyio.EffectIo) *SharedTools {
 	tl := &SharedTools{
 		Toolbar: widget.NewToolbar(),
 		effect:  effect,

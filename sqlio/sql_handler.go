@@ -8,7 +8,6 @@ import (
 	"gglow/glow"
 	"gglow/iohandler"
 	"gglow/resources"
-	"log"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -33,7 +32,7 @@ type SqlHandler struct {
 
 func NewSqlHandler(driver, dsn string) (*SqlHandler, error) {
 	sqlh := &SqlHandler{
-		folder:     fyio.Dots,
+		folder:     iohandler.Dots,
 		keyList:    make([]string, 0),
 		keyMap:     make(map[string]bool),
 		serializer: &iohandler.JsonSerializer{},
@@ -62,7 +61,7 @@ func (sqlh *SqlHandler) OnExit() error {
 }
 
 func (sqlh *SqlHandler) RootFolder() ([]string, error) {
-	return sqlh.SetFolder(fyio.Dots)
+	return sqlh.SetFolder(iohandler.Dots)
 }
 
 func (sqlh *SqlHandler) Ping() error {
@@ -79,7 +78,7 @@ func (sqlh *SqlHandler) Ping() error {
 func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	q := fmt.Sprintf(sqlh.schema.ReadEffect, sqlh.folder, title)
+	q := sqlh.schema.ReadEffect(sqlh.folder, title)
 	var folder, name string
 	var source []byte
 	row := sqlh.db.QueryRowContext(ctx, q)
@@ -102,12 +101,12 @@ func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 }
 
 func (sqlh *SqlHandler) IsFolder(title string) bool {
-	return title == fyio.Dots || sqlh.folder == fyio.Dots
+	return title == iohandler.Dots || sqlh.folder == iohandler.Dots
 }
 
 func (sqlh *SqlHandler) WriteFolder(folder string) error {
 	sqlh.folder = folder
-	return sqlh.WriteEffect(fyio.Dots, nil)
+	return sqlh.WriteEffect(iohandler.Dots, nil)
 }
 
 func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
@@ -129,7 +128,7 @@ func (sqlh *SqlHandler) ValidateNewEffectName(title string) error {
 }
 
 func (sqlh *SqlHandler) isDuplicateFolder(folder string) error {
-	err := sqlh.findEffect(folder, fyio.Dots)
+	err := sqlh.findEffect(folder, iohandler.Dots)
 	if err == sql.ErrNoRows {
 		return nil
 	}
@@ -189,17 +188,10 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 		_, update = sqlh.keyMap[title]
 	}
 
-	if update {
-		query = fmt.Sprintf(sqlh.schema.UpdateEffect,
-			string(source), sqlh.folder, title)
-	} else {
-		query = fmt.Sprintf(sqlh.schema.InsertEffect,
-			sqlh.folder, title, string(source))
-	}
-
+	query = sqlh.schema.WriteEffect(update, sqlh.folder, title, string(source))
 	_, err = sqlh.db.ExecContext(ctx, query)
 	if err != nil {
-		log.Fatal(err)
+		fyne.LogError("unable to execute query: "+query, err)
 		return err
 	}
 
@@ -215,7 +207,7 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 func (sqlh *SqlHandler) findEffect(folder, title string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	q := fmt.Sprintf(sqlh.schema.FindEffect, folder, title)
+	q := sqlh.schema.ExistsEffect(folder, title)
 	row := sqlh.db.QueryRowContext(ctx, q)
 	var result string
 	err := row.Scan(&result)
@@ -225,13 +217,7 @@ func (sqlh *SqlHandler) findEffect(folder, title string) error {
 func (sqlh *SqlHandler) SetFolder(folder string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	var query string
-	if folder == "" || folder == fyio.Dots {
-		query = sqlh.schema.Folder
-	} else {
-		query = fmt.Sprintf(sqlh.schema.ListEffects, folder)
-	}
-
+	query := sqlh.schema.SelectFolder(folder)
 	rows, err := sqlh.db.QueryContext(ctx, query)
 	if err != nil {
 		fyne.LogError("unable to execute search query", err)
@@ -279,7 +265,14 @@ func (sqlh *SqlHandler) Create(name string) error {
 		// }
 	}
 
-	for _, query := range sqlh.schema.Create {
+	for _, query := range sqlh.schema.DropSQL {
+		_, err := sqlh.db.ExecContext(ctx, query)
+		if err != nil {
+			fyne.LogError("CreateNewDatabase", err)
+			return err
+		}
+	}
+	for _, query := range sqlh.schema.CreateSQL {
 		_, err := sqlh.db.ExecContext(ctx, query)
 		if err != nil {
 			fyne.LogError("CreateNewDatabase", err)

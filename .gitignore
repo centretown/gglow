@@ -5,3 +5,5 @@ fyne-cross
 *.yaml
 *.db
 generated_*
+fyglow/fyglow
+cpglow/cpglow

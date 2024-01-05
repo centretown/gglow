@@ -1,8 +1,8 @@
 package fyui
 
 import (
+	"gglow/fyio"
 	"gglow/fyresource"
-	"gglow/iohandler"
 	"gglow/resources"
 	"gglow/settings"
 
@@ -19,7 +19,7 @@ type Ui struct {
 	window      fyne.Window
 	app         fyne.App
 	preferences fyne.Preferences
-	effect      iohandler.EffectIoHandler
+	effect      *fyio.EffectIo
 	theme       *fyresource.GlowTheme
 	sourceStrip binding.Untyped
 
@@ -44,7 +44,7 @@ type Ui struct {
 	isMobile      bool
 }
 
-func NewUi(app fyne.App, window fyne.Window, effect iohandler.EffectIoHandler, theme *fyresource.GlowTheme) *Ui {
+func NewUi(app fyne.App, window fyne.Window, effect *fyio.EffectIo, theme *fyresource.GlowTheme) *Ui {
 	ui := &Ui{
 		window:      window,
 		app:         app,

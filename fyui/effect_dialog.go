@@ -1,8 +1,8 @@
 package fyui
 
 import (
+	"gglow/fyio"
 	"gglow/glow"
-	"gglow/iohandler"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -17,12 +17,12 @@ import (
 type EffectDialog struct {
 	*dialog.CustomDialog
 	title  binding.String
-	effect iohandler.EffectIoHandler
+	effect *fyio.EffectIo
 
 	applyButton *widget.Button
 }
 
-func NewEffectDialog(effect iohandler.EffectIoHandler, window fyne.Window) (ef *EffectDialog) {
+func NewEffectDialog(effect *fyio.EffectIo, window fyne.Window) (ef *EffectDialog) {
 	ef = &EffectDialog{
 		effect: effect,
 		title:  binding.NewString(),
@@ -60,8 +60,7 @@ func (ef *EffectDialog) apply() {
 	}
 
 	//refresh the current folder
-	ef.effect.LoadFolder(ef.effect.FolderName())
-
+	ef.effect.LoadEffect(ef.effect.FolderName())
 	err = ef.effect.LoadEffect(title)
 	if err != nil {
 		fyne.LogError(title, err)

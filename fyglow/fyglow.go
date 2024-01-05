@@ -50,8 +50,7 @@ func main() {
 	app.Settings().SetTheme(theme)
 
 	window := app.NewWindow(resources.GlowLabel.String())
-	effect := fyio.NewEffectIo(storageHandler, preferences, accessor)
-
+	effect := fyio.NewEffect(storageHandler, preferences, accessor)
 	ui := fyui.NewUi(app, window, effect, theme)
 
 	window.SetCloseIntercept(func() {

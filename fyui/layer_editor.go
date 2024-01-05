@@ -3,7 +3,6 @@ package fyui
 import (
 	"gglow/fyio"
 	"gglow/glow"
-	"gglow/iohandler"
 	"gglow/resources"
 	"strconv"
 
@@ -16,7 +15,7 @@ import (
 
 type LayerEditor struct {
 	*fyne.Container
-	effect iohandler.EffectIoHandler
+	effect *fyio.EffectIo
 	layer  *glow.Layer
 	fields *fyio.LayerFields
 	window fyne.Window
@@ -46,7 +45,7 @@ type LayerEditor struct {
 	isEditing bool
 }
 
-func NewLayerEditor(effect iohandler.EffectIoHandler, window fyne.Window,
+func NewLayerEditor(effect *fyio.EffectIo, window fyne.Window,
 	sharedTools *SharedTools) *LayerEditor {
 
 	le := &LayerEditor{

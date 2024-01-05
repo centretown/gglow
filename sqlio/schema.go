@@ -1,46 +1,73 @@
 package sqlio
 
-type Schema struct {
-	Version      string
-	Create       []string
-	Folder       string
-	ListEffects  string
-	ReadEffect   string
-	FindEffect   string
-	InsertEffect string
-	UpdateEffect string
-}
-
-var SchemaMap = make(map[string]*Schema)
-var Schemas = []*Schema{
-	{Version: "0.1",
-		Create: []string{
-			"DROP VIEW IF EXISTS palettes;",
-			"DROP VIEW IF EXISTS folders;",
-			"DROP TABLE IF EXISTS effects;",
-			"DROP TABLE IF EXISTS colors;",
-			`CREATE TABLE effects (
-folder VARCHAR(80) NOT NULL,
-title VARCHAR(80) NOT NULL,
-effect TEXT,
-PRIMARY KEY (folder, title)
-);`,
-			"CREATE INDEX effect_title ON effects (title);",
-			`CREATE VIEW folders(folder, title) AS
-SELECT folder, title
-FROM effects
-WHERE title = '..'
-ORDER BY folder;
-`,
-		},
-		Folder:       "SELECT folder FROM folders;",
-		ListEffects:  "SELECT title FROM effects WHERE folder = '%s' ORDER BY folder;",
-		ReadEffect:   "SELECT * FROM effects WHERE folder = '%s' AND title = '%s'",
-		FindEffect:   "SELECT title FROM effects WHERE folder = '%s' AND title = '%s';",
-		UpdateEffect: "UPDATE effects SET effect = '%s' WHERE folder = '%s' AND title = '%s'",
-		InsertEffect: "INSERT INTO effects (folder, title, effect) VALUES('%s', '%s', '%s')",
-	},
-}
+import (
+	"fmt"
+	"gglow/iohandler"
+)
 
 func init() {
+	for _, schema := range Schemas {
+		schema.SelectFolder = schema.setFolder
+		schema.WriteEffect = schema.writeEffect
+		schema.ExistsEffect = schema.existsEffect
+		schema.ReadEffect = schema.readEffect
+
+		// additions and overrides
+		switch schema.Version.Major {
+		case 1:
+		}
+		SchemaMap[schema.Version.ToUint64()] = schema
+	}
+}
+
+type Schema struct {
+	Version   iohandler.Version
+	AlterSQL  []string
+	CreateSQL []string
+	DropSQL   []string
+
+	SelectFolder func(folder string) (query string)
+	ExistsEffect func(folder, title string) (query string)
+	ReadEffect   func(folder, title string) (query string)
+	WriteEffect  func(update bool, items ...string) (query string)
+
+	selectFolderSQL string
+	listEffectsSQL  string
+	readEffectSQL   string
+	existsEffectSQL string
+	insertEffectSQL string
+	updateEffectSQL string
+}
+
+var SchemaMap = make(map[uint64]*Schema)
+var Schemas = []*Schema{
+	schema_v0,
+	schema_v1,
+}
+
+func (schema *Schema) setFolder(folder string) string {
+	if folder == "" || folder == ".." {
+		return schema.selectFolderSQL
+	}
+	return fmt.Sprintf(schema.listEffectsSQL, folder)
+}
+
+func (schema *Schema) writeEffect(update bool, items ...string) string {
+	if len(items) < 3 {
+		return ""
+	}
+	folder, title, source := items[0], items[1], items[2]
+	if update {
+		return fmt.Sprintf(schema.updateEffectSQL, source, folder, title)
+	}
+	return fmt.Sprintf(schema.insertEffectSQL,
+		folder, title, source)
+}
+
+func (schema *Schema) existsEffect(folder, title string) string {
+	return fmt.Sprintf(schema.existsEffectSQL, folder, title)
+}
+
+func (schema *Schema) readEffect(folder, title string) string {
+	return fmt.Sprintf(schema.readEffectSQL, folder, title)
 }

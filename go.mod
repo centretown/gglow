@@ -6,6 +6,7 @@ require (
 	fyne.io/fyne/v2 v2.4.1
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
 	github.com/go-sql-driver/mysql v1.7.1
+	github.com/google/uuid v1.5.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.18
 	gopkg.in/yaml.v2 v2.4.0
@@ -25,7 +26,6 @@ require (
 	github.com/go-text/render v0.0.0-20230619120952-35bccb6164b8 // indirect
 	github.com/go-text/typesetting v0.0.0-20230616162802-9c17dd34aa4a // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/google/uuid v1.5.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect

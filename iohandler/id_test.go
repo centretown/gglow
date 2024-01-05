@@ -14,7 +14,7 @@ func TestUuid(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		t.Log(id.String())
+		t.Log(id.String(), len(id.String()))
 		m[id.String()] = false
 	}
 

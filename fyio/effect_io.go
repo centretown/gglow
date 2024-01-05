@@ -4,40 +4,49 @@ import (
 	"fmt"
 	"gglow/glow"
 	"gglow/iohandler"
+	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
 )
 
-var _ iohandler.EffectIoHandler = (*EffectIo)(nil)
-
-const Dots = ".."
-
 type EffectIo struct {
 	iohandler.IoHandler
-	config           *iohandler.Accessor
-	Frame            binding.Untyped
-	Layer            binding.Untyped
-	LayerSummaryList binding.StringList
-	effectName       string
-	folderName       string
-	layerIndex       int
-	hasChanged       binding.Bool
-	isActive         bool
-	saveActions      []func(*glow.Frame)
+
+	config *iohandler.Accessor
+	frame  *glow.Frame
+	layer  *glow.Layer
+
+	folderName string
+	effectName string
+	layerIndex int
+
+	folderWatch binding.Int
+	frameWatch  binding.Int
+	layerWatch  binding.Int
+	hasChanged  binding.Bool
+	summaryList []string
+
+	isActive    bool
+	saveActions []func(*glow.Frame)
 }
 
-func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *iohandler.Accessor) *EffectIo {
+func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, config *iohandler.Accessor) *EffectIo {
 
 	eff := &EffectIo{
-		IoHandler:        io,
-		Frame:            binding.NewUntyped(),
-		Layer:            binding.NewUntyped(),
-		LayerSummaryList: binding.NewStringList(),
-		hasChanged:       binding.NewBool(),
-		saveActions:      make([]func(*glow.Frame), 0),
-		config:           config,
+		IoHandler:   io,
+		folderWatch: binding.NewInt(),
+		frameWatch:  binding.NewInt(),
+		layerWatch:  binding.NewInt(),
+
+		hasChanged:  binding.NewBool(),
+		saveActions: make([]func(*glow.Frame), 0),
+		summaryList: make([]string, 0),
+		config:      config,
 	}
+
+	eff.frame = glow.NewFrame()
+	eff.layer = &eff.frame.Layers[0]
 
 	folder := config.Folder
 	effect := config.Effect
@@ -47,22 +56,12 @@ func NewEffectIo(io iohandler.IoHandler, preferences fyne.Preferences, config *i
 	}
 	if len(effect) > 0 {
 		eff.LoadEffect(effect)
-	} else {
-		eff.setFrame(glow.NewFrame(), 0)
 	}
-
-	eff.AddFrameListener(binding.NewDataListener(eff.onChangeFrame))
 	return eff
 }
 
-func (eff *EffectIo) LoadFolder(folder string) []string {
-	keys, _ := eff.IoHandler.SetFolder(folder)
-	return keys
-}
-
 func (eff *EffectIo) SummaryList() []string {
-	l, _ := eff.LayerSummaryList.Get()
-	return l
+	return eff.summaryList
 }
 
 func (eff *EffectIo) LayerIndex() int {
@@ -73,45 +72,91 @@ func (eff *EffectIo) SetActive() {
 	eff.isActive = true
 }
 
-func (eff *EffectIo) setFrame(frame *glow.Frame, layerIndex int) {
-	eff.Frame.Set(frame)
-	eff.SetCurrentLayer(layerIndex)
-	eff.SetUnchanged()
+func (eff *EffectIo) alert(x binding.Int) {
+	a, _ := x.Get()
+	x.Set(a + 1)
+}
+
+func (eff *EffectIo) alertFolder() {
+	eff.alert(eff.folderWatch)
+}
+
+func (eff *EffectIo) LoadFolder(folder string) []string {
+	ls, err := eff.IoHandler.SetFolder(folder)
+	if err != nil {
+		fyne.LogError("loadfolder", err)
+		return ls
+	}
+	eff.alertFolder()
+	return ls
+}
+
+func (eff *EffectIo) alertFrame() {
+	eff.alert(eff.frameWatch)
+}
+
+func (eff *EffectIo) alertLayer() {
+	eff.alert(eff.layerWatch)
 }
 
 func (eff *EffectIo) GetFrame() *glow.Frame {
-	f, _ := eff.Frame.Get()
-	return f.(*glow.Frame)
+	return eff.frame
+}
+
+func (eff *EffectIo) setFrame(frame *glow.Frame, layerIndex int) {
+	eff.frame = frame
+
+	summaries := make([]string, 0, len(frame.Layers))
+	for i, layer := range frame.Layers {
+		summaries = append(summaries, SummarizeLayer(&layer, i+1))
+	}
+	eff.summaryList = summaries
+
+	eff.setLayer(layerIndex)
+	eff.alertFrame()
+	eff.alertLayer()
+	eff.SetUnchanged()
+}
+
+func (eff *EffectIo) setLayer(index int) {
+	lCount := len(eff.frame.Layers)
+	if lCount == 0 {
+		fyne.LogError("setLayer", fmt.Errorf("no Layers in frame"))
+		os.Exit(1)
+		return
+	}
+
+	if index >= lCount {
+		index = lCount - 1
+	}
+	eff.layerIndex = index
+	eff.layer = &eff.frame.Layers[index]
 }
 
 func (eff *EffectIo) SetCurrentLayer(i int) {
-	frame := eff.GetFrame()
-	var layer *glow.Layer
-	if i < len(frame.Layers) {
-		eff.layerIndex = i
-		layer = &frame.Layers[i]
-	} else {
-		eff.layerIndex = 0
-		layer = &glow.Layer{}
-	}
-	eff.Layer.Set(layer)
+	eff.setLayer(i)
+	eff.alertLayer()
 }
 
 func (eff *EffectIo) GetCurrentLayer() *glow.Layer {
-	layer, _ := eff.Layer.Get()
-	return layer.(*glow.Layer)
+	return eff.layer
 }
 
-func (eff *EffectIo) AddFrameListener(listener interface{}) {
-	eff.Frame.AddListener(listener.(binding.DataListener))
+func (eff *EffectIo) AddFolderListener(listener binding.DataListener) {
+	eff.folderWatch.AddListener(listener)
+}
+func (eff *EffectIo) AddFrameListener(listener binding.DataListener) {
+	eff.frameWatch.AddListener(listener)
+}
+func (eff *EffectIo) AddLayerListener(listener binding.DataListener) {
+	eff.layerWatch.AddListener(listener)
+}
+func (eff *EffectIo) AddChangeListener(listener binding.DataListener) {
+	eff.hasChanged.AddListener(listener)
 }
 
-func (eff *EffectIo) AddLayer(*glow.Layer) (err error)  { return }
-func (eff *EffectIo) AddEffect(*glow.Frame) (err error) { return }
-
-func (eff *EffectIo) AddLayerListener(listener interface{}) {
-	eff.Layer.AddListener(listener.(binding.DataListener))
-}
+// func (eff *EffectIo) AddLayer(*glow.Layer) (err error)  { return }
+// func (eff *EffectIo) AddEffect(*glow.Frame) (err error) { return }
 
 func (eff *EffectIo) SetChanged() {
 	if !eff.isActive {
@@ -122,10 +167,6 @@ func (eff *EffectIo) SetChanged() {
 
 func (eff *EffectIo) SetUnchanged() {
 	eff.hasChanged.Set(false)
-}
-
-func (eff *EffectIo) AddChangeListener(listener interface{}) {
-	eff.hasChanged.AddListener(listener.(binding.DataListener))
 }
 
 func (eff *EffectIo) HasChanged() bool {
@@ -148,25 +189,23 @@ func (eff *EffectIo) LoadEffect(title string) error {
 }
 
 func (eff *EffectIo) SaveEffect() error {
-	//apply changes
-	frame := eff.GetFrame()
-	for _, saveAction := range eff.saveActions {
-		saveAction(frame)
-	}
-	current := *frame
-	eff.Frame.Set(&current)
-
-	title, frame := eff.EffectName(), eff.GetFrame()
+	title := eff.EffectName()
 	err := ValidateEffectName(title)
 	if err != nil {
 		return err
 	}
 
-	err = eff.IoHandler.WriteEffect(title, frame)
+	//apply changes
+	for _, saveAction := range eff.saveActions {
+		saveAction(eff.frame)
+	}
+
+	err = eff.IoHandler.WriteEffect(title, eff.frame)
 	if err != nil {
 		return err
 	}
 
+	eff.setFrame(eff.frame, eff.layerIndex)
 	eff.SetUnchanged()
 	return err
 }
@@ -177,14 +216,4 @@ func (eff *EffectIo) OnSave(f func(*glow.Frame)) {
 
 func (eff *EffectIo) EffectName() string {
 	return eff.effectName
-}
-
-func (eff *EffectIo) onChangeFrame() {
-	fmt.Printf("onChangeFrame")
-	frame := eff.GetFrame()
-	summaries := make([]string, 0, len(frame.Layers))
-	for i, layer := range frame.Layers {
-		summaries = append(summaries, SummarizeLayer(&layer, i+1))
-	}
-	eff.LayerSummaryList.Set(summaries)
 }

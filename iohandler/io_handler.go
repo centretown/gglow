@@ -2,6 +2,8 @@ package iohandler
 
 import "gglow/glow"
 
+const Dots = ".."
+
 type OutHandler interface {
 	Create(name string) error
 	WriteEffect(title string, frame *glow.Frame) error
