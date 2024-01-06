@@ -4,13 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"gglow/fyio"
 	"gglow/glow"
 	"gglow/iohandler"
 	"gglow/resources"
 	"time"
 
-	"fyne.io/fyne/v2"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
@@ -42,7 +40,7 @@ func NewSqlHandler(driver, dsn string) (*SqlHandler, error) {
 	var err error
 	sqlh.db, err = sql.Open(driver, dsn)
 	if err != nil {
-		fyne.LogError(resources.MsgParseEffectPath.Format(dsn), err)
+		iohandler.LogError(resources.MsgParseEffectPath.Format(dsn), err)
 		return nil, err
 	}
 	return sqlh, nil
@@ -70,7 +68,7 @@ func (sqlh *SqlHandler) Ping() error {
 
 	err := sqlh.db.PingContext(ctx)
 	if err != nil {
-		fyne.LogError("unable to connect to database", err)
+		iohandler.LogError("unable to connect to database", err)
 	}
 	return err
 }
@@ -84,14 +82,14 @@ func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 	row := sqlh.db.QueryRowContext(ctx, q)
 	err := row.Scan(&folder, &name, &source)
 	if err != nil {
-		fyne.LogError("unable to query database", err)
+		iohandler.LogError("unable to query database", err)
 		return nil, err
 	}
 
 	frame := &glow.Frame{}
 	err = sqlh.serializer.Scan(source, frame)
 	if err != nil {
-		fyne.LogError("unable to decode frame", err)
+		iohandler.LogError("unable to decode frame", err)
 		return nil, err
 	}
 
@@ -110,7 +108,7 @@ func (sqlh *SqlHandler) WriteFolder(folder string) error {
 }
 
 func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
-	err := fyio.ValidateFolderName(title)
+	err := iohandler.ValidateFolderName(title)
 	if err != nil {
 		return err
 	}
@@ -119,7 +117,7 @@ func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
 	return err
 }
 func (sqlh *SqlHandler) ValidateNewEffectName(title string) error {
-	err := fyio.ValidateEffectName(title)
+	err := iohandler.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}
@@ -182,7 +180,7 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 	if frame != nil {
 		source, err = sqlh.serializer.Format(frame)
 		if err != nil {
-			fyne.LogError("unable to encode frame", err)
+			iohandler.LogError("unable to encode frame", err)
 			return err
 		}
 		_, update = sqlh.keyMap[title]
@@ -191,7 +189,7 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 	query = sqlh.schema.WriteEffect(update, sqlh.folder, title, string(source))
 	_, err = sqlh.db.ExecContext(ctx, query)
 	if err != nil {
-		fyne.LogError("unable to execute query: "+query, err)
+		iohandler.LogError("unable to execute query: "+query, err)
 		return err
 	}
 
@@ -220,7 +218,7 @@ func (sqlh *SqlHandler) SetFolder(folder string) ([]string, error) {
 	query := sqlh.schema.SelectFolder(folder)
 	rows, err := sqlh.db.QueryContext(ctx, query)
 	if err != nil {
-		fyne.LogError("unable to execute search query", err)
+		iohandler.LogError("unable to execute search query", err)
 		return sqlh.keyList, err
 	}
 	defer rows.Close()
@@ -254,13 +252,13 @@ func (sqlh *SqlHandler) Create(name string) error {
 		// query := fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s;", name)
 		// _, err := sqlh.db.ExecContext(ctx, query)
 		// if err != nil {
-		// 	fyne.LogError("CreateNewDatabase", err)
+		// 	iohandler.LogError("CreateNewDatabase", err)
 		// 	return err
 		// }
 		// query = fmt.Sprintf("USE %s;", name)
 		// _, err = sqlh.db.ExecContext(ctx, query)
 		// if err != nil {
-		// 	fyne.LogError("USE", err)
+		// 	iohandler.LogError("USE", err)
 		// 	return err
 		// }
 	}
@@ -268,14 +266,14 @@ func (sqlh *SqlHandler) Create(name string) error {
 	for _, query := range sqlh.schema.DropSQL {
 		_, err := sqlh.db.ExecContext(ctx, query)
 		if err != nil {
-			fyne.LogError("CreateNewDatabase", err)
+			iohandler.LogError("CreateNewDatabase", err)
 			return err
 		}
 	}
 	for _, query := range sqlh.schema.CreateSQL {
 		_, err := sqlh.db.ExecContext(ctx, query)
 		if err != nil {
-			fyne.LogError("CreateNewDatabase", err)
+			iohandler.LogError("CreateNewDatabase", err)
 			return err
 		}
 	}

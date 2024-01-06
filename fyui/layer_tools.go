@@ -8,30 +8,18 @@ import (
 )
 
 type LayerTools struct {
-	InsertButton *ButtonItem
-	RemoveButton *ButtonItem
+	*widget.Toolbar
 }
 
 func NewLayerTools(effect *fyio.EffectIo) *LayerTools {
-	lt := &LayerTools{}
-
-	lt.InsertButton = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.ContentAddIcon(), lt.add))
-	lt.RemoveButton = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.ContentRemoveIcon(), lt.remove))
-	return lt
-}
-
-func (lt *LayerTools) Items() (items []widget.ToolbarItem) {
-	items = []widget.ToolbarItem{
-		lt.InsertButton,
-		lt.RemoveButton,
+	lt := &LayerTools{
+		Toolbar: widget.NewToolbar(),
 	}
-	return
-}
 
-func (lt *LayerTools) add() {
-}
+	lt.Toolbar.Append(NewButtonItem(
+		widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {})))
 
-func (lt *LayerTools) remove() {
+	lt.Toolbar.Append(NewButtonItem(
+		widget.NewButtonWithIcon("", theme.ContentRemoveIcon(), func() {})))
+	return lt
 }

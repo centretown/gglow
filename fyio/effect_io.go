@@ -46,7 +46,7 @@ func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, config *ioh
 	}
 
 	eff.frame = glow.NewFrame()
-	eff.layer = &eff.frame.Layers[0]
+	eff.layer = eff.frame.Layers[0]
 
 	folder := config.Folder
 	effect := config.Effect
@@ -87,7 +87,6 @@ func (eff *EffectIo) LoadFolder(folder string) []string {
 		fyne.LogError("loadfolder", err)
 		return ls
 	}
-	eff.alertFolder()
 	return ls
 }
 
@@ -108,7 +107,7 @@ func (eff *EffectIo) setFrame(frame *glow.Frame, layerIndex int) {
 
 	summaries := make([]string, 0, len(frame.Layers))
 	for i, layer := range frame.Layers {
-		summaries = append(summaries, SummarizeLayer(&layer, i+1))
+		summaries = append(summaries, SummarizeLayer(layer, i+1))
 	}
 	eff.summaryList = summaries
 
@@ -130,7 +129,7 @@ func (eff *EffectIo) setLayer(index int) {
 		index = lCount - 1
 	}
 	eff.layerIndex = index
-	eff.layer = &eff.frame.Layers[index]
+	eff.layer = eff.frame.Layers[index]
 }
 
 func (eff *EffectIo) SetCurrentLayer(i int) {
@@ -155,8 +154,37 @@ func (eff *EffectIo) AddChangeListener(listener binding.DataListener) {
 	eff.hasChanged.AddListener(listener)
 }
 
-// func (eff *EffectIo) AddLayer(*glow.Layer) (err error)  { return }
-// func (eff *EffectIo) AddEffect(*glow.Frame) (err error) { return }
+func (eff *EffectIo) AddLayer(*glow.Layer) (err error) {
+	eff.frame.Layers = append(eff.frame.Layers, glow.NewLayer())
+	return
+}
+
+func (eff *EffectIo) AddFolder(title string) (err error) {
+	err = eff.CreateNewFolder(title)
+	if err != nil {
+		return
+	}
+
+	_, err = eff.SetFolder(title)
+	if err != nil {
+		return
+	}
+
+	eff.alertFolder()
+	return
+}
+
+func (eff *EffectIo) AddEffect(title string, frame *glow.Frame) (err error) {
+	err = eff.CreateNewEffect(title, frame)
+	if err != nil {
+		fyne.LogError(title, err)
+	}
+	eff.effectName = title
+	eff.frame = frame
+	eff.alertFolder()
+	eff.alertFrame()
+	return
+}
 
 func (eff *EffectIo) SetChanged() {
 	if !eff.isActive {
@@ -190,7 +218,7 @@ func (eff *EffectIo) LoadEffect(title string) error {
 
 func (eff *EffectIo) SaveEffect() error {
 	title := eff.EffectName()
-	err := ValidateEffectName(title)
+	err := iohandler.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}

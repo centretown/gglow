@@ -29,11 +29,8 @@ func NewEffectSelect(effect *fyio.EffectIo) *widget.Select {
 	}))
 
 	effect.AddFolderListener(binding.NewDataListener(func() {
-		// fmt.Println("SelelectFolderListener")
-		// fs.auto = true
-		// fs.Select.SetOptions(effect.ListCurrentFolder())
-		// fs.auto = true
-		// fs.Select.SetSelected(effect.EffectName())
+		ls := fs.effect.ListCurrentFolder()
+		fs.Select.SetOptions(ls)
 	}))
 	return fs.Select
 }

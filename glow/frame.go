@@ -13,20 +13,50 @@ const (
 )
 
 type Frame struct {
-	Length   uint16  `yaml:"length" json:"length"`
-	Rows     uint16  `yaml:"rows" json:"rows"`
-	Interval uint32  `yaml:"interval" json:"interval"`
-	Layers   []Layer `yaml:"layers" json:"layers"`
+	Length   uint16   `yaml:"length" json:"length"`
+	Rows     uint16   `yaml:"rows" json:"rows"`
+	Interval uint32   `yaml:"interval" json:"interval"`
+	Layers   []*Layer `yaml:"layers" json:"layers"`
 }
 
 func NewFrame() (frame *Frame) {
 	frame = &Frame{}
 	frame.Interval = 48
-	var layer Layer
-	layer.Chroma.Colors = append(layer.Chroma.Colors,
-		HSV{Hue: 0, Saturation: 0, Value: 100})
-	frame.Layers = append(frame.Layers, layer)
+	frame.Layers = append(frame.Layers, NewLayer())
 	return
+}
+
+func (frame *Frame) AppendLayer(layer *Layer) {
+	frame.Layers = append(frame.Layers, layer)
+}
+
+func (frame *Frame) InsertLayer(position int, layer *Layer) {
+	if position < 0 {
+		position = 0
+	}
+	if layer == nil {
+		layer = &Layer{}
+	}
+
+	layerLength := len(frame.Layers)
+
+	if position >= layerLength {
+		frame.Layers = append(frame.Layers, layer)
+		return
+	}
+
+	ll := make([]*Layer, 0, layerLength+1)
+	i := 0
+	for i < layerLength {
+		if position == i {
+			position = -1
+			ll = append(ll, layer)
+			continue
+		}
+		ll = append(ll, frame.Layers[i])
+		i++
+	}
+	frame.Layers = ll
 }
 
 func (frame *Frame) updateLayers() {
@@ -62,7 +92,7 @@ func (frame *Frame) Spin(light Light) {
 	}
 }
 
-func (frame *Frame) AddLayers(layers ...Layer) {
+func (frame *Frame) AddLayers(layers ...*Layer) {
 	frame.Layers = append(frame.Layers, layers...)
 	frame.updateLayers()
 }

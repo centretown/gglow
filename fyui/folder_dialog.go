@@ -47,12 +47,12 @@ func NewFolderDialog(effect *fyio.EffectIo, window fyne.Window) *FolderDialog {
 }
 
 func (fd *FolderDialog) apply() {
+	fd.CustomDialog.Hide()
 	title, _ := fd.title.Get()
-	err := fd.effect.CreateNewFolder(title)
+	err := fd.effect.AddFolder(title)
 	if err != nil {
 		fyne.LogError(title, err)
 	}
-	fd.CustomDialog.Hide()
 }
 
 func (fd *FolderDialog) validateFolderName(s string) error {

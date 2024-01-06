@@ -4,73 +4,47 @@ import (
 	"gglow/fyio"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
 type FrameTools struct {
-	frameMenu *ButtonItem
-
-	newFrame     *ButtonItem
-	newFolder    *ButtonItem
-	deleteFrame  *ButtonItem
-	createDialog *EffectDialog
-	folderDialog *FolderDialog
-
-	toolBar *widget.Toolbar
-	popUp   *widget.PopUp
-	effect  *fyio.EffectIo
+	*widget.Toolbar
 }
 
 func NewFrameTools(effect *fyio.EffectIo, window fyne.Window) *FrameTools {
 	ft := &FrameTools{
-		effect: effect,
+		Toolbar: widget.NewToolbar(),
 	}
 
-	ft.createDialog = NewEffectDialog(effect, window)
-	ft.folderDialog = NewFolderDialog(effect, window)
-
-	ft.frameMenu = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.DocumentIcon(), ft.menu))
-
-	ft.newFolder = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.FolderNewIcon(), func() {
-			ft.popUp.Hide()
-			ft.folderDialog.Start()
+	saveButton := NewButtonItem(
+		widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), func() {
+			effect.SaveEffect()
 		}))
-	ft.newFrame = NewButtonItem(
+	ft.Toolbar.Append(saveButton)
+	effect.AddChangeListener(binding.NewDataListener(func() {
+		if effect.HasChanged() {
+			saveButton.Enable()
+			return
+		}
+		saveButton.Disable()
+	}))
+
+	createDialog := NewEffectDialog(effect, window)
+	ft.Toolbar.Append(NewButtonItem(
 		widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
-			ft.popUp.Hide()
-			ft.createDialog.Start()
-		}))
-	ft.deleteFrame = NewButtonItem(
-		widget.NewButtonWithIcon("", theme.DeleteIcon(), ft.delete))
-	ft.toolBar = widget.NewToolbar(
-		ft.newFolder,
-		ft.newFrame,
-		ft.deleteFrame,
-	)
+			createDialog.Start()
+		})))
 
-	ft.popUp = widget.NewPopUp(ft.toolBar, window.Canvas())
+	folderDialog := NewFolderDialog(effect, window)
+	ft.Toolbar.Append(NewButtonItem(
+		widget.NewButtonWithIcon("", theme.FolderNewIcon(), func() {
+			folderDialog.Start()
+		})))
+
+	ft.Toolbar.Append(NewButtonItem(
+		widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {})))
+
 	return ft
-}
-
-func (ft *FrameTools) Items() (items []widget.ToolbarItem) {
-	items = []widget.ToolbarItem{
-		ft.frameMenu,
-	}
-	return
-}
-
-func (ft *FrameTools) delete() {
-	ft.popUp.Hide()
-}
-
-func (ft *FrameTools) menu() {
-	pos := fyne.Position{
-		X: -ft.popUp.MinSize().Width/2 + ft.frameMenu.Button.MinSize().Width/2,
-		Y: -ft.popUp.MinSize().Height,
-	}
-
-	ft.popUp.ShowAtRelativePosition(pos, ft.frameMenu.Button)
 }

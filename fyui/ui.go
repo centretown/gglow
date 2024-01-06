@@ -31,8 +31,6 @@ type Ui struct {
 
 	effectSelect *widget.Select
 
-	toolbar *SharedTools
-
 	frameEditor *FrameEditor
 	layerEditor *LayerEditor
 
@@ -66,9 +64,8 @@ func (ui *Ui) OnExit() {
 
 func (ui *Ui) layoutContent() *fyne.Container {
 
-	toolsLayout := container.New(layout.NewCenterLayout(), ui.toolbar)
-	ui.editor = container.NewBorder(toolsLayout, nil, nil, nil,
-		container.NewBorder(ui.frameEditor.Container, nil, nil, nil, ui.layerEditor.Container))
+	ui.editor = container.NewBorder(ui.frameEditor.Container, nil, nil, nil,
+		ui.layerEditor.Container)
 
 	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
 	selectorMenu := container.NewBorder(nil, nil, menuButton, nil, ui.effectSelect)
@@ -117,10 +114,8 @@ func (ui *Ui) BuildContent() *fyne.Container {
 
 	ui.effectSelect = NewEffectSelect(ui.effect)
 
-	ui.toolbar = NewSharedTools(ui.effect)
-	ui.frameEditor = NewFrameEditor(ui.effect, ui.window, ui.toolbar)
-	ui.layerEditor = NewLayerEditor(ui.effect, ui.window, ui.toolbar)
-	ui.toolbar.Refresh()
+	ui.frameEditor = NewFrameEditor(ui.effect, ui.window)
+	ui.layerEditor = NewLayerEditor(ui.effect, ui.window)
 
 	ui.playContainer = container.NewBorder(ui.stripTools, nil, nil, nil, ui.strip)
 

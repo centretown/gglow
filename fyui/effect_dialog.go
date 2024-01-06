@@ -54,14 +54,7 @@ func (ef *EffectDialog) apply() {
 	title, _ := ef.title.Get()
 	frame := glow.NewFrame()
 	frame.Interval = uint32(RateBounds.OnVal)
-	err := ef.effect.CreateNewEffect(title, frame)
-	if err != nil {
-		fyne.LogError(title, err)
-	}
-
-	//refresh the current folder
-	ef.effect.LoadEffect(ef.effect.FolderName())
-	err = ef.effect.LoadEffect(title)
+	err := ef.effect.AddEffect(title, frame)
 	if err != nil {
 		fyne.LogError(title, err)
 	}

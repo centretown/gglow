@@ -19,6 +19,13 @@ type Layer struct {
 	last     uint16
 }
 
+func NewLayer() *Layer {
+	var layer Layer
+	layer.Chroma.Colors = append(layer.Chroma.Colors,
+		HSV{Hue: 0, Saturation: 100, Value: 100})
+	return &layer
+}
+
 func (layer *Layer) Setup(length, rows uint16,
 	grid *Grid, chroma *Chroma, hueShift int16,
 	scan uint16, begin uint16, end uint16) error {

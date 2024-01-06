@@ -20,12 +20,10 @@ type FrameEditor struct {
 	fields      *fyio.FrameFields
 	rateBounds  *IntEntryBounds
 	rateBox     *RangeIntBox
-	tools       *FrameTools
 	isEditing   bool
 }
 
-func NewFrameEditor(effect *fyio.EffectIo, window fyne.Window,
-	sharedTools *SharedTools) *FrameEditor {
+func NewFrameEditor(effect *fyio.EffectIo, window fyne.Window) *FrameEditor {
 
 	fe := &FrameEditor{
 		effect:      effect,
@@ -34,14 +32,13 @@ func NewFrameEditor(effect *fyio.EffectIo, window fyne.Window,
 		fields:      fyio.NewFrameFields(),
 	}
 
+	tools := container.NewCenter(NewFrameTools(effect, window))
 	fe.layerSelect = NewLayerSelect(fe.effect)
 	ratelabel := widget.NewLabel(resources.RateLabel.String())
 	fe.rateBox = NewRangeIntBox(fe.fields.Interval, fe.rateBounds)
 	frm := container.New(layout.NewFormLayout(), ratelabel, fe.rateBox.Container)
-	fe.Container = container.NewBorder(nil, fe.layerSelect, nil, nil, frm)
+	fe.Container = container.NewBorder(tools, fe.layerSelect, nil, nil, frm)
 
-	fe.tools = NewFrameTools(effect, window)
-	sharedTools.AddItems(fe.tools.Items()...)
 	effect.OnSave(fe.apply)
 
 	fe.fields.Interval.AddListener(binding.NewDataListener(func() {

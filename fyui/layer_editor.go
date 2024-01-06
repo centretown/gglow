@@ -45,8 +45,7 @@ type LayerEditor struct {
 	isEditing bool
 }
 
-func NewLayerEditor(effect *fyio.EffectIo, window fyne.Window,
-	sharedTools *SharedTools) *LayerEditor {
+func NewLayerEditor(effect *fyio.EffectIo, window fyne.Window) *LayerEditor {
 
 	le := &LayerEditor{
 		window: window,
@@ -69,14 +68,14 @@ func NewLayerEditor(effect *fyio.EffectIo, window fyne.Window,
 
 	form := le.createForm()
 	scroll := container.NewVScroll(form)
+	tools := container.NewCenter(NewLayerTools(effect))
 
-	le.Container = container.NewBorder(nil, nil, nil, nil, scroll)
+	le.Container = container.NewBorder(tools, nil, nil, nil, scroll)
 
 	le.effect.AddFrameListener(binding.NewDataListener(le.setFields))
 
 	le.effect.AddLayerListener(binding.NewDataListener(le.setFields))
 
-	sharedTools.AddItems(le.tools.Items()...)
 	effect.OnSave(le.apply)
 	return le
 }
@@ -218,7 +217,7 @@ func (le *LayerEditor) setFields() {
 
 func (le *LayerEditor) apply(frame *glow.Frame) {
 	index := le.effect.LayerIndex()
-	le.layer = &frame.Layers[index]
+	le.layer = frame.Layers[index]
 	le.setColors()
 	le.fields.ToLayer(le.layer)
 }

@@ -2,7 +2,6 @@ package storageio
 
 import (
 	"fmt"
-	"gglow/fyio"
 	"gglow/glow"
 	"gglow/iohandler"
 	"gglow/resources"
@@ -200,7 +199,7 @@ func (fh *StorageHandler) WriteFolder(folder string) error {
 	fh.folder = folder
 	fmt.Println(folder, "folder")
 	folder = strings.TrimSpace(folder)
-	err := fyio.ValidateFolderName(folder)
+	err := iohandler.ValidateFolderName(folder)
 	if err != nil {
 		return err
 	}
@@ -299,7 +298,7 @@ func (fh *StorageHandler) EffectName() string {
 }
 
 func (fh *StorageHandler) ValidateNewFolderName(title string) error {
-	err := fyio.ValidateFolderName(title)
+	err := iohandler.ValidateFolderName(title)
 	if err != nil {
 		return err
 	}
@@ -309,7 +308,7 @@ func (fh *StorageHandler) ValidateNewFolderName(title string) error {
 }
 
 func (fh *StorageHandler) ValidateNewEffectName(title string) error {
-	err := fyio.ValidateEffectName(title)
+	err := iohandler.ValidateEffectName(title)
 	if err != nil {
 		return err
 	}

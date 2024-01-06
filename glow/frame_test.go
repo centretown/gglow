@@ -25,7 +25,7 @@ func compareFrames(t *testing.T, frame, frame2 *Frame) {
 			frame.Interval, frame2.Interval)
 	}
 	for i := range frame.Layers {
-		compareLayers(t, &frame.Layers[i], &frame2.Layers[i])
+		compareLayers(t, frame.Layers[i], frame2.Layers[i])
 	}
 }
 
@@ -37,11 +37,11 @@ func TestFrameBasic(t *testing.T) {
 	grid.Orientation = Diagonal
 	grid.Origin = TopLeft
 
-	var layer1 Layer
+	layer1 := &Layer{}
 	layer1.Grid = grid
 	layer1.Chroma = chroma
 
-	var layer2 Layer
+	layer2 := &Layer{}
 	layer2.Grid = grid
 	layer2.Chroma = chroma
 	layer2.Scan = 4
