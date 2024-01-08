@@ -22,6 +22,7 @@ type InHandler interface {
 	IsFolder(key string) bool
 	ListCurrentFolder() []string
 	RootFolder() ([]string, error)
+	IsRootFolder() bool
 	OnExit() error
 }
 

@@ -1,6 +1,7 @@
 package fyui
 
 import (
+	"fmt"
 	"gglow/fyio"
 	"gglow/fyresource"
 	"gglow/resources"
@@ -29,7 +30,7 @@ type Ui struct {
 	stripTools    *fyne.Container
 	playContainer *fyne.Container
 
-	effectSelect *widget.Select
+	effectSelect *widget.SelectEntry
 
 	frameEditor *FrameEditor
 	layerEditor *LayerEditor
@@ -54,6 +55,16 @@ func NewUi(app fyne.App, window fyne.Window, effect *fyio.EffectIo, theme *fyres
 	}
 
 	window.SetContent(ui.BuildContent())
+
+	AddGlobalShortCut(window, &GlobalShortCut{Shortcut: CtrlS,
+		Apply: func() {
+			fmt.Println("SAVE")
+			effect.SaveEffect()
+		},
+		Enabled: effect.HasChanged})
+	// AddGlobalShortCut(window, &GlobalShortCut{Shortcut: Esc,
+	// 	Apply:   func() { fmt.Println("ESCAPE") },
+	// 	Enabled: func() bool { return true }})
 	return ui
 }
 

@@ -69,8 +69,10 @@ func NewLayerEditor(effect *fyio.EffectIo, window fyne.Window) *LayerEditor {
 	form := le.createForm()
 	scroll := container.NewVScroll(form)
 	tools := container.NewCenter(NewLayerTools(effect))
+	layerSelect := NewLayerSelect(effect)
+	fixed := container.NewVBox(tools, layerSelect)
 
-	le.Container = container.NewBorder(tools, nil, nil, nil, scroll)
+	le.Container = container.NewBorder(fixed, nil, nil, nil, scroll)
 
 	le.effect.AddFrameListener(binding.NewDataListener(le.setFields))
 

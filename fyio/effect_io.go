@@ -87,6 +87,7 @@ func (eff *EffectIo) LoadFolder(folder string) []string {
 		fyne.LogError("loadfolder", err)
 		return ls
 	}
+	eff.alertFolder()
 	return ls
 }
 
@@ -165,10 +166,10 @@ func (eff *EffectIo) AddFolder(title string) (err error) {
 		return
 	}
 
-	_, err = eff.SetFolder(title)
-	if err != nil {
-		return
-	}
+	// _, err = eff.SetFolder(title)
+	// if err != nil {
+	// 	return
+	// }
 
 	eff.alertFolder()
 	return
@@ -230,6 +231,7 @@ func (eff *EffectIo) SaveEffect() error {
 
 	err = eff.IoHandler.WriteEffect(title, eff.frame)
 	if err != nil {
+		fyne.LogError("WriteEffect", err)
 		return err
 	}
 

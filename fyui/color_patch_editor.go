@@ -71,11 +71,12 @@ func NewColorPatchEditor(source *ColorPatch,
 	pe.saturation.AddListener(binding.NewDataListener(pe.setSaturation))
 	pe.value.AddListener(binding.NewDataListener(pe.setValue))
 
-	revertButton := widget.NewButtonWithIcon("Cancel", theme.CancelIcon(), func() {
-		pe.CustomDialog.Hide()
-	})
-
-	pe.applyButton = widget.NewButtonWithIcon("Apply", theme.ConfirmIcon(), pe.apply)
+	revertButton := widget.NewButtonWithIcon(resources.CancelLabel.String(),
+		theme.CancelIcon(), func() {
+			pe.CustomDialog.Hide()
+		})
+	pe.applyButton = widget.NewButtonWithIcon(resources.ApplyLabel.String(),
+		theme.ConfirmIcon(), pe.apply)
 	vbox := container.NewVBox(
 		pe.patch,
 		hueBox,

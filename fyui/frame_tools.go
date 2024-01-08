@@ -23,28 +23,41 @@ func NewFrameTools(effect *fyio.EffectIo, window fyne.Window) *FrameTools {
 			effect.SaveEffect()
 		}))
 	ft.Toolbar.Append(saveButton)
-	effect.AddChangeListener(binding.NewDataListener(func() {
-		if effect.HasChanged() {
-			saveButton.Enable()
-			return
+
+	addEffect := NewEffectDialog(effect, window)
+	effectButton := NewButtonItem(
+		widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
+			addEffect.Start()
+		}))
+	ft.Toolbar.Append(effectButton)
+
+	effect.AddFolderListener(binding.NewDataListener(func() {
+		if effect.IsRootFolder() {
+			effectButton.Disable()
+		} else {
+			effectButton.Enable()
 		}
-		saveButton.Disable()
 	}))
 
-	createDialog := NewEffectDialog(effect, window)
 	ft.Toolbar.Append(NewButtonItem(
-		widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
-			createDialog.Start()
-		})))
+		widget.NewButtonWithIcon("", theme.ContentRemoveIcon(), func() {})))
 
-	folderDialog := NewFolderDialog(effect, window)
+	addFolder := NewFolderDialog(effect, window)
 	ft.Toolbar.Append(NewButtonItem(
 		widget.NewButtonWithIcon("", theme.FolderNewIcon(), func() {
-			folderDialog.Start()
+			addFolder.Start()
 		})))
 
 	ft.Toolbar.Append(NewButtonItem(
 		widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {})))
+
+	effect.AddChangeListener(binding.NewDataListener(func() {
+		if effect.HasChanged() {
+			saveButton.Enable()
+		} else {
+			saveButton.Disable()
+		}
+	}))
 
 	return ft
 }

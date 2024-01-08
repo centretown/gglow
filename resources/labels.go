@@ -39,7 +39,11 @@ const (
 	PasteLabel
 	EditLabel
 	PickerLabel
-	GridLayout
+	GridLayoutLabel
+	AddEffectLabel
+	AddFolderLabel
+	TitleLabel
+	FolderLabel
 )
 
 var entryLabels = []string{
@@ -55,7 +59,7 @@ var entryLabels = []string{
 	"Cancel", "Apply",
 	"Interval (ms)", "Override",
 	"Cut", "Copy", "Paste", "Edit", "Picker",
-	"Layout",
+	"Layout", "Add Effect", "Add Folder", "Title", "Folder",
 }
 
 func (id LabelID) String() string {

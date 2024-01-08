@@ -1,7 +1,7 @@
 package iohandler
 
-import "fmt"
+import "log"
 
 func LogError(cause string, err error) {
-	fmt.Printf("%s:\n\t%v\n", cause, err)
+	log.Printf("%s:\n\t%v\n", cause, err)
 }

@@ -1,49 +1,108 @@
 package fyui
 
 import (
+	"fmt"
 	"gglow/fyio"
+	"strings"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 )
 
 type EffectSelect struct {
-	*widget.Select
-	effect *fyio.EffectIo
-	auto   bool
+	*widget.SelectEntry
+	selection binding.String
+	// folderName binding.String
+	// effectName binding.String
+	effect  *fyio.EffectIo
+	lookup  map[string]string
+	options []string
+	// auto       bool
 }
 
-func NewEffectSelect(effect *fyio.EffectIo) *widget.Select {
+func NewEffectSelect(effect *fyio.EffectIo) *widget.SelectEntry {
 	fs := &EffectSelect{
-		effect: effect,
+		// folderName: binding.NewString(),
+		// effectName: binding.NewString(),
+		selection: binding.NewString(),
+		effect:    effect,
+		options:   make([]string, 0),
+		lookup:    make(map[string]string),
 	}
-	fs.Select = widget.NewSelect(effect.ListCurrentFolder(),
-		fs.onChange)
+	// fs.selection = binding.NewSprintf("%s/%s", fs.folderName, fs.effectName)
+	// fs.Select = widget.NewSelect(effect.ListCurrentFolder(),
+	// 	fs.onChange)
+
+	fs.SelectEntry = widget.NewSelectEntry(effect.ListCurrentFolder())
+	fs.selection.Set(effect.EffectName())
+	fs.Entry.Bind(fs.selection)
+	fs.SelectEntry.OnChanged = fs.onChange
 
 	effect.AddFrameListener(binding.NewDataListener(func() {
-		selected := fs.Select.Selected
-		if selected != effect.EffectName() {
-			fs.auto = true
-			fs.Select.SetSelected(effect.EffectName())
-		}
+		fmt.Println("AddFrameListener")
+		fs.selection.Set(effect.EffectName())
+		// fs.effectName.Set(effect.EffectName())
+		// selected := fs.SelectEntry.Selected
+		// if selected != effect.EffectName() {
+		// fs.auto = true
+		// fs.SelectEntry.SetSelected(effect.EffectName())
+		// }
 	}))
 
 	effect.AddFolderListener(binding.NewDataListener(func() {
-		ls := fs.effect.ListCurrentFolder()
-		fs.Select.SetOptions(ls)
+		fmt.Println("AddFolderListener")
+		fs.selection.Set(effect.FolderName())
+		fs.options = fs.effect.ListCurrentFolder()
+		fs.SelectEntry.SetOptions(fs.options)
+		fs.buildLookup()
+		// fs.selection.Set(effect.FolderName() + "/" + effect.EffectName())
 	}))
-	return fs.Select
+	return fs.SelectEntry
+}
+
+func (fs *EffectSelect) buildLookup() {
+	fs.lookup = make(map[string]string)
+	for _, s := range fs.options {
+		fs.lookup[strings.ToLower(s)] = s
+	}
 }
 
 func (fs *EffectSelect) onChange(title string) {
-	if fs.auto {
-		fs.auto = false
+	title, ok := fs.Parse(title)
+	if !ok {
 		return
 	}
+	fs.selection.Set(title)
+	fmt.Println("onChange")
+
 	if fs.effect.IsFolder(title) {
-		ls := fs.effect.LoadFolder(title)
-		fs.Select.SetOptions(ls)
+		fs.options = fs.effect.LoadFolder(title)
+		fs.buildLookup()
+		fs.SelectEntry.SetOptions(fs.options)
 	} else {
 		fs.effect.LoadEffect(title)
 	}
+}
+
+func (fs *EffectSelect) Parse(title string) (string, bool) {
+	length := len(title)
+	if length < 1 {
+		fs.SelectEntry.SetOptions(fs.options)
+		return title, false
+	}
+
+	search := strings.ToLower(title)
+	if result, ok := fs.lookup[search]; ok {
+		fmt.Println("result", result)
+		return result, ok
+	}
+
+	ls := make([]string, 0)
+	for _, s := range fs.options {
+		if strings.HasPrefix(strings.ToLower(s), search) {
+			ls = append(ls, s)
+		}
+	}
+	fs.SelectEntry.SetOptions(ls)
+	return title, false
 }

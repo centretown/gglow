@@ -62,6 +62,10 @@ func (sqlh *SqlHandler) RootFolder() ([]string, error) {
 	return sqlh.SetFolder(iohandler.Dots)
 }
 
+func (sqlh *SqlHandler) IsRootFolder() bool {
+	return sqlh.folder == iohandler.Dots
+}
+
 func (sqlh *SqlHandler) Ping() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -82,7 +86,7 @@ func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 	row := sqlh.db.QueryRowContext(ctx, q)
 	err := row.Scan(&folder, &name, &source)
 	if err != nil {
-		iohandler.LogError("unable to query database", err)
+		iohandler.LogError("sqlh.ReadEffect", err)
 		return nil, err
 	}
 
@@ -142,7 +146,13 @@ func (sqlh *SqlHandler) CreateNewFolder(folder string) error {
 	if err != nil {
 		return err
 	}
-	return sqlh.WriteFolder(folder)
+	err = sqlh.WriteFolder(folder)
+	if err != nil {
+		return err
+	}
+
+	_, err = sqlh.SetFolder(folder)
+	return err
 }
 
 func (sqlh *SqlHandler) isDuplicate(title string) error {
@@ -189,8 +199,7 @@ func (sqlh *SqlHandler) WriteEffect(title string, frame *glow.Frame) error {
 	query = sqlh.schema.WriteEffect(update, sqlh.folder, title, string(source))
 	_, err = sqlh.db.ExecContext(ctx, query)
 	if err != nil {
-		iohandler.LogError("unable to execute query: "+query, err)
-		return err
+		return fmt.Errorf("unable to execute query: '%s' %v", query, err)
 	}
 
 	if !update {
@@ -218,8 +227,7 @@ func (sqlh *SqlHandler) SetFolder(folder string) ([]string, error) {
 	query := sqlh.schema.SelectFolder(folder)
 	rows, err := sqlh.db.QueryContext(ctx, query)
 	if err != nil {
-		iohandler.LogError("unable to execute search query", err)
-		return sqlh.keyList, err
+		return sqlh.keyList, fmt.Errorf("sqlh.SetFolder '%s' %v", query, err)
 	}
 	defer rows.Close()
 

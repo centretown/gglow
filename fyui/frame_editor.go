@@ -15,29 +15,30 @@ import (
 
 type FrameEditor struct {
 	*fyne.Container
-	effect      *fyio.EffectIo
-	layerSelect *widget.Select
-	fields      *fyio.FrameFields
-	rateBounds  *IntEntryBounds
-	rateBox     *RangeIntBox
-	isEditing   bool
+	effect *fyio.EffectIo
+	// layerSelect *widget.Select
+	fields     *fyio.FrameFields
+	rateBounds *IntEntryBounds
+	rateBox    *RangeIntBox
+	isEditing  bool
 }
 
 func NewFrameEditor(effect *fyio.EffectIo, window fyne.Window) *FrameEditor {
 
 	fe := &FrameEditor{
-		effect:      effect,
-		layerSelect: NewLayerSelect(effect),
-		rateBounds:  RateBounds,
-		fields:      fyio.NewFrameFields(),
+		effect: effect,
+		// layerSelect: NewLayerSelect(effect),
+		rateBounds: RateBounds,
+		fields:     fyio.NewFrameFields(),
 	}
 
 	tools := container.NewCenter(NewFrameTools(effect, window))
-	fe.layerSelect = NewLayerSelect(fe.effect)
+	// fe.layerSelect = NewLayerSelect(fe.effect)
 	ratelabel := widget.NewLabel(resources.RateLabel.String())
 	fe.rateBox = NewRangeIntBox(fe.fields.Interval, fe.rateBounds)
 	frm := container.New(layout.NewFormLayout(), ratelabel, fe.rateBox.Container)
-	fe.Container = container.NewBorder(tools, fe.layerSelect, nil, nil, frm)
+	fe.Container = container.NewBorder(tools, nil, nil, nil, frm)
+	// fe.Container = container.NewBorder(tools, fe.layerSelect, nil, nil, frm)
 
 	effect.OnSave(fe.apply)
 

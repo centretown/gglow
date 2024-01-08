@@ -1,7 +1,9 @@
 package fyui
 
 import (
+	"fmt"
 	"gglow/fyio"
+	"gglow/resources"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -26,7 +28,7 @@ func NewFolderDialog(effect *fyio.EffectIo, window fyne.Window) *FolderDialog {
 		title:  binding.NewString(),
 	}
 
-	nameLabel := widget.NewLabel("Folder")
+	nameLabel := widget.NewLabel(resources.FolderLabel.String())
 	nameEntry := widget.NewEntryWithData(fd.title)
 	nameEntry.Validator = validation.NewAllStrings(fd.validateFolderName)
 
@@ -34,21 +36,29 @@ func NewFolderDialog(effect *fyio.EffectIo, window fyne.Window) *FolderDialog {
 	frm := container.New(layout.NewFormLayout(),
 		nameLabel, nameEntry, sep, sep)
 
-	fd.CustomDialog = dialog.NewCustomWithoutButtons("Add Folder", frm, window)
-	fd.applyButton = widget.NewButtonWithIcon("Apply", theme.ConfirmIcon(), fd.apply)
+	fd.CustomDialog = dialog.NewCustomWithoutButtons(resources.AddFolderLabel.String(),
+		frm, window)
+	fd.applyButton = widget.NewButtonWithIcon(resources.ApplyLabel.String(),
+		theme.ConfirmIcon(), fd.Apply)
 	fd.applyButton.Disable()
 
 	revertButton := NewButtonItem(
-		widget.NewButtonWithIcon("Cancel", theme.CancelIcon(), func() {
-			fd.CustomDialog.Hide()
-		}))
+		widget.NewButtonWithIcon(resources.CancelLabel.String(),
+			theme.CancelIcon(), func() {
+				fd.CustomDialog.Hide()
+			}))
 	fd.CustomDialog.SetButtons([]fyne.CanvasObject{revertButton, fd.applyButton})
 	return fd
 }
 
-func (fd *FolderDialog) apply() {
+func (fd *FolderDialog) Cancel() {
+	fd.CustomDialog.Hide()
+}
+
+func (fd *FolderDialog) Apply() {
 	fd.CustomDialog.Hide()
 	title, _ := fd.title.Get()
+	fmt.Println("FolderDialog.Apply", title)
 	err := fd.effect.AddFolder(title)
 	if err != nil {
 		fyne.LogError(title, err)
@@ -68,4 +78,12 @@ func (fd *FolderDialog) validateFolderName(s string) error {
 func (fd *FolderDialog) Start() {
 	fd.title.Set("")
 	fd.CustomDialog.Show()
+	// AddDialogShortcuts(fyne.KeyReturn,
+	// 	&DialogShortCut{
+	// 		Apply:   fd.Apply,
+	// 		Enabled: func() bool { return !fd.applyButton.Disabled() }})
+	// AddDialogShortcuts(fyne.KeyEscape,
+	// 	&DialogShortCut{
+	// 		Apply:   fd.Cancel,
+	// 		Enabled: func() bool { return true }})
 }

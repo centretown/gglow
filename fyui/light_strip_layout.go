@@ -39,7 +39,7 @@ func NewLightStripLayout(parent fyne.Window, p fyne.Preferences,
 	rowsItem := widget.NewFormItem(resources.RowsLabel.String(), rowsEntry.Container)
 
 	frm := widget.NewForm(colItem, rowsItem)
-	ll.CustomDialog = dialog.NewCustomWithoutButtons(resources.GridLayout.String(),
+	ll.CustomDialog = dialog.NewCustomWithoutButtons(resources.GridLayoutLabel.String(),
 		frm, parent)
 	confirm := widget.NewButton(resources.ApplyLabel.String(), ll.confirm)
 	revert := widget.NewButton(resources.CancelLabel.String(), ll.revert)
