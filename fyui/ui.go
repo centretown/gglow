@@ -1,7 +1,6 @@
 package fyui
 
 import (
-	"fmt"
 	"gglow/fyio"
 	"gglow/fyresource"
 	"gglow/resources"
@@ -30,7 +29,7 @@ type Ui struct {
 	stripTools    *fyne.Container
 	playContainer *fyne.Container
 
-	effectSelect *widget.SelectEntry
+	effectSelect *EffectSelect
 
 	frameEditor *FrameEditor
 	layerEditor *LayerEditor
@@ -54,17 +53,16 @@ func NewUi(app fyne.App, window fyne.Window, effect *fyio.EffectIo, theme *fyres
 		isMobile:    app.Driver().Device().IsMobile(),
 	}
 
+	AddGlobalShortCut(window,
+		&GlobalShortCut{Shortcut: CtrlS,
+			Apply: func() {
+				// fmt.Println("SAVE")
+				effect.SaveEffect()
+			},
+			Enabled: effect.HasChanged})
+
 	window.SetContent(ui.BuildContent())
 
-	AddGlobalShortCut(window, &GlobalShortCut{Shortcut: CtrlS,
-		Apply: func() {
-			fmt.Println("SAVE")
-			effect.SaveEffect()
-		},
-		Enabled: effect.HasChanged})
-	// AddGlobalShortCut(window, &GlobalShortCut{Shortcut: Esc,
-	// 	Apply:   func() { fmt.Println("ESCAPE") },
-	// 	Enabled: func() bool { return true }})
 	return ui
 }
 
@@ -79,7 +77,7 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		ui.layerEditor.Container)
 
 	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
-	selectorMenu := container.NewBorder(nil, nil, menuButton, nil, ui.effectSelect)
+	selectorMenu := container.NewBorder(ui.effectSelect.Folder, nil, menuButton, nil, ui.effectSelect.SelectEntry)
 
 	if ui.isMobile {
 		dropDown := dialog.NewCustom(resources.EditLabel.String(), "hide", ui.editor, ui.window)
@@ -123,6 +121,7 @@ func (ui *Ui) BuildContent() *fyne.Container {
 	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.effect, ui.stripLayout)
 	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
+	// ui.effectTitle = binding.NewSprintf()
 	ui.effectSelect = NewEffectSelect(ui.effect)
 
 	ui.frameEditor = NewFrameEditor(ui.effect, ui.window)

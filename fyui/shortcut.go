@@ -25,8 +25,8 @@ var Esc = &desktop.CustomShortcut{KeyName: fyne.KeyEscape}
 
 func AddGlobalShortCut(window fyne.Window, sc *GlobalShortCut) {
 	window.Canvas().AddShortcut(sc.Shortcut, func(shortcut fyne.Shortcut) {
+		// fmt.Println(sc.Shortcut.KeyName, sc.Shortcut.Modifier)
 		if sc.Enabled() {
-			fmt.Println(sc.Shortcut.KeyName, sc.Shortcut.Modifier)
 			sc.Apply()
 		}
 	})

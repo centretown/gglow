@@ -1,7 +1,6 @@
 package fyui
 
 import (
-	"fmt"
 	"gglow/fyio"
 	"strings"
 
@@ -11,27 +10,25 @@ import (
 
 type EffectSelect struct {
 	*widget.SelectEntry
-	selection binding.String
-	// folderName binding.String
-	// effectName binding.String
-	effect  *fyio.EffectIo
-	lookup  map[string]string
-	options []string
-	// auto       bool
+	Folder     *widget.Label
+	selection  binding.String
+	effect     *fyio.EffectIo
+	lookup     map[string]string
+	options    []string
+	folderName binding.String
 }
 
-func NewEffectSelect(effect *fyio.EffectIo) *widget.SelectEntry {
+func NewEffectSelect(effect *fyio.EffectIo) *EffectSelect {
 	fs := &EffectSelect{
-		// folderName: binding.NewString(),
-		// effectName: binding.NewString(),
-		selection: binding.NewString(),
-		effect:    effect,
-		options:   make([]string, 0),
-		lookup:    make(map[string]string),
+		selection:  binding.NewString(),
+		effect:     effect,
+		options:    make([]string, 0),
+		lookup:     make(map[string]string),
+		folderName: binding.NewString(),
 	}
-	// fs.selection = binding.NewSprintf("%s/%s", fs.folderName, fs.effectName)
-	// fs.Select = widget.NewSelect(effect.ListCurrentFolder(),
-	// 	fs.onChange)
+
+	fs.Folder = widget.NewLabelWithData(fs.folderName)
+	fs.folderName.Set(effect.FolderName())
 
 	fs.SelectEntry = widget.NewSelectEntry(effect.ListCurrentFolder())
 	fs.selection.Set(effect.EffectName())
@@ -39,25 +36,18 @@ func NewEffectSelect(effect *fyio.EffectIo) *widget.SelectEntry {
 	fs.SelectEntry.OnChanged = fs.onChange
 
 	effect.AddFrameListener(binding.NewDataListener(func() {
-		fmt.Println("AddFrameListener")
 		fs.selection.Set(effect.EffectName())
-		// fs.effectName.Set(effect.EffectName())
-		// selected := fs.SelectEntry.Selected
-		// if selected != effect.EffectName() {
-		// fs.auto = true
-		// fs.SelectEntry.SetSelected(effect.EffectName())
-		// }
+		fs.folderName.Set(effect.FolderName())
 	}))
 
 	effect.AddFolderListener(binding.NewDataListener(func() {
-		fmt.Println("AddFolderListener")
 		fs.selection.Set(effect.FolderName())
+		fs.folderName.Set(effect.FolderName())
 		fs.options = fs.effect.ListCurrentFolder()
 		fs.SelectEntry.SetOptions(fs.options)
 		fs.buildLookup()
-		// fs.selection.Set(effect.FolderName() + "/" + effect.EffectName())
 	}))
-	return fs.SelectEntry
+	return fs
 }
 
 func (fs *EffectSelect) buildLookup() {
@@ -68,13 +58,10 @@ func (fs *EffectSelect) buildLookup() {
 }
 
 func (fs *EffectSelect) onChange(title string) {
-	title, ok := fs.Parse(title)
-	if !ok {
+	title, complete := fs.Parse(title)
+	if !complete {
 		return
 	}
-	fs.selection.Set(title)
-	fmt.Println("onChange")
-
 	if fs.effect.IsFolder(title) {
 		fs.options = fs.effect.LoadFolder(title)
 		fs.buildLookup()
@@ -84,25 +71,26 @@ func (fs *EffectSelect) onChange(title string) {
 	}
 }
 
-func (fs *EffectSelect) Parse(title string) (string, bool) {
-	length := len(title)
+func (fs *EffectSelect) Parse(title string) (result string, complete bool) {
+	result = title
+	length := len(result)
 	if length < 1 {
 		fs.SelectEntry.SetOptions(fs.options)
-		return title, false
+		return
 	}
 
-	search := strings.ToLower(title)
-	if result, ok := fs.lookup[search]; ok {
-		fmt.Println("result", result)
-		return result, ok
+	search := strings.ToLower(result)
+	result, complete = fs.lookup[search]
+	if complete {
+		return
 	}
 
 	ls := make([]string, 0)
 	for _, s := range fs.options {
-		if strings.HasPrefix(strings.ToLower(s), search) {
+		if strings.Contains(strings.ToLower(s), search) {
 			ls = append(ls, s)
 		}
 	}
 	fs.SelectEntry.SetOptions(ls)
-	return title, false
+	return
 }
