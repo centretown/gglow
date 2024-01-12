@@ -52,7 +52,7 @@ func (ch *CodeHandler) WriteFolder(title string) error {
 	return nil
 }
 
-func (ch *CodeHandler) SetFolder(key string) ([]string, error) {
+func (ch *CodeHandler) SetCurrentFolder(key string) ([]string, error) {
 	return emptyList, nil
 }
 

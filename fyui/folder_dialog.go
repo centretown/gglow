@@ -78,12 +78,4 @@ func (fd *FolderDialog) validateFolderName(s string) error {
 func (fd *FolderDialog) Start() {
 	fd.title.Set("")
 	fd.CustomDialog.Show()
-	// AddDialogShortcuts(fyne.KeyReturn,
-	// 	&DialogShortCut{
-	// 		Apply:   fd.Apply,
-	// 		Enabled: func() bool { return !fd.applyButton.Disabled() }})
-	// AddDialogShortcuts(fyne.KeyEscape,
-	// 	&DialogShortCut{
-	// 		Apply:   fd.Cancel,
-	// 		Enabled: func() bool { return true }})
 }

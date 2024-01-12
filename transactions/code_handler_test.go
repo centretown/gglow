@@ -40,19 +40,19 @@ func TestCodeHandler(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = dataIn.RootFolder()
+	_, err = dataIn.SetRootCurrent()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	list := dataIn.ListCurrentFolder()
+	list := dataIn.ListCurrent()
 	for _, item := range list {
-		items, err := dataIn.SetFolder(item)
+		items, err := dataIn.SetCurrentFolder(item)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		_, err = dataOut.SetFolder(item)
+		_, err = dataOut.SetCurrentFolder(item)
 		if err != nil {
 			t.Fatal(err)
 		}

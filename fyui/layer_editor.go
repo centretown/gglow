@@ -45,7 +45,7 @@ type LayerEditor struct {
 	isEditing bool
 }
 
-func NewLayerEditor(effect *fyio.EffectIo, window fyne.Window) *LayerEditor {
+func NewLayerEditor(effect *fyio.EffectIo, window fyne.Window, menu *fyne.Menu) *LayerEditor {
 
 	le := &LayerEditor{
 		window: window,
@@ -54,7 +54,7 @@ func NewLayerEditor(effect *fyio.EffectIo, window fyne.Window) *LayerEditor {
 		layer:  effect.GetCurrentLayer(),
 
 		fields: fyio.NewLayerFields(),
-		tools:  NewLayerTools(effect),
+		tools:  NewLayerTools(effect, window, menu),
 
 		rateBounds: RateBounds,
 		hueBounds:  HueShiftBounds,
@@ -68,7 +68,7 @@ func NewLayerEditor(effect *fyio.EffectIo, window fyne.Window) *LayerEditor {
 
 	form := le.createForm()
 	scroll := container.NewVScroll(form)
-	tools := container.NewCenter(NewLayerTools(effect))
+	tools := container.NewCenter(le.tools)
 	layerSelect := NewLayerSelect(effect)
 	fixed := container.NewVBox(tools, layerSelect)
 

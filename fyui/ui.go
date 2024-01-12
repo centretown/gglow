@@ -5,6 +5,7 @@ import (
 	"gglow/fyresource"
 	"gglow/resources"
 	"gglow/settings"
+	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -40,6 +41,7 @@ type Ui struct {
 
 	mainContainer *fyne.Container
 	isMobile      bool
+	mainMenu      *fyne.Menu
 }
 
 func NewUi(app fyne.App, window fyne.Window, effect *fyio.EffectIo, theme *fyresource.GlowTheme) *Ui {
@@ -51,15 +53,8 @@ func NewUi(app fyne.App, window fyne.Window, effect *fyio.EffectIo, theme *fyres
 		effect:      effect,
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
+		mainMenu:    fyne.NewMenu(""),
 	}
-
-	AddGlobalShortCut(window,
-		&GlobalShortCut{Shortcut: CtrlS,
-			Apply: func() {
-				// fmt.Println("SAVE")
-				effect.SaveEffect()
-			},
-			Enabled: effect.HasChanged})
 
 	window.SetContent(ui.BuildContent())
 
@@ -72,16 +67,24 @@ func (ui *Ui) OnExit() {
 }
 
 func (ui *Ui) layoutContent() *fyne.Container {
-
 	ui.editor = container.NewBorder(ui.frameEditor.Container, nil, nil, nil,
 		ui.layerEditor.Container)
 
+	editButton := widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {})
+	popUp := widget.NewPopUpMenu(ui.mainMenu, ui.window.Canvas())
 	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
-	selectorMenu := container.NewBorder(ui.effectSelect.Folder, nil, menuButton, nil, ui.effectSelect.SelectEntry)
+	menuButton.OnTapped = func() {
+		popUp.Move(menuButton.Position().Add(fyne.Delta{DX: 0,
+			DY: menuButton.MinSize().Height}))
+		popUp.Show()
+	}
+
+	selectorMenu := container.NewBorder(nil, nil,
+		container.NewHBox(menuButton, editButton), nil, ui.effectSelect.SelectEntry)
 
 	if ui.isMobile {
 		dropDown := dialog.NewCustom(resources.EditLabel.String(), "hide", ui.editor, ui.window)
-		menuButton.OnTapped = func() {
+		editButton.OnTapped = func() {
 			dropDown.Resize(ui.window.Canvas().Size())
 			dropDown.Show()
 		}
@@ -102,7 +105,7 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
 		setSplit(ui.isSplit)
 
-		menuButton.OnTapped = func() {
+		editButton.OnTapped = func() {
 			ui.isSplit = !ui.isSplit
 			setSplit(ui.isSplit)
 		}
@@ -121,11 +124,10 @@ func (ui *Ui) BuildContent() *fyne.Container {
 	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.effect, ui.stripLayout)
 	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
-	// ui.effectTitle = binding.NewSprintf()
 	ui.effectSelect = NewEffectSelect(ui.effect)
 
-	ui.frameEditor = NewFrameEditor(ui.effect, ui.window)
-	ui.layerEditor = NewLayerEditor(ui.effect, ui.window)
+	ui.frameEditor = NewFrameEditor(ui.effect, ui.window, ui.mainMenu)
+	ui.layerEditor = NewLayerEditor(ui.effect, ui.window, ui.mainMenu)
 
 	ui.playContainer = container.NewBorder(ui.stripTools, nil, nil, nil, ui.strip)
 
@@ -137,6 +139,7 @@ func (ui *Ui) BuildContent() *fyne.Container {
 		ui.stripPlayer.ResetStrip()
 	}))
 
+	ui.addShortCuts()
 	return ui.layoutContent()
 }
 
@@ -147,3 +150,72 @@ func (ui *Ui) getLightPreferences() (columns, rows int) {
 		fyresource.StripRowsDefault)
 	return
 }
+
+func (ui *Ui) addShortCuts() {
+	exit := func() {
+		os.Exit(0)
+	}
+
+	AddGlobalShortCut(ui.window,
+		&GlobalShortCut{Shortcut: CtrlQ,
+			Action: exit,
+		})
+	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
+		&fyne.MenuItem{Label: "Quit", Shortcut: CtrlQ, Action: exit})
+}
+
+// 	fileMenu := &fyne.Menu{
+// 		Label: "File",
+// 		Items: []*fyne.MenuItem{
+// 			{Label: "New Folder",
+// 				Icon:   theme.FolderNewIcon(),
+// 				Action: func() { fmt.Println("New Folder") },
+// 			},
+// 			{Label: "Trash Folder",
+// 				Icon:   theme.DeleteIcon(),
+// 				Action: func() { fmt.Println("Trash Folder") },
+// 			},
+// 			{IsSeparator: true},
+// 			{Label: "New Effect",
+// 				Icon:   theme.ContentAddIcon(),
+// 				Action: func() { fmt.Println("New Effect") },
+// 			},
+// 			{Label: "Save Effect",
+// 				Icon:   theme.DocumentSaveIcon(),
+// 				Action: func() { fmt.Println("Save Effect") },
+// 			},
+// 			{Label: "Remove Effect",
+// 				Icon:   theme.ContentRemoveIcon(),
+// 				Action: func() { fmt.Println("Remove Effect") },
+// 			},
+// 		},
+// 	}
+// 	editMenu := &fyne.Menu{
+// 		Label: "Edit",
+// 		Items: []*fyne.MenuItem{
+// 			{Label: "Cut",
+// 				Icon:   theme.ContentCutIcon(),
+// 				Action: func() { fmt.Println("Cut") },
+// 			},
+// 			{IsSeparator: true},
+// 			{Label: "Copy",
+// 				Icon:   theme.ContentCopyIcon(),
+// 				Action: func() { fmt.Println("Copy") },
+// 			},
+// 			{Label: "Paste",
+// 				Icon:   theme.ContentPasteIcon(),
+// 				Action: func() { fmt.Println("Paste") },
+// 			},
+// 			{IsSeparator: true},
+// 			{Label: "New Layer",
+// 				Icon:   theme.ContentAddIcon(),
+// 				Action: func() { fmt.Println("New Layer") },
+// 			},
+// 			{Label: "Remove Layer",
+// 				Icon:   theme.ContentRemoveIcon(),
+// 				Action: func() { fmt.Println("Remove Layer") },
+// 			},
+// 		}}
+// 	main := fyne.NewMainMenu()
+// 	return main
+// }

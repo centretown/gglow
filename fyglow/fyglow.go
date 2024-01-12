@@ -48,7 +48,6 @@ func main() {
 
 	theme := fyresource.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
-
 	window := app.NewWindow(resources.GlowLabel.String())
 	effect := fyio.NewEffect(storageHandler, preferences, accessor)
 	ui := fyui.NewUi(app, window, effect, theme)
@@ -108,7 +107,7 @@ func loadStorage(preferences fyne.Preferences) (iohandler.IoHandler, *iohandler.
 
 	storeHandler, err := store.NewIoHandler(accessor)
 	if err == nil {
-		_, err = storeHandler.RootFolder()
+		_, err = storeHandler.SetRootCurrent()
 	}
 
 	if err != nil {

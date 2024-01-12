@@ -44,6 +44,10 @@ const (
 	AddFolderLabel
 	TitleLabel
 	FolderLabel
+	SaveLabel
+	NewLabel
+	RemoveLabel
+	TrashLabel
 )
 
 var entryLabels = []string{
@@ -60,6 +64,7 @@ var entryLabels = []string{
 	"Interval (ms)", "Override",
 	"Cut", "Copy", "Paste", "Edit", "Picker",
 	"Layout", "Add Effect", "Add Folder", "Title", "Folder",
+	"Save", "New", "Remove", "Trash",
 }
 
 func (id LabelID) String() string {

@@ -10,40 +10,32 @@ import (
 
 type EffectSelect struct {
 	*widget.SelectEntry
-	Folder     *widget.Label
-	selection  binding.String
-	effect     *fyio.EffectIo
-	lookup     map[string]string
-	options    []string
-	folderName binding.String
+	selection binding.String
+	effect    *fyio.EffectIo
+	lookup    map[string]string
+	options   []string
 }
 
 func NewEffectSelect(effect *fyio.EffectIo) *EffectSelect {
 	fs := &EffectSelect{
-		selection:  binding.NewString(),
-		effect:     effect,
-		options:    make([]string, 0),
-		lookup:     make(map[string]string),
-		folderName: binding.NewString(),
+		selection: binding.NewString(),
+		effect:    effect,
+		options:   make([]string, 0),
+		lookup:    make(map[string]string),
 	}
 
-	fs.Folder = widget.NewLabelWithData(fs.folderName)
-	fs.folderName.Set(effect.FolderName())
-
-	fs.SelectEntry = widget.NewSelectEntry(effect.ListCurrentFolder())
+	fs.SelectEntry = widget.NewSelectEntry(effect.ListCurrent())
 	fs.selection.Set(effect.EffectName())
 	fs.Entry.Bind(fs.selection)
 	fs.SelectEntry.OnChanged = fs.onChange
 
 	effect.AddFrameListener(binding.NewDataListener(func() {
 		fs.selection.Set(effect.EffectName())
-		fs.folderName.Set(effect.FolderName())
 	}))
 
 	effect.AddFolderListener(binding.NewDataListener(func() {
 		fs.selection.Set(effect.FolderName())
-		fs.folderName.Set(effect.FolderName())
-		fs.options = fs.effect.ListCurrentFolder()
+		fs.options = fs.effect.ListCurrent()
 		fs.SelectEntry.SetOptions(fs.options)
 		fs.buildLookup()
 	}))
@@ -82,6 +74,7 @@ func (fs *EffectSelect) Parse(title string) (result string, complete bool) {
 	search := strings.ToLower(result)
 	result, complete = fs.lookup[search]
 	if complete {
+		fs.SelectEntry.SetOptions(fs.options)
 		return
 	}
 

@@ -27,3 +27,18 @@ func (bi *ButtonItem) Enable() {
 func (bi *ButtonItem) Disable() {
 	bi.Button.Disable()
 }
+
+type LabelItem struct {
+	*widget.Label
+}
+
+func NewLabelItem(label *widget.Label) *LabelItem {
+	lb := &LabelItem{
+		Label: label,
+	}
+	return lb
+}
+
+func (lb *LabelItem) ToolbarObject() fyne.CanvasObject {
+	return lb.Label
+}

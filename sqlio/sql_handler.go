@@ -22,7 +22,9 @@ type SqlHandler struct {
 	db     *sql.DB
 
 	keyList    []string
-	keyMap     map[string]bool
+	keyMap     map[string]interface{}
+	folders    []string
+	foldersMap map[string]interface{}
 	driver     string
 	serializer iohandler.Serializer
 	schema     *Schema
@@ -32,7 +34,9 @@ func NewSqlHandler(driver, dsn string) (*SqlHandler, error) {
 	sqlh := &SqlHandler{
 		folder:     iohandler.Dots,
 		keyList:    make([]string, 0),
-		keyMap:     make(map[string]bool),
+		keyMap:     make(map[string]interface{}),
+		folders:    make([]string, 0),
+		foldersMap: make(map[string]interface{}),
 		serializer: &iohandler.JsonSerializer{},
 		driver:     driver,
 		schema:     Schemas[0],
@@ -58,8 +62,8 @@ func (sqlh *SqlHandler) OnExit() error {
 	return sqlh.db.Close()
 }
 
-func (sqlh *SqlHandler) RootFolder() ([]string, error) {
-	return sqlh.SetFolder(iohandler.Dots)
+func (sqlh *SqlHandler) SetRootCurrent() ([]string, error) {
+	return sqlh.SetCurrentFolder(iohandler.Dots)
 }
 
 func (sqlh *SqlHandler) IsRootFolder() bool {
@@ -151,7 +155,7 @@ func (sqlh *SqlHandler) CreateNewFolder(folder string) error {
 		return err
 	}
 
-	_, err = sqlh.SetFolder(folder)
+	_, err = sqlh.SetCurrentFolder(folder)
 	return err
 }
 
@@ -221,34 +225,46 @@ func (sqlh *SqlHandler) findEffect(folder, title string) error {
 	return err
 }
 
-func (sqlh *SqlHandler) SetFolder(folder string) ([]string, error) {
+func (sqlh *SqlHandler) ReadFolder(folder string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	query := sqlh.schema.SelectFolder(folder)
 	rows, err := sqlh.db.QueryContext(ctx, query)
 	if err != nil {
-		return sqlh.keyList, fmt.Errorf("sqlh.SetFolder '%s' %v", query, err)
+		return sqlh.keyList, fmt.Errorf("ReadFolders '%s' %v", query, err)
 	}
 	defer rows.Close()
 
-	sqlh.folder = folder
-	sqlh.keyList = make([]string, 0)
-	sqlh.keyMap = make(map[string]bool)
 	var title string
+	ls := make([]string, 0)
 
 	for rows.Next() {
 		err = rows.Scan(&title)
 		if err != nil {
 			break
 		}
-		sqlh.keyList = append(sqlh.keyList, title)
-		sqlh.keyMap[title] = false
+		ls = append(ls, title)
+	}
+	return ls, err
+}
+
+func (sqlh *SqlHandler) SetCurrentFolder(folder string) ([]string, error) {
+	ls, err := sqlh.ReadFolder(folder)
+	if err != nil {
+		return sqlh.keyList, err
+	}
+
+	sqlh.keyList = ls
+	sqlh.folder = folder
+	sqlh.keyMap = make(map[string]interface{})
+	for _, s := range ls {
+		sqlh.keyMap[s] = false
 	}
 
 	return sqlh.keyList, err
 }
 
-func (sqlh *SqlHandler) ListCurrentFolder() []string {
+func (sqlh *SqlHandler) ListCurrent() []string {
 	return sqlh.keyList
 }
 

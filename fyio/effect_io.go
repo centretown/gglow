@@ -17,6 +17,7 @@ type EffectIo struct {
 	frame  *glow.Frame
 	layer  *glow.Layer
 
+	folderList []string
 	folderName string
 	effectName string
 	layerIndex int
@@ -42,6 +43,7 @@ func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, config *ioh
 		hasChanged:  binding.NewBool(),
 		saveActions: make([]func(*glow.Frame), 0),
 		summaryList: make([]string, 0),
+		folderList:  make([]string, 0),
 		config:      config,
 	}
 
@@ -52,7 +54,7 @@ func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, config *ioh
 	effect := config.Effect
 
 	if folder != "" {
-		eff.SetFolder(folder)
+		eff.SetCurrentFolder(folder)
 	}
 	if len(effect) > 0 {
 		eff.LoadEffect(effect)
@@ -82,7 +84,7 @@ func (eff *EffectIo) alertFolder() {
 }
 
 func (eff *EffectIo) LoadFolder(folder string) []string {
-	ls, err := eff.IoHandler.SetFolder(folder)
+	ls, err := eff.IoHandler.SetCurrentFolder(folder)
 	if err != nil {
 		fyne.LogError("loadfolder", err)
 		return ls

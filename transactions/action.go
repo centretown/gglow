@@ -129,7 +129,7 @@ func (a *Action) updateDatabase(output *iohandler.Accessor) (err error) {
 		}
 	}
 
-	_, err = dataIn.RootFolder()
+	_, err = dataIn.SetRootCurrent()
 	if err != nil {
 		return a.AddError(err)
 	}
@@ -150,7 +150,7 @@ func (a *Action) verifyInput(config *iohandler.Accessor, refresh bool) error {
 	defer st.OnExit()
 
 	if refresh {
-		_, err = st.RootFolder()
+		_, err = st.SetRootCurrent()
 		if err != nil {
 			return a.AddError(err)
 		}
@@ -167,7 +167,7 @@ func (a *Action) verifyOutput(config *iohandler.Accessor) error {
 }
 
 func (action *Action) writeDatabase(dataIn iohandler.IoHandler, dataOut iohandler.OutHandler) error {
-	folders, err := dataIn.RootFolder()
+	folders, err := dataIn.SetRootCurrent()
 	if err != nil {
 		err = fmt.Errorf("dataIn RootFolder %s", err)
 		return err
@@ -179,13 +179,13 @@ func (action *Action) writeDatabase(dataIn iohandler.IoHandler, dataOut iohandle
 
 		if dataIn.IsFolder(folder) && action.filter.IsSelected(folder) {
 			action.AddNote(fmt.Sprintf("add folder %s", folder))
-			items, err := dataIn.SetFolder(folder)
+			items, err := dataIn.SetCurrentFolder(folder)
 			if err != nil {
 				err = fmt.Errorf("set input %s", err)
 				return err
 			}
 
-			_, err = dataOut.SetFolder(folder)
+			_, err = dataOut.SetCurrentFolder(folder)
 			if err != nil {
 				err = fmt.Errorf("set output %s", err)
 				return err
@@ -196,7 +196,7 @@ func (action *Action) writeDatabase(dataIn iohandler.IoHandler, dataOut iohandle
 				err = fmt.Errorf("write folder %s", err)
 				return err
 			}
-			dataIn.RootFolder()
+			dataIn.SetRootCurrent()
 		}
 	}
 	return nil

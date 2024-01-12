@@ -18,27 +18,32 @@ type FrameEditor struct {
 	effect *fyio.EffectIo
 	// layerSelect *widget.Select
 	fields     *fyio.FrameFields
+	folderName binding.String
+	effectName binding.String
 	rateBounds *IntEntryBounds
 	rateBox    *RangeIntBox
 	isEditing  bool
 }
 
-func NewFrameEditor(effect *fyio.EffectIo, window fyne.Window) *FrameEditor {
+func NewFrameEditor(effect *fyio.EffectIo, window fyne.Window, menu *fyne.Menu) *FrameEditor {
 
 	fe := &FrameEditor{
-		effect: effect,
-		// layerSelect: NewLayerSelect(effect),
+		effect:     effect,
+		folderName: binding.NewString(),
+		effectName: binding.NewString(),
 		rateBounds: RateBounds,
 		fields:     fyio.NewFrameFields(),
 	}
 
-	tools := container.NewCenter(NewFrameTools(effect, window))
-	// fe.layerSelect = NewLayerSelect(fe.effect)
+	tools := container.NewCenter(NewFrameTools(effect, window, menu))
+	folderLabel := widget.NewLabelWithData(fe.folderName)
+	effectLabel := widget.NewLabelWithData(fe.effectName)
 	ratelabel := widget.NewLabel(resources.RateLabel.String())
 	fe.rateBox = NewRangeIntBox(fe.fields.Interval, fe.rateBounds)
-	frm := container.New(layout.NewFormLayout(), ratelabel, fe.rateBox.Container)
+	frm := container.New(layout.NewFormLayout(),
+		folderLabel, effectLabel,
+		ratelabel, fe.rateBox.Container)
 	fe.Container = container.NewBorder(tools, nil, nil, nil, frm)
-	// fe.Container = container.NewBorder(tools, fe.layerSelect, nil, nil, frm)
 
 	effect.OnSave(fe.apply)
 
@@ -50,6 +55,9 @@ func NewFrameEditor(effect *fyio.EffectIo, window fyne.Window) *FrameEditor {
 		}
 	}))
 
+	effect.AddFolderListener(binding.NewDataListener(func() {
+		fe.folderName.Set(effect.FolderName())
+	}))
 	fe.effect.AddFrameListener(binding.NewDataListener(fe.setFields))
 	return fe
 }
@@ -65,6 +73,8 @@ func (fe *FrameEditor) setFields() {
 	frame := fe.effect.GetFrame()
 	fe.fields.FromFrame(frame)
 	fe.rateBox.Entry.SetText(strconv.FormatInt(int64(frame.Interval), 10))
+	fe.folderName.Set(fe.effect.FolderName())
+	fe.effectName.Set(fe.effect.EffectName())
 	fe.isEditing = true
 }
 
