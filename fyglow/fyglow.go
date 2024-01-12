@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gglow/fyio"
-	"gglow/fyresource"
-	"gglow/fyui"
+	"gglow/fyglow/effectio"
+	"gglow/fyglow/resource"
+	"gglow/fyglow/ui"
 	"gglow/iohandler"
 	"gglow/resources"
 	"gglow/settings"
@@ -35,22 +35,22 @@ func init() {
 
 func main() {
 
-	app := app.NewWithID(fyresource.AppID)
+	app := app.NewWithID(resource.AppID)
 	preferences := app.Preferences()
 
 	storageHandler, accessor := loadStorage(preferences)
 	fmt.Println(accessPath, accessor.Driver, accessor.Path)
 
-	icon, err := fyresource.DarkGanderImage.Load()
+	icon, err := resource.DarkGanderImage.Load()
 	if err == nil {
 		app.SetIcon(icon)
 	}
 
-	theme := fyresource.NewGlowTheme(preferences)
+	theme := resource.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
 	window := app.NewWindow(resources.GlowLabel.String())
-	effect := fyio.NewEffect(storageHandler, preferences, accessor)
-	ui := fyui.NewUi(app, window, effect, theme)
+	effect := effectio.NewEffect(storageHandler, preferences, accessor)
+	ui := ui.NewUi(app, window, effect, theme)
 
 	window.SetCloseIntercept(func() {
 		accessor.Folder = effect.FolderName()
