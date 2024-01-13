@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gglow/glow"
-	"gglow/resources"
+	"gglow/text"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -241,14 +241,14 @@ func (cp *ColorPatch) EditPaste() {
 
 func (cp *ColorPatch) TappedSecondary(pointEvent *fyne.PointEvent) {
 	cp.requestFocus()
-	cutItem := fyne.NewMenuItem(resources.CutLabel.String(), func() {
+	cutItem := fyne.NewMenuItem(text.CutLabel.String(), func() {
 		cp.EditCut()
 	})
-	copyItem := fyne.NewMenuItem(resources.CopyLabel.String(), func() {
+	copyItem := fyne.NewMenuItem(text.CopyLabel.String(), func() {
 		cp.EditCopy()
 	})
 
-	pasteItem := fyne.NewMenuItem(resources.PasteLabel.String(), func() {
+	pasteItem := fyne.NewMenuItem(text.PasteLabel.String(), func() {
 		cp.EditPaste()
 	})
 
@@ -258,7 +258,7 @@ func (cp *ColorPatch) TappedSecondary(pointEvent *fyne.PointEvent) {
 		menu.Items = []*fyne.MenuItem{cutItem, copyItem, pasteItem}
 	default:
 		menu.Items = []*fyne.MenuItem{cutItem, copyItem, pasteItem,
-			fyne.NewMenuItem(resources.EditLabel.String(), func() {
+			fyne.NewMenuItem(text.EditLabel.String(), func() {
 				cp.Tapped(nil)
 			})}
 	}

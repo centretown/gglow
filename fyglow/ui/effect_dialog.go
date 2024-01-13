@@ -3,7 +3,7 @@ package ui
 import (
 	"gglow/fyglow/effectio"
 	"gglow/glow"
-	"gglow/resources"
+	"gglow/text"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -29,7 +29,7 @@ func NewEffectDialog(effect *effectio.EffectIo, window fyne.Window) (ef *EffectD
 		title:  binding.NewString(),
 	}
 
-	nameLabel := widget.NewLabel(resources.TitleLabel.String())
+	nameLabel := widget.NewLabel(text.TitleLabel.String())
 	nameEntry := widget.NewEntryWithData(ef.title)
 	nameEntry.Validator = validation.NewAllStrings(ef.validateFileName)
 
@@ -37,14 +37,14 @@ func NewEffectDialog(effect *effectio.EffectIo, window fyne.Window) (ef *EffectD
 	frm := container.New(layout.NewFormLayout(),
 		nameLabel, nameEntry, sep, sep)
 
-	ef.CustomDialog = dialog.NewCustomWithoutButtons(resources.AddEffectLabel.String(),
+	ef.CustomDialog = dialog.NewCustomWithoutButtons(text.AddEffectLabel.String(),
 		frm, window)
-	ef.applyButton = widget.NewButtonWithIcon(resources.ApplyLabel.String(),
+	ef.applyButton = widget.NewButtonWithIcon(text.ApplyLabel.String(),
 		theme.ConfirmIcon(), ef.apply)
 	ef.applyButton.Disable()
 
 	revertButton := NewButtonItem(
-		widget.NewButtonWithIcon(resources.CancelLabel.String(),
+		widget.NewButtonWithIcon(text.CancelLabel.String(),
 			theme.CancelIcon(), func() {
 				ef.CustomDialog.Hide()
 			}))

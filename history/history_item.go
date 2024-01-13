@@ -3,7 +3,7 @@ package history
 import (
 	"fmt"
 	"gglow/glow"
-	"gglow/resources"
+	"gglow/text"
 	"strings"
 )
 
@@ -46,7 +46,7 @@ func (hi *HistoryItem) Pop() (*glow.Frame, error) {
 	if length < 1 {
 		return nil,
 			fmt.Errorf("%s: %s", makePath(hi.Route, hi.Title),
-				resources.MsgNotFound.String())
+				text.MsgNotFound.String())
 	}
 	length--
 	frame := hi.List[length]

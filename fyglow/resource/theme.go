@@ -45,7 +45,7 @@ const LightStripBackground fyne.ThemeColorName = "LightStripBackground"
 func (m GlowTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
 	if name == LightStripBackground {
 		if variant == theme.VariantLight {
-			c := color.RGBA{32, 48, 96, 255}
+			c := color.RGBA{230, 230, 230, 255}
 			return c
 		}
 		c := color.RGBA{24, 12, 8, 255}

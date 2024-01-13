@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gglow/glow"
 	"gglow/iohandler"
-	"gglow/resources"
+	"gglow/text"
 	"io"
 	"os"
 	"strings"
@@ -47,7 +47,7 @@ func RootURI(rootPath string) (fyne.ListableURI, error) {
 
 	uri, err := storage.ParseURI(path)
 	if err != nil {
-		fyne.LogError(resources.MsgParseEffectPath.Format(path), err)
+		fyne.LogError(text.MsgParseEffectPath.Format(path), err)
 		return nil, err
 	}
 
@@ -117,7 +117,7 @@ func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
 	listable, err := storage.ListerForURI(uri)
 	if err != nil {
 		fyne.LogError("ListerForURI", err)
-		err = fmt.Errorf(resources.MsgPathNotFolder.Format(folder))
+		err = fmt.Errorf(text.MsgPathNotFolder.Format(folder))
 		fyne.LogError("ListerForURI", err)
 		return fh.keyList, err
 	}
@@ -164,7 +164,7 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 func (fh *StorageHandler) isDuplicate(title string) error {
 	_, found := fh.uriMap[title]
 	if found {
-		return fmt.Errorf(resources.MsgDuplicate.String())
+		return fmt.Errorf(text.MsgDuplicate.String())
 	}
 	return nil
 }
@@ -229,7 +229,7 @@ func (fh *StorageHandler) WriteEffect(title string, frame *glow.Frame) error {
 	}
 
 	if !writable {
-		err = fmt.Errorf(resources.MsgNotWritable.String())
+		err = fmt.Errorf(text.MsgNotWritable.String())
 		return err
 	}
 
@@ -259,28 +259,28 @@ func (fh *StorageHandler) ReadEffect(title string) (*glow.Frame, error) {
 
 	uri, ok := fh.uriMap[title]
 	if !ok {
-		err := fmt.Errorf(resources.MsgGetEffectLookup.Format(title))
+		err := fmt.Errorf(text.MsgGetEffectLookup.Format(title))
 		fyne.LogError("ReadEffect", err)
 		return frame, err
 	}
 
 	rdr, err := storage.Reader(uri)
 	if err != nil {
-		fyne.LogError(resources.MsgGetFrame.Format(title), err)
+		fyne.LogError(text.MsgGetFrame.Format(title), err)
 		return frame, err
 	}
 	defer rdr.Close()
 
 	buffer, err := io.ReadAll(rdr)
 	if err != nil {
-		fyne.LogError(resources.MsgGetFrame.Format(title), err)
+		fyne.LogError(text.MsgGetFrame.Format(title), err)
 		return frame, err
 	}
 
 	serializer := iohandler.UriSerializer(uri.Extension())
 	err = serializer.Scan(buffer, frame)
 	if err != nil {
-		fyne.LogError(resources.MsgGetFrame.Format(title), err)
+		fyne.LogError(text.MsgGetFrame.Format(title), err)
 		return frame, err
 	}
 

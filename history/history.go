@@ -3,7 +3,7 @@ package history
 import (
 	"fmt"
 	"gglow/glow"
-	"gglow/resources"
+	"gglow/text"
 	"time"
 )
 
@@ -51,12 +51,12 @@ func (h *History) RestorePrevious(route []string, title string) (source *glow.Fr
 	path := makePath(route, title)
 	item, ok := h.Find(path)
 	if !ok {
-		err = fmt.Errorf("%s: %s", path, resources.MsgNotFound.String())
+		err = fmt.Errorf("%s: %s", path, text.MsgNotFound.String())
 		return
 	}
 
 	if !item.HasHistory() {
-		err = fmt.Errorf("%s: %s", path, resources.MsgListEmpty.String())
+		err = fmt.Errorf("%s: %s", path, text.MsgListEmpty.String())
 		return
 
 	}

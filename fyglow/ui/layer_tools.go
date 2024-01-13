@@ -1,8 +1,10 @@
 package ui
 
 import (
+	"fmt"
 	"gglow/fyglow/effectio"
-	"gglow/resources"
+	"gglow/fyglow/resource"
+	"gglow/text"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
@@ -21,24 +23,29 @@ func NewLayerTools(effect *effectio.EffectIo, window fyne.Window, menu *fyne.Men
 	}
 
 	lt.Toolbar.Append(NewButtonItem(widget.NewButtonWithIcon("",
-		theme.ContentAddIcon(), lt.addLayer)))
+		resource.Icon(resource.IconLayerAdd), lt.addLayer)))
 	lt.Toolbar.Append(NewButtonItem(widget.NewButtonWithIcon("",
-		theme.ContentAddIcon(), lt.addLayer)))
+		resource.Icon(resource.IconLayerInsert), lt.insertLayer)))
 	lt.Toolbar.Append(NewButtonItem(widget.NewButtonWithIcon("",
-		theme.ContentRemoveIcon(), lt.removeLayer)))
+		resource.Icon(resource.IconLayerRemove), lt.removeLayer)))
 
 	AddGlobalShortCut(window,
 		&GlobalShortCut{Shortcut: CtrlL, Action: lt.addLayer})
 
-	itemNew := &fyne.MenuItem{Label: resources.NewLabel.String(),
+	itemNew := &fyne.MenuItem{Label: text.NewLabel.String(),
 		Icon: theme.ContentAddIcon(), Action: lt.addLayer, Shortcut: CtrlL}
-	itemRemove := &fyne.MenuItem{Label: resources.RemoveLabel.String(),
+	itemRemove := &fyne.MenuItem{Label: text.RemoveLabel.String(),
 		Icon: theme.ContentRemoveIcon(), Action: lt.removeLayer}
 	itemLayer := &fyne.MenuItem{
-		Label:     resources.LayersLabel.String(),
+		Label:     text.LayersLabel.String(),
 		ChildMenu: &fyne.Menu{Label: "", Items: []*fyne.MenuItem{itemNew, itemRemove}}}
 	menu.Items = append(menu.Items, &fyne.MenuItem{IsSeparator: true}, itemLayer)
 	return lt
+}
+
+func (lt *LayerTools) insertLayer() {
+	// lt.effect.AddLayer()
+	fmt.Println("insert")
 }
 
 func (lt *LayerTools) addLayer() {

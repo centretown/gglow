@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 	"gglow/fyglow/effectio"
-	"gglow/resources"
+	"gglow/text"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
@@ -88,40 +88,40 @@ func NewFrameTools(effect *effectio.EffectIo, window fyne.Window,
 			},
 		})
 
-	itemNewFolder := &fyne.MenuItem{Label: resources.NewLabel.String(),
+	itemNewFolder := &fyne.MenuItem{Label: text.NewLabel.String(),
 		Icon: theme.FolderNewIcon(),
 		Action: func() {
 			addFolder.Start()
 		},
 		Shortcut: ShiftCtrlN,
 	}
-	itemTrash := &fyne.MenuItem{Label: resources.TrashLabel.String(),
+	itemTrash := &fyne.MenuItem{Label: text.TrashLabel.String(),
 		Icon:   theme.DeleteIcon(),
 		Action: func() { fmt.Println("Trash Folder") },
 	}
 	itemFolders := &fyne.MenuItem{
-		Label:     resources.FolderLabel.String(),
+		Label:     text.FolderLabel.String(),
 		ChildMenu: &fyne.Menu{Label: "", Items: []*fyne.MenuItem{itemNewFolder, itemTrash}},
 	}
 	menu.Items = append(menu.Items, &fyne.MenuItem{IsSeparator: true},
 		itemFolders)
 
-	itemSave := &fyne.MenuItem{Label: resources.SaveLabel.String(),
+	itemSave := &fyne.MenuItem{Label: text.SaveLabel.String(),
 		Icon:     theme.DocumentSaveIcon(),
 		Action:   effectSave,
 		Shortcut: CtrlS,
 	}
-	itemNew := &fyne.MenuItem{Label: resources.NewLabel.String(),
+	itemNew := &fyne.MenuItem{Label: text.NewLabel.String(),
 		Icon:     theme.ContentAddIcon(),
 		Action:   effectAdd,
 		Shortcut: CtrlN,
 	}
-	itemRemove := &fyne.MenuItem{Label: resources.RemoveLabel.String(),
+	itemRemove := &fyne.MenuItem{Label: text.RemoveLabel.String(),
 		Icon:   theme.ContentRemoveIcon(),
 		Action: func() { fmt.Println("Remove Effect") },
 	}
 	itemEffects := &fyne.MenuItem{
-		Label: resources.EffectsLabel.String(),
+		Label: text.EffectsLabel.String(),
 		ChildMenu: &fyne.Menu{Label: "",
 			Items: []*fyne.MenuItem{
 				itemSave, itemNew, itemRemove}},

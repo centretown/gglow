@@ -2,7 +2,7 @@ package ui
 
 import (
 	"gglow/glow"
-	"gglow/resources"
+	"gglow/text"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -61,21 +61,21 @@ func NewColorPatchEditor(source *ColorPatch,
 	valueBox := container.NewBorder(nil, nil, widget.NewLabel("V"), valueLabel,
 		valueSlider.Container)
 
-	pickerButton := widget.NewButtonWithIcon(resources.PickerLabel.String(), theme.MoreHorizontalIcon(),
+	pickerButton := widget.NewButtonWithIcon(text.PickerLabel.String(), theme.MoreHorizontalIcon(),
 		pe.selectColorPicker(pe.patch))
 	pe.setFields()
-	pe.removeButton = widget.NewButtonWithIcon(resources.CutLabel.String(), theme.ContentCutIcon(),
+	pe.removeButton = widget.NewButtonWithIcon(text.CutLabel.String(), theme.ContentCutIcon(),
 		pe.remove)
 
 	pe.hue.AddListener(binding.NewDataListener(pe.setHue))
 	pe.saturation.AddListener(binding.NewDataListener(pe.setSaturation))
 	pe.value.AddListener(binding.NewDataListener(pe.setValue))
 
-	revertButton := widget.NewButtonWithIcon(resources.CancelLabel.String(),
+	revertButton := widget.NewButtonWithIcon(text.CancelLabel.String(),
 		theme.CancelIcon(), func() {
 			pe.CustomDialog.Hide()
 		})
-	pe.applyButton = widget.NewButtonWithIcon(resources.ApplyLabel.String(),
+	pe.applyButton = widget.NewButtonWithIcon(text.ApplyLabel.String(),
 		theme.ConfirmIcon(), pe.apply)
 	vbox := container.NewVBox(
 		pe.patch,

@@ -3,7 +3,7 @@ package ui
 import (
 	"gglow/fyglow/effectio"
 	"gglow/glow"
-	"gglow/resources"
+	"gglow/text"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -38,7 +38,7 @@ func NewFrameEditor(effect *effectio.EffectIo, window fyne.Window, menu *fyne.Me
 	tools := container.NewCenter(NewFrameTools(effect, window, menu))
 	folderLabel := widget.NewLabelWithData(fe.folderName)
 	effectLabel := widget.NewLabelWithData(fe.effectName)
-	ratelabel := widget.NewLabel(resources.RateLabel.String())
+	ratelabel := widget.NewLabel(text.RateLabel.String())
 	fe.rateBox = NewRangeIntBox(fe.fields.Interval, fe.rateBounds)
 	frm := container.New(layout.NewFormLayout(),
 		folderLabel, effectLabel,

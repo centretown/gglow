@@ -7,7 +7,6 @@ import (
 	"gglow/fyglow/resource"
 	"gglow/fyglow/ui"
 	"gglow/iohandler"
-	"gglow/resources"
 	"gglow/settings"
 	"gglow/store"
 	"os"
@@ -34,21 +33,18 @@ func init() {
 }
 
 func main() {
-
+	var err error
 	app := app.NewWithID(resource.AppID)
 	preferences := app.Preferences()
 
 	storageHandler, accessor := loadStorage(preferences)
 	fmt.Println(accessPath, accessor.Driver, accessor.Path)
 
-	icon, err := resource.DarkGanderImage.Load()
-	if err == nil {
-		app.SetIcon(icon)
-	}
+	app.SetIcon(resource.DarkGander())
 
 	theme := resource.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
-	window := app.NewWindow(resources.GlowLabel.String())
+	window := app.NewWindow("")
 	effect := effectio.NewEffect(storageHandler, preferences, accessor)
 	ui := ui.NewUi(app, window, effect, theme)
 

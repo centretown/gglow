@@ -3,8 +3,8 @@ package ui
 import (
 	"gglow/fyglow/effectio"
 	"gglow/fyglow/resource"
-	"gglow/resources"
 	"gglow/settings"
+	"gglow/text"
 	"os"
 
 	"fyne.io/fyne/v2"
@@ -83,7 +83,7 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		container.NewHBox(menuButton, editButton), nil, ui.effectSelect.SelectEntry)
 
 	if ui.isMobile {
-		dropDown := dialog.NewCustom(resources.EditLabel.String(), "hide", ui.editor, ui.window)
+		dropDown := dialog.NewCustom(text.EditLabel.String(), "hide", ui.editor, ui.window)
 		editButton.OnTapped = func() {
 			dropDown.Resize(ui.window.Canvas().Size())
 			dropDown.Show()

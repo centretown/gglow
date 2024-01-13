@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"gglow/resources"
 	"gglow/settings"
+	"gglow/text"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -32,17 +32,17 @@ func NewLightStripLayout(parent fyne.Window, p fyne.Preferences,
 
 	ll.columns.Set(p.Int(settings.StripColumns.String()))
 	columnsEntry := NewRangeIntBox(ll.columns, &IntEntryBounds{1, 50, 0, 0})
-	colItem := widget.NewFormItem(resources.ColumnsLabel.String(), columnsEntry.Container)
+	colItem := widget.NewFormItem(text.ColumnsLabel.String(), columnsEntry.Container)
 
 	ll.rows.Set(p.Int(settings.StripRows.String()))
 	rowsEntry := NewRangeIntBox(ll.rows, &IntEntryBounds{1, 20, 0, 0})
-	rowsItem := widget.NewFormItem(resources.RowsLabel.String(), rowsEntry.Container)
+	rowsItem := widget.NewFormItem(text.RowsLabel.String(), rowsEntry.Container)
 
 	frm := widget.NewForm(colItem, rowsItem)
-	ll.CustomDialog = dialog.NewCustomWithoutButtons(resources.GridLayoutLabel.String(),
+	ll.CustomDialog = dialog.NewCustomWithoutButtons(text.GridLayoutLabel.String(),
 		frm, parent)
-	confirm := widget.NewButton(resources.ApplyLabel.String(), ll.confirm)
-	revert := widget.NewButton(resources.CancelLabel.String(), ll.revert)
+	confirm := widget.NewButton(text.ApplyLabel.String(), ll.confirm)
+	revert := widget.NewButton(text.CancelLabel.String(), ll.revert)
 	ll.CustomDialog.SetButtons([]fyne.CanvasObject{revert, confirm})
 	return ll
 }

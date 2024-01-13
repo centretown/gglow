@@ -2,7 +2,7 @@ package ui
 
 import (
 	"gglow/fyglow/effectio"
-	"gglow/resources"
+	"gglow/text"
 
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
@@ -10,7 +10,7 @@ import (
 
 func NewLayerSelect(effect *effectio.EffectIo) (sel *widget.Select) {
 	sel = widget.NewSelect([]string{}, func(s string) {})
-	sel.PlaceHolder = resources.LayersLabel.PlaceHolder() + "..."
+	sel.PlaceHolder = text.LayersLabel.PlaceHolder() + "..."
 	sel.OnChanged = func(s string) {
 		index := sel.SelectedIndex()
 		effect.SetCurrentLayer(index)

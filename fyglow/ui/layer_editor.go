@@ -3,7 +3,7 @@ package ui
 import (
 	"gglow/fyglow/effectio"
 	"gglow/glow"
-	"gglow/resources"
+	"gglow/text"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -60,8 +60,8 @@ func NewLayerEditor(effect *effectio.EffectIo, window fyne.Window, menu *fyne.Me
 		hueBounds:  HueShiftBounds,
 		scanBounds: ScanBounds,
 
-		selectOrigin:      widget.NewSelect(resources.OriginLabels, func(s string) {}),
-		selectOrientation: widget.NewSelect(resources.OrientationLabels, func(s string) {}),
+		selectOrigin:      widget.NewSelect(text.OriginLabels, func(s string) {}),
+		selectOrientation: widget.NewSelect(text.OrientationLabels, func(s string) {}),
 	}
 
 	le.createPatches()
@@ -106,7 +106,7 @@ func (le *LayerEditor) selectColor(patch *ColorPatch) func() {
 }
 
 func (le *LayerEditor) createForm() *fyne.Container {
-	labelOrigin := widget.NewLabel(resources.OriginLabel.String())
+	labelOrigin := widget.NewLabel(text.OriginLabel.String())
 	le.selectOrigin.OnChanged = func(s string) {
 		current := le.layer.Grid.Origin
 		selected := le.selectOrigin.SelectedIndex()
@@ -116,7 +116,7 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		}
 	}
 
-	labelOrientation := widget.NewLabel(resources.OrientationLabel.String())
+	labelOrientation := widget.NewLabel(text.OrientationLabel.String())
 	le.selectOrientation.OnChanged = func(s string) {
 		current := le.layer.Grid.Orientation
 		selected := le.selectOrientation.SelectedIndex()
@@ -126,8 +126,8 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		}
 	}
 
-	scanLabel := widget.NewLabel(resources.LengthLabel.String())
-	scanCheckLabel := widget.NewLabel(resources.ScanLabel.String())
+	scanLabel := widget.NewLabel(text.LengthLabel.String())
+	scanCheckLabel := widget.NewLabel(text.ScanLabel.String())
 	le.scanBox = NewRangeIntBox(le.fields.Scan, le.scanBounds)
 	le.fields.Scan.AddListener(binding.NewDataListener(func() {
 		scan, _ := le.fields.Scan.Get()
@@ -137,11 +137,11 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	}))
 	le.checkScan = widget.NewCheck("", checkRangeBox(le.scanBox, le.fields.Scan))
 
-	colorsLabel := widget.NewLabel(resources.ColorsLabel.String())
+	colorsLabel := widget.NewLabel(text.ColorsLabel.String())
 	// gradientLabel := widget.NewLabel(resources.GradientLabel.String())
 
-	huelabel := widget.NewLabel(resources.HueShiftLabel.String())
-	hueCheckLabel := widget.NewLabel(resources.DynamicLabel.String())
+	huelabel := widget.NewLabel(text.HueShiftLabel.String())
+	hueCheckLabel := widget.NewLabel(text.DynamicLabel.String())
 	le.hueBox = NewRangeIntBox(le.fields.HueShift, le.hueBounds)
 	le.fields.HueShift.AddListener(binding.NewDataListener(func() {
 		shift, _ := le.fields.HueShift.Get()
@@ -151,8 +151,8 @@ func (le *LayerEditor) createForm() *fyne.Container {
 	}))
 	le.checkHue = widget.NewCheck("", checkRangeBox(le.hueBox, le.fields.HueShift))
 
-	ratelabel := widget.NewLabel(resources.RateLabel.String())
-	rateCheckLabel := widget.NewLabel(resources.OverrideLabel.String())
+	ratelabel := widget.NewLabel(text.RateLabel.String())
+	rateCheckLabel := widget.NewLabel(text.OverrideLabel.String())
 	le.rateBox = NewRangeIntBox(le.fields.Rate, le.rateBounds)
 	le.fields.Rate.AddListener(binding.NewDataListener(func() {
 		rate, _ := le.fields.Rate.Get()

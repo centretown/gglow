@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"gglow/glow"
 	"gglow/iohandler"
-	"gglow/resources"
+	"gglow/text"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -44,7 +44,7 @@ func NewSqlHandler(driver, dsn string) (*SqlHandler, error) {
 	var err error
 	sqlh.db, err = sql.Open(driver, dsn)
 	if err != nil {
-		iohandler.LogError(resources.MsgParseEffectPath.Format(dsn), err)
+		iohandler.LogError(text.MsgParseEffectPath.Format(dsn), err)
 		return nil, err
 	}
 	return sqlh, nil
@@ -142,7 +142,7 @@ func (sqlh *SqlHandler) isDuplicateFolder(folder string) error {
 	if err != nil {
 		return err
 	}
-	return fmt.Errorf(resources.MsgDuplicate.String())
+	return fmt.Errorf(text.MsgDuplicate.String())
 }
 
 func (sqlh *SqlHandler) CreateNewFolder(folder string) error {
@@ -162,7 +162,7 @@ func (sqlh *SqlHandler) CreateNewFolder(folder string) error {
 func (sqlh *SqlHandler) isDuplicate(title string) error {
 	_, found := sqlh.keyMap[title]
 	if found {
-		return fmt.Errorf("%s %s", title, resources.MsgDuplicate.String())
+		return fmt.Errorf("%s %s", title, text.MsgDuplicate.String())
 	}
 	return nil
 }

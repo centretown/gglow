@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 	"gglow/fyglow/effectio"
-	"gglow/resources"
+	"gglow/text"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -28,7 +28,7 @@ func NewFolderDialog(effect *effectio.EffectIo, window fyne.Window) *FolderDialo
 		title:  binding.NewString(),
 	}
 
-	nameLabel := widget.NewLabel(resources.FolderLabel.String())
+	nameLabel := widget.NewLabel(text.FolderLabel.String())
 	nameEntry := widget.NewEntryWithData(fd.title)
 	nameEntry.Validator = validation.NewAllStrings(fd.validateFolderName)
 
@@ -36,14 +36,14 @@ func NewFolderDialog(effect *effectio.EffectIo, window fyne.Window) *FolderDialo
 	frm := container.New(layout.NewFormLayout(),
 		nameLabel, nameEntry, sep, sep)
 
-	fd.CustomDialog = dialog.NewCustomWithoutButtons(resources.AddFolderLabel.String(),
+	fd.CustomDialog = dialog.NewCustomWithoutButtons(text.AddFolderLabel.String(),
 		frm, window)
-	fd.applyButton = widget.NewButtonWithIcon(resources.ApplyLabel.String(),
+	fd.applyButton = widget.NewButtonWithIcon(text.ApplyLabel.String(),
 		theme.ConfirmIcon(), fd.Apply)
 	fd.applyButton.Disable()
 
 	revertButton := NewButtonItem(
-		widget.NewButtonWithIcon(resources.CancelLabel.String(),
+		widget.NewButtonWithIcon(text.CancelLabel.String(),
 			theme.CancelIcon(), func() {
 				fd.CustomDialog.Hide()
 			}))

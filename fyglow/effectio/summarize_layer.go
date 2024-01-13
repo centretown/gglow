@@ -3,7 +3,7 @@ package effectio
 import (
 	"fmt"
 	"gglow/glow"
-	"gglow/resources"
+	"gglow/text"
 	"strings"
 )
 
@@ -15,20 +15,20 @@ func SummarizeLayer(layer *glow.Layer, index int) string {
 	bldr.WriteString(fmt.Sprintf("%d: ", index))
 
 	if layer.HueShift != 0 {
-		bldr.WriteString(resources.DynamicLabel.String() + space)
+		bldr.WriteString(text.DynamicLabel.String() + space)
 	} else {
-		bldr.WriteString(resources.StaticLabel.String() + space)
+		bldr.WriteString(text.StaticLabel.String() + space)
 	}
 
-	bldr.WriteString(resources.OrientationID(
+	bldr.WriteString(text.OrientationID(
 		layer.Grid.Orientation).String() + space)
 
 	if len(layer.Chroma.Colors) > 1 {
-		bldr.WriteString(resources.GradientLabel.String() + space)
+		bldr.WriteString(text.GradientLabel.String() + space)
 	}
 
 	if layer.Scan > 0 {
-		bldr.WriteString(resources.ScanLabel.String() + space)
+		bldr.WriteString(text.ScanLabel.String() + space)
 	}
 
 	if layer.Begin != 0 {
