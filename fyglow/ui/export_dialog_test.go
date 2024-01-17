@@ -47,7 +47,7 @@ func TestExportB(t *testing.T) {
 	}
 	defer ioh.OnExit()
 	effect := effectio.NewEffect(ioh, app.Preferences(), accessor)
-	xd := NewExportDialogB(effect, window)
+	xd := NewExportDialog(effect, window)
 	xd.tree.OpenAllBranches()
 	xd.Show()
 }

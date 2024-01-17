@@ -157,7 +157,7 @@ func (ui *Ui) addShortCuts() {
 	}
 
 	export := func() {
-		exportDialog := NewExportDialogB(ui.effect, ui.window)
+		exportDialog := NewExportDialog(ui.effect, ui.window)
 		exportDialog.Resize(ui.window.Canvas().Size())
 		exportDialog.Start()
 	}
