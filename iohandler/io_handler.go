@@ -2,7 +2,12 @@ package iohandler
 
 import "gglow/glow"
 
-const Dots = ".."
+const DOTS = ".."
+
+type KeyValue struct {
+	Key   string
+	Value string
+}
 
 type OutHandler interface {
 	Create(name string) error
@@ -16,11 +21,12 @@ type InHandler interface {
 	FolderName() string
 	EffectName() string
 	ReadEffect(title string) (*glow.Frame, error)
+	ListFolder(string) ([]KeyValue, error)
 	ReadFolder(string) ([]string, error)
 
 	ValidateNewFolderName(title string) error
 	ValidateNewEffectName(title string) error
-	IsFolder(key string) bool
+	IsFolder(folder, title string) bool
 	IsRootFolder() bool
 
 	ListCurrent() []string

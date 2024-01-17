@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gglow/transactions"
+	"gglow/action"
 	"os"
 )
 
@@ -27,7 +27,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	transaction, err := transactions.ReadTransaction(transactionFile)
+	transaction, err := action.ReadTransaction(transactionFile)
 	if err != nil {
 		flag.Usage()
 		fmt.Println(transactionFile, err)

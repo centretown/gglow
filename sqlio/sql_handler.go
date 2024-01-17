@@ -32,7 +32,7 @@ type SqlHandler struct {
 
 func NewSqlHandler(driver, dsn string) (*SqlHandler, error) {
 	sqlh := &SqlHandler{
-		folder:     iohandler.Dots,
+		folder:     iohandler.DOTS,
 		keyList:    make([]string, 0),
 		keyMap:     make(map[string]interface{}),
 		folders:    make([]string, 0),
@@ -63,11 +63,11 @@ func (sqlh *SqlHandler) OnExit() error {
 }
 
 func (sqlh *SqlHandler) SetRootCurrent() ([]string, error) {
-	return sqlh.SetCurrentFolder(iohandler.Dots)
+	return sqlh.SetCurrentFolder(iohandler.DOTS)
 }
 
 func (sqlh *SqlHandler) IsRootFolder() bool {
-	return sqlh.folder == iohandler.Dots
+	return sqlh.folder == iohandler.DOTS
 }
 
 func (sqlh *SqlHandler) Ping() error {
@@ -106,13 +106,13 @@ func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 	return frame, nil
 }
 
-func (sqlh *SqlHandler) IsFolder(title string) bool {
-	return title == iohandler.Dots || sqlh.folder == iohandler.Dots
+func (sqlh *SqlHandler) IsFolder(folder, title string) bool {
+	return title == iohandler.DOTS || folder == iohandler.DOTS
 }
 
 func (sqlh *SqlHandler) WriteFolder(folder string) error {
 	sqlh.folder = folder
-	return sqlh.WriteEffect(iohandler.Dots, nil)
+	return sqlh.WriteEffect(iohandler.DOTS, nil)
 }
 
 func (sqlh *SqlHandler) ValidateNewFolderName(title string) error {
@@ -134,7 +134,7 @@ func (sqlh *SqlHandler) ValidateNewEffectName(title string) error {
 }
 
 func (sqlh *SqlHandler) isDuplicateFolder(folder string) error {
-	err := sqlh.findEffect(folder, iohandler.Dots)
+	err := sqlh.findEffect(folder, iohandler.DOTS)
 	if err == sql.ErrNoRows {
 		return nil
 	}
@@ -224,6 +224,32 @@ func (sqlh *SqlHandler) findEffect(folder, title string) error {
 	err := row.Scan(&result)
 	return err
 }
+func (sqlh *SqlHandler) ListFolder(folder string) (list []iohandler.KeyValue, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	list = make([]iohandler.KeyValue, 0)
+	var (
+		query = sqlh.schema.ListFolder(folder)
+		rows  *sql.Rows
+	)
+
+	rows, err = sqlh.db.QueryContext(ctx, query)
+	if err != nil {
+		return list, fmt.Errorf("ListFolder '%s' %v", query, err)
+	}
+	defer rows.Close()
+
+	var scanFolder, scanTitle string
+	for rows.Next() {
+		err = rows.Scan(&scanFolder, &scanTitle)
+		if err != nil {
+			break
+		}
+		list = append(list, iohandler.KeyValue{Key: scanFolder, Value: scanTitle})
+	}
+	return
+}
 
 func (sqlh *SqlHandler) ReadFolder(folder string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -235,15 +261,15 @@ func (sqlh *SqlHandler) ReadFolder(folder string) ([]string, error) {
 	}
 	defer rows.Close()
 
-	var title string
+	var scanFolder, scanTitle string
 	ls := make([]string, 0)
 
 	for rows.Next() {
-		err = rows.Scan(&title)
+		err = rows.Scan(&scanFolder, &scanTitle)
 		if err != nil {
 			break
 		}
-		ls = append(ls, title)
+		ls = append(ls, scanFolder)
 	}
 	return ls, err
 }

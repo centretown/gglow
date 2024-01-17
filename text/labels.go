@@ -42,12 +42,13 @@ const (
 	GridLayoutLabel
 	AddEffectLabel
 	AddFolderLabel
-	TitleLabel
+	EffectLabel
 	FolderLabel
 	SaveLabel
 	NewLabel
 	RemoveLabel
 	TrashLabel
+	InsertLabel
 )
 
 var entryLabels = []string{
@@ -64,7 +65,7 @@ var entryLabels = []string{
 	"Interval (ms)", "Override",
 	"Cut", "Copy", "Paste", "Edit", "Picker",
 	"Layout", "Add Effect", "Add Folder", "Title", "Folder",
-	"Save", "New", "Remove", "Trash",
+	"Save", "New", "Remove", "Trash", "Insert",
 }
 
 func (id LabelID) String() string {

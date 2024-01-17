@@ -1,4 +1,4 @@
-package transactions
+package action
 
 import (
 	"fmt"
@@ -177,7 +177,8 @@ func (action *Action) writeDatabase(dataIn iohandler.IoHandler, dataOut iohandle
 
 	for _, folder := range folders {
 
-		if dataIn.IsFolder(folder) && action.filter.IsSelected(folder) {
+		if action.filter.IsSelected(folder) {
+			// if dataIn.IsFolder(folder) && action.filter.IsSelected(folder) {
 			action.AddNote(fmt.Sprintf("add folder %s", folder))
 			items, err := dataIn.SetCurrentFolder(folder)
 			if err != nil {
@@ -211,7 +212,7 @@ func (action *Action) writeFolder(folder string, items []string, dataIn iohandle
 	}
 
 	for _, item := range items {
-		if !dataIn.IsFolder(item) && action.filter.IsSelected(folder, item) {
+		if !dataIn.IsFolder(folder, item) && action.filter.IsSelected(folder, item) {
 			action.AddNote(fmt.Sprintf("add effect %s.%s", folder, item))
 			frame, err := dataIn.ReadEffect(item)
 			if err != nil {

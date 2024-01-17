@@ -74,26 +74,15 @@ func NewFrameTools(effect *effectio.EffectIo, window fyne.Window,
 	}))
 
 	AddGlobalShortCut(window,
-		&GlobalShortCut{Shortcut: CtrlS,
-			Action: effectSave})
-
+		&GlobalShortCut{Shortcut: CtrlS, Action: effectSave})
 	AddGlobalShortCut(window,
-		&GlobalShortCut{Shortcut: CtrlN,
-			Action: effectAdd})
-
+		&GlobalShortCut{Shortcut: CtrlN, Action: effectAdd})
 	AddGlobalShortCut(window,
-		&GlobalShortCut{Shortcut: ShiftCtrlN,
-			Action: func() {
-				addFolder.Start()
-			},
-		})
+		&GlobalShortCut{Shortcut: ShiftCtrlN, Action: addFolder.Start})
 
 	itemNewFolder := &fyne.MenuItem{Label: text.NewLabel.String(),
-		Icon: theme.FolderNewIcon(),
-		Action: func() {
-			addFolder.Start()
-		},
-		Shortcut: ShiftCtrlN,
+		Icon:   theme.FolderNewIcon(),
+		Action: addFolder.Start, Shortcut: ShiftCtrlN,
 	}
 	itemTrash := &fyne.MenuItem{Label: text.TrashLabel.String(),
 		Icon:   theme.DeleteIcon(),
@@ -123,12 +112,11 @@ func NewFrameTools(effect *effectio.EffectIo, window fyne.Window,
 	itemEffects := &fyne.MenuItem{
 		Label: text.EffectsLabel.String(),
 		ChildMenu: &fyne.Menu{Label: "",
-			Items: []*fyne.MenuItem{
-				itemSave, itemNew, itemRemove}},
+			Items: []*fyne.MenuItem{itemSave, itemNew, itemRemove}},
 	}
 
-	menu.Items = append(menu.Items, &fyne.MenuItem{IsSeparator: true},
-		itemEffects)
+	menu.Items = append(menu.Items,
+		&fyne.MenuItem{IsSeparator: true}, itemEffects)
 
 	return ft
 }

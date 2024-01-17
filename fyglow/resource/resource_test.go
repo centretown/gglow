@@ -19,19 +19,19 @@ func TestIcons(t *testing.T) {
 		fmt.Println(i+1, string(s))
 	}
 
-	res := Icon(IconLayer)
+	res := Icon(IconLayerID)
 	btn := widget.NewButtonWithIcon("", res, func() {})
 	btn.CreateRenderer()
 
-	res = Icon(IconLayerAdd)
+	res = Icon(IconLayerAddID)
 	btn = widget.NewButtonWithIcon("", res, func() {})
 	btn.CreateRenderer()
 
-	res = Icon(IconLayerRemove)
+	res = Icon(IconLayerRemoveID)
 	btn = widget.NewButtonWithIcon("", res, func() {})
 	btn.CreateRenderer()
 
-	res = Icon(IconLayerInsert)
+	res = Icon(IconLayerInsertID)
 	btn = widget.NewButtonWithIcon("", res, func() {})
 	btn.CreateRenderer()
 }

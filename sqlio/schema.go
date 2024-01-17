@@ -7,6 +7,7 @@ import (
 
 func init() {
 	for _, schema := range Schemas {
+		schema.ListFolder = schema.listFolder
 		schema.SelectFolder = schema.setFolder
 		schema.WriteEffect = schema.writeEffect
 		schema.ExistsEffect = schema.existsEffect
@@ -26,6 +27,7 @@ type Schema struct {
 	CreateSQL []string
 	DropSQL   []string
 
+	ListFolder   func(folder string) (query string)
 	SelectFolder func(folder string) (query string)
 	ExistsEffect func(folder, title string) (query string)
 	ReadEffect   func(folder, title string) (query string)
@@ -45,8 +47,15 @@ var Schemas = []*Schema{
 	schema_v1,
 }
 
+func (schema *Schema) listFolder(folder string) string {
+	if folder == "" || folder == iohandler.DOTS {
+		return schema.selectFolderSQL
+	}
+	return fmt.Sprintf(schema.listEffectsSQL, folder)
+}
+
 func (schema *Schema) setFolder(folder string) string {
-	if folder == "" || folder == ".." {
+	if folder == "" || folder == iohandler.DOTS {
 		return schema.selectFolderSQL
 	}
 	return fmt.Sprintf(schema.listEffectsSQL, folder)

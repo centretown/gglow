@@ -9,6 +9,7 @@ import (
 	"gglow/iohandler"
 	"gglow/settings"
 	"gglow/store"
+	"gglow/text"
 	"os"
 
 	"fyne.io/fyne/v2"
@@ -44,7 +45,7 @@ func main() {
 
 	theme := resource.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
-	window := app.NewWindow("")
+	window := app.NewWindow(text.GlowLabel.String())
 	effect := effectio.NewEffect(storageHandler, preferences, accessor)
 	ui := ui.NewUi(app, window, effect, theme)
 

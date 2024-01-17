@@ -1,14 +1,8 @@
-package transactions
+package action
 
-type FilterItem struct {
-	Folder  string
-	Effects []string
-}
-
-type FilterItems []FilterItem
 type Filter map[string]map[string]bool
 
-func NewFilter(filters FilterItems) Filter {
+func NewFilter(filters []FilterItem) Filter {
 	filterMap := make(map[string]map[string]bool)
 	for _, filter := range filters {
 		effectMap := make(map[string]bool)

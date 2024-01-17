@@ -13,9 +13,9 @@ import (
 type EffectIo struct {
 	iohandler.IoHandler
 
-	config *iohandler.Accessor
-	frame  *glow.Frame
-	layer  *glow.Layer
+	accessor *iohandler.Accessor
+	frame    *glow.Frame
+	layer    *glow.Layer
 
 	folderList []string
 	folderName string
@@ -32,7 +32,7 @@ type EffectIo struct {
 	saveActions []func(*glow.Frame)
 }
 
-func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, config *iohandler.Accessor) *EffectIo {
+func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, accessor *iohandler.Accessor) *EffectIo {
 
 	eff := &EffectIo{
 		IoHandler:   io,
@@ -44,14 +44,14 @@ func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, config *ioh
 		saveActions: make([]func(*glow.Frame), 0),
 		summaryList: make([]string, 0),
 		folderList:  make([]string, 0),
-		config:      config,
+		accessor:    accessor,
 	}
 
 	eff.frame = glow.NewFrame()
 	eff.layer = eff.frame.Layers[0]
 
-	folder := config.Folder
-	effect := config.Effect
+	folder := accessor.Folder
+	effect := accessor.Effect
 
 	if folder != "" {
 		eff.SetCurrentFolder(folder)
@@ -60,6 +60,10 @@ func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, config *ioh
 		eff.LoadEffect(effect)
 	}
 	return eff
+}
+
+func (eff *EffectIo) IsFolder(title string) bool {
+	return eff.IoHandler.IsFolder(eff.folderName, title)
 }
 
 func (eff *EffectIo) SummaryList() []string {
@@ -155,6 +159,10 @@ func (eff *EffectIo) AddLayerListener(listener binding.DataListener) {
 }
 func (eff *EffectIo) AddChangeListener(listener binding.DataListener) {
 	eff.hasChanged.AddListener(listener)
+}
+
+func (eff *EffectIo) InsertLayer() {
+	eff.insertLayer(eff.layerIndex)
 }
 
 func (eff *EffectIo) insertLayer(pos int) {

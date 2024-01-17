@@ -156,66 +156,19 @@ func (ui *Ui) addShortCuts() {
 		os.Exit(0)
 	}
 
+	export := func() {
+		exportDialog := NewExportDialogB(ui.effect, ui.window)
+		exportDialog.Resize(ui.window.Canvas().Size())
+		exportDialog.Start()
+	}
+
 	AddGlobalShortCut(ui.window,
-		&GlobalShortCut{Shortcut: CtrlQ,
-			Action: exit,
-		})
+		&GlobalShortCut{Shortcut: CtrlQ, Action: exit})
+	AddGlobalShortCut(ui.window,
+		&GlobalShortCut{Shortcut: CtrlE, Action: export})
+
+	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
+		&fyne.MenuItem{Label: "Export", Shortcut: CtrlE, Action: export})
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
 		&fyne.MenuItem{Label: "Quit", Shortcut: CtrlQ, Action: exit})
 }
-
-// 	fileMenu := &fyne.Menu{
-// 		Label: "File",
-// 		Items: []*fyne.MenuItem{
-// 			{Label: "New Folder",
-// 				Icon:   theme.FolderNewIcon(),
-// 				Action: func() { fmt.Println("New Folder") },
-// 			},
-// 			{Label: "Trash Folder",
-// 				Icon:   theme.DeleteIcon(),
-// 				Action: func() { fmt.Println("Trash Folder") },
-// 			},
-// 			{IsSeparator: true},
-// 			{Label: "New Effect",
-// 				Icon:   theme.ContentAddIcon(),
-// 				Action: func() { fmt.Println("New Effect") },
-// 			},
-// 			{Label: "Save Effect",
-// 				Icon:   theme.DocumentSaveIcon(),
-// 				Action: func() { fmt.Println("Save Effect") },
-// 			},
-// 			{Label: "Remove Effect",
-// 				Icon:   theme.ContentRemoveIcon(),
-// 				Action: func() { fmt.Println("Remove Effect") },
-// 			},
-// 		},
-// 	}
-// 	editMenu := &fyne.Menu{
-// 		Label: "Edit",
-// 		Items: []*fyne.MenuItem{
-// 			{Label: "Cut",
-// 				Icon:   theme.ContentCutIcon(),
-// 				Action: func() { fmt.Println("Cut") },
-// 			},
-// 			{IsSeparator: true},
-// 			{Label: "Copy",
-// 				Icon:   theme.ContentCopyIcon(),
-// 				Action: func() { fmt.Println("Copy") },
-// 			},
-// 			{Label: "Paste",
-// 				Icon:   theme.ContentPasteIcon(),
-// 				Action: func() { fmt.Println("Paste") },
-// 			},
-// 			{IsSeparator: true},
-// 			{Label: "New Layer",
-// 				Icon:   theme.ContentAddIcon(),
-// 				Action: func() { fmt.Println("New Layer") },
-// 			},
-// 			{Label: "Remove Layer",
-// 				Icon:   theme.ContentRemoveIcon(),
-// 				Action: func() { fmt.Println("Remove Layer") },
-// 			},
-// 		}}
-// 	main := fyne.NewMainMenu()
-// 	return main
-// }

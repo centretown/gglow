@@ -80,7 +80,7 @@ func NewStorageHandler(rootPath string) (*StorageHandler, error) {
 
 func (fh *StorageHandler) Refresh() ([]string, error) {
 	fh.Current = fh.RootURI
-	fh.folder = ".."
+	fh.folder = iohandler.DOTS
 	err := fh.makeLookupList()
 	return fh.keyList, err
 }
@@ -94,7 +94,7 @@ func (fh *StorageHandler) IsFolder(key string) bool {
 }
 
 func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
-	if folder == iohandler.Dots {
+	if folder == iohandler.DOTS {
 		return fh.Refresh()
 	}
 
@@ -138,7 +138,7 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 	currentUri := fh.Current
 	isRoot := currentUri == fh.RootURI
 	if !isRoot {
-		fh.uriMap[iohandler.Dots] = fh.Current
+		fh.uriMap[iohandler.DOTS] = fh.Current
 	}
 	fh.Current = currentUri
 
@@ -150,7 +150,7 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 
 	fh.keyList = make([]string, 0, len(uriList)+1)
 	if !isRoot {
-		fh.keyList = append(fh.keyList, iohandler.Dots)
+		fh.keyList = append(fh.keyList, iohandler.DOTS)
 	}
 
 	for _, uri := range uriList {

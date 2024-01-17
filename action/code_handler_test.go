@@ -1,4 +1,4 @@
-package transactions
+package action
 
 import (
 	"gglow/iohandler"
@@ -69,7 +69,7 @@ func writeFolder(t *testing.T, folder string, items []string, dataIn iohandler.I
 	}
 
 	for _, item := range items {
-		if !dataIn.IsFolder(item) {
+		if !dataIn.IsFolder(folder, item) {
 			frame, err := dataIn.ReadEffect(item)
 			if err != nil {
 				t.Fatal(err)

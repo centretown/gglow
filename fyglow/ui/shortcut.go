@@ -15,9 +15,10 @@ var CtrlN = &desktop.CustomShortcut{KeyName: fyne.KeyN, Modifier: fyne.KeyModifi
 var CtrlL = &desktop.CustomShortcut{KeyName: fyne.KeyL, Modifier: fyne.KeyModifierControl}
 var ShiftCtrlN = &desktop.CustomShortcut{KeyName: fyne.KeyN, Modifier: fyne.KeyModifierShift | fyne.KeyModifierControl}
 var CtrlQ = &desktop.CustomShortcut{KeyName: fyne.KeyQ, Modifier: fyne.KeyModifierControl}
+var CtrlE = &desktop.CustomShortcut{KeyName: fyne.KeyE, Modifier: fyne.KeyModifierControl}
 
-func AddGlobalShortCut(window fyne.Window, sc *GlobalShortCut) {
-	window.Canvas().AddShortcut(sc.Shortcut, func(shortcut fyne.Shortcut) {
-		sc.Action()
+func AddGlobalShortCut(window fyne.Window, cut *GlobalShortCut) {
+	window.Canvas().AddShortcut(cut.Shortcut, func(shortcut fyne.Shortcut) {
+		cut.Action()
 	})
 }

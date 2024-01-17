@@ -32,14 +32,30 @@ func (id ImageID) Load() (res fyne.Resource, err error) {
 type AppIconID int
 
 const (
-	IconLayer uint = iota
-	IconLayerAdd
-	IconLayerRemove
-	IconLayerInsert
+	IconLayerID uint = iota
+	IconLayerAddID
+	IconLayerRemoveID
+	IconLayerInsertID
 	ICON_COUNT
 )
 
 var appResoures = make([]fyne.Resource, int(ICON_COUNT))
+
+func IconLayer() fyne.Resource {
+	return appResoures[IconLayerID]
+}
+
+func IconLayerAdd() fyne.Resource {
+	return appResoures[IconLayerAddID]
+}
+
+func IconLayerRemove() fyne.Resource {
+	return appResoures[IconLayerRemoveID]
+}
+
+func IconLayerInsert() fyne.Resource {
+	return appResoures[IconLayerInsertID]
+}
 
 func Icon(i uint) fyne.Resource {
 	if i >= ICON_COUNT {
