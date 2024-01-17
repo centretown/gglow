@@ -13,7 +13,7 @@ import (
 type EffectIo struct {
 	iohandler.IoHandler
 
-	accessor *iohandler.Accessor
+	Accessor *iohandler.Accessor
 	frame    *glow.Frame
 	layer    *glow.Layer
 
@@ -44,7 +44,7 @@ func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, accessor *i
 		saveActions: make([]func(*glow.Frame), 0),
 		summaryList: make([]string, 0),
 		folderList:  make([]string, 0),
-		accessor:    accessor,
+		Accessor:    accessor,
 	}
 
 	eff.frame = glow.NewFrame()
