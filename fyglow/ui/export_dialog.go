@@ -5,6 +5,7 @@ import (
 	"gglow/text"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
@@ -12,26 +13,58 @@ import (
 
 type ExportDialog struct {
 	*dialog.CustomDialog
-	effect *effectio.EffectIo
-	data   binding.BoolTree
-	tree   *widget.Tree
+	window  fyne.Window
+	effect  *effectio.EffectIo
+	data    binding.BoolTree
+	tree    *widget.Tree
+	options *widget.CheckGroup
 }
 
 func NewExportDialog(effect *effectio.EffectIo, window fyne.Window) *ExportDialog {
 	xd := &ExportDialog{
 		effect: effect,
+		window: window,
 	}
+	xd.options = widget.NewCheckGroup(
+		[]string{"Code", "Data"}, func(s []string) {})
+	xd.options.Horizontal = true
 	xd.tree = xd.buildTree()
-	xd.CustomDialog = dialog.NewCustom("Export", text.CancelLabel.String(), xd.tree, window)
+	lay := container.NewBorder(xd.options, nil, nil, nil, xd.tree)
+	xd.CustomDialog = dialog.NewCustom("Export", "", lay, window)
 
-	xd.CustomDialog.SetOnClosed(func() {
-		action := BuildAction(xd.data, effect)
-		err := action.Process()
-		if err != nil {
-			fyne.LogError("MAKECODE", err)
-		}
-	})
+	cancel := widget.NewButton(text.CancelLabel.String(), xd.cancel)
+	apply := widget.NewButton(text.ApplyLabel.String(), xd.apply)
+	xd.SetButtons([]fyne.CanvasObject{cancel, apply})
 	return xd
+}
+
+func (xd *ExportDialog) apply() {
+	xd.CustomDialog.Hide()
+	var path string
+	dlg := dialog.NewFolderOpen(func(uri fyne.ListableURI, err error) {
+		if err != nil || uri == nil {
+			if err != nil {
+				fyne.LogError("ShowFolderOpen", err)
+			}
+			return
+		}
+		path = uri.Path()
+		act := BuildAction(xd.data, xd.effect, "code", path)
+		err = act.Process()
+		if err != nil {
+			fyne.LogError("Export Code", err)
+		}
+
+		ShowActionResults(act, xd.window)
+
+	}, xd.window)
+
+	dlg.Resize(xd.window.Canvas().Size())
+	dlg.Show()
+}
+
+func (xd *ExportDialog) cancel() {
+	xd.CustomDialog.Hide()
 }
 
 func (xd *ExportDialog) Start() {

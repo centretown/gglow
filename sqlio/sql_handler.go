@@ -90,7 +90,7 @@ func (sqlh *SqlHandler) ReadEffect(title string) (*glow.Frame, error) {
 	row := sqlh.db.QueryRowContext(ctx, q)
 	err := row.Scan(&folder, &name, &source)
 	if err != nil {
-		iohandler.LogError("sqlh.ReadEffect", err)
+		iohandler.LogError("sqlh.ReadEffect: "+title, err)
 		return nil, err
 	}
 

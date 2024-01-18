@@ -6,10 +6,15 @@ import (
 	"gglow/iohandler"
 	"strings"
 
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/widget"
+	"gopkg.in/yaml.v3"
 )
 
-func BuildAction(data binding.BoolTree, effect *effectio.EffectIo) (act *action.Action) {
+func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, driver, path string) (act *action.Action) {
 	newFilter := func(folder string, ids []string) (item action.FilterItem) {
 		item.Folder = folder
 		item.Effects = make([]string, 0)
@@ -27,13 +32,13 @@ func BuildAction(data binding.BoolTree, effect *effectio.EffectIo) (act *action.
 	act.Method = "clone"
 	act.Input = effect.Accessor
 	output := &iohandler.Accessor{
-		Driver:   "code",
-		Path:     "/home/dave/src/gglow/generated_test_tranactions_7",
-		Database: "/home/dave/src/gglow/generated_test_tranactions_7",
+		Driver:   driver,
+		Path:     path,
+		Database: path,
 	}
 	act.Outputs = append(act.Outputs, output)
 
-	folders := data.ChildIDs("")
+	folders := data.ChildIDs(binding.DataTreeRootID)
 	for _, id := range folders {
 		filter := newFilter(id, data.ChildIDs(id))
 		if len(filter.Effects) > 0 {
@@ -41,8 +46,6 @@ func BuildAction(data binding.BoolTree, effect *effectio.EffectIo) (act *action.
 		}
 	}
 
-	// out, _ := yaml.Marshal(act)
-	// fmt.Println(string(out))
 	return
 }
 
@@ -50,7 +53,7 @@ func BuildBoolTree(effect *effectio.EffectIo) binding.BoolTree {
 	data := binding.NewBoolTree()
 	folders, _ := effect.ListFolder(iohandler.DOTS)
 	for _, folder := range folders {
-		data.Append("", folder.Key, false)
+		data.Append(binding.DataTreeRootID, folder.Key, false)
 	}
 
 	for _, folder := range folders {
@@ -63,4 +66,21 @@ func BuildBoolTree(effect *effectio.EffectIo) binding.BoolTree {
 		}
 	}
 	return data
+}
+
+func ShowActionResults(act *action.Action, window fyne.Window) {
+	buf, _ := yaml.Marshal(act)
+	seg := string(buf)
+	rich := widget.NewRichTextWithText(seg)
+	scroll := container.NewScroll(rich)
+	var title string
+	if act.HasErrors() {
+		title = "Action has errors. Check the log."
+	} else {
+		title = "Action was successful!"
+	}
+
+	dlg := dialog.NewCustom(title, "Close", scroll, window)
+	dlg.Resize(window.Canvas().Size())
+	dlg.Show()
 }

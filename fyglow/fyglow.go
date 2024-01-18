@@ -18,7 +18,7 @@ import (
 
 const (
 	pathUsage   = "path to data accessor"
-	pathDefault = "accessor.yaml"
+	pathDefault = "accessor.glow"
 )
 
 var accessor = &iohandler.Accessor{
@@ -29,8 +29,8 @@ var accessor = &iohandler.Accessor{
 var accessPath string
 
 func init() {
-	flag.StringVar(&accessPath, "p", "", pathUsage+" (short form)")
-	flag.StringVar(&accessPath, "path", "", pathUsage)
+	// flag.StringVar(&accessPath, "p", "", pathUsage+" (short form)")
+	flag.StringVar(&accessPath, "", "", pathUsage)
 }
 
 func main() {
@@ -79,7 +79,7 @@ func main() {
 
 func loadStorage(preferences fyne.Preferences) (iohandler.IoHandler, *iohandler.Accessor) {
 	flag.Parse()
-
+	accessPath = flag.Arg(0)
 	if accessPath == "" {
 		accessPath = preferences.StringWithFallback(settings.AccessFile.String(), "")
 	}

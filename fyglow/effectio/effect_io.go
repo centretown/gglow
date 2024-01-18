@@ -63,7 +63,7 @@ func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, accessor *i
 }
 
 func (eff *EffectIo) IsFolder(title string) bool {
-	return eff.IoHandler.IsFolder(eff.folderName, title)
+	return eff.IoHandler.IsFolder(eff.FolderName(), title)
 }
 
 func (eff *EffectIo) SummaryList() []string {
@@ -204,11 +204,6 @@ func (eff *EffectIo) AddFolder(title string) (err error) {
 		return
 	}
 
-	// _, err = eff.SetFolder(title)
-	// if err != nil {
-	// 	return
-	// }
-
 	eff.alertFolder()
 	return
 }
@@ -269,7 +264,7 @@ func (eff *EffectIo) SaveEffect() error {
 
 	err = eff.IoHandler.WriteEffect(title, eff.frame)
 	if err != nil {
-		fyne.LogError("WriteEffect", err)
+		fyne.LogError("SaveEffect", err)
 		return err
 	}
 
