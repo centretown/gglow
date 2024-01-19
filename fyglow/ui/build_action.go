@@ -15,8 +15,9 @@ import (
 )
 
 func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []string, path string) (act *action.Action) {
-	newFilter := func(folder string, ids []string) (item action.FilterItem) {
+	selectFilter := func(folder string, ids []string) (item action.FilterItem, selected bool) {
 		item.Folder = folder
+		selected, _ = data.GetValue(folder)
 		item.Effects = make([]string, 0)
 		for _, id := range ids {
 			val, _ := data.GetValue(id)
@@ -24,6 +25,10 @@ func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []str
 				item.Effects = append(item.Effects,
 					strings.TrimPrefix(id, folder+"/"))
 			}
+		}
+
+		if len(item.Effects) > 0 {
+			selected = true
 		}
 		return
 	}
@@ -43,8 +48,8 @@ func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []str
 
 	folders := data.ChildIDs(binding.DataTreeRootID)
 	for _, id := range folders {
-		filter := newFilter(id, data.ChildIDs(id))
-		if len(filter.Effects) > 0 {
+		filter, ok := selectFilter(id, data.ChildIDs(id))
+		if ok {
 			act.FilterItems = append(act.FilterItems, filter)
 		}
 	}
