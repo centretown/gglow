@@ -4,6 +4,7 @@ import (
 	"gglow/action"
 	"gglow/fyglow/effectio"
 	"gglow/iohandler"
+	"gglow/text"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -30,7 +31,7 @@ func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []str
 
 	folders := data.ChildIDs(binding.DataTreeRootID)
 	for _, id := range folders {
-		filter, ok := selectFilter(data, id)
+		filter, ok := SelectFilter(data, id)
 		if ok {
 			act.FilterItems = append(act.FilterItems, filter)
 		}
@@ -64,12 +65,13 @@ func ConfirmAction(act *action.Action, window fyne.Window) {
 	seg := string(buf)
 	rich := widget.NewRichTextWithText(seg)
 	scroll := container.NewScroll(rich)
-	dlg := dialog.NewCustomConfirm("Confirm", "Proceed", "Cancel", scroll,
+	dlg := dialog.NewCustomConfirm(text.ConfirmLabel.String(),
+		text.ProceedLabel.String(), text.CancelLabel.String(), scroll,
 		func(confirm bool) {
 			if confirm {
 				err := act.Process()
 				if err != nil {
-					fyne.LogError("Export Code", err)
+					fyne.LogError("ConfirmAction", err)
 				}
 				ShowActionResults(act, window)
 			}
@@ -95,7 +97,7 @@ func ShowActionResults(act *action.Action, window fyne.Window) {
 	dlg.Show()
 }
 
-func selectFilter(data binding.BoolTree, folder string) (item action.FilterItem, selected bool) {
+func SelectFilter(data binding.BoolTree, folder string) (item action.FilterItem, selected bool) {
 	item.Folder = folder
 	item.Effects = make([]string, 0)
 	selected, _ = data.GetValue(folder)

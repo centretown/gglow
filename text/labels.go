@@ -56,6 +56,8 @@ const (
 	SelectLabel
 	CodeLabel
 	DataLabel
+	ConfirmLabel
+	ProceedLabel
 )
 
 var entryLabels = []string{
@@ -75,6 +77,7 @@ var entryLabels = []string{
 	"Save", "New", "Remove", "Trash",
 	"Insert", "Next", "Close", "Export", "Quit",
 	"Select", "Code", "Data",
+	"Confirm", "Proceed",
 }
 
 func (id LabelID) String() string {
