@@ -15,24 +15,6 @@ import (
 )
 
 func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []string, path string) (act *action.Action) {
-	selectFilter := func(folder string, ids []string) (item action.FilterItem, selected bool) {
-		item.Folder = folder
-		selected, _ = data.GetValue(folder)
-		item.Effects = make([]string, 0)
-		for _, id := range ids {
-			val, _ := data.GetValue(id)
-			if val {
-				item.Effects = append(item.Effects,
-					strings.TrimPrefix(id, folder+"/"))
-			}
-		}
-
-		if len(item.Effects) > 0 {
-			selected = true
-		}
-		return
-	}
-
 	act = action.NewAction()
 	act.Method = "clone"
 	act.Input = effect.Accessor
@@ -48,7 +30,7 @@ func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []str
 
 	folders := data.ChildIDs(binding.DataTreeRootID)
 	for _, id := range folders {
-		filter, ok := selectFilter(id, data.ChildIDs(id))
+		filter, ok := selectFilter(data, id)
 		if ok {
 			act.FilterItems = append(act.FilterItems, filter)
 		}
@@ -77,6 +59,25 @@ func BuildBoolTree(effect *effectio.EffectIo) binding.BoolTree {
 	return data
 }
 
+func ConfirmAction(act *action.Action, window fyne.Window) {
+	buf, _ := yaml.Marshal(act)
+	seg := string(buf)
+	rich := widget.NewRichTextWithText(seg)
+	scroll := container.NewScroll(rich)
+	dlg := dialog.NewCustomConfirm("Confirm", "Proceed", "Cancel", scroll,
+		func(confirm bool) {
+			if confirm {
+				err := act.Process()
+				if err != nil {
+					fyne.LogError("Export Code", err)
+				}
+				ShowActionResults(act, window)
+			}
+		}, window)
+	dlg.Resize(window.Canvas().Size())
+	dlg.Show()
+}
+
 func ShowActionResults(act *action.Action, window fyne.Window) {
 	buf, _ := yaml.Marshal(act)
 	seg := string(buf)
@@ -92,4 +93,23 @@ func ShowActionResults(act *action.Action, window fyne.Window) {
 	dlg := dialog.NewCustom(title, "Close", scroll, window)
 	dlg.Resize(window.Canvas().Size())
 	dlg.Show()
+}
+
+func selectFilter(data binding.BoolTree, folder string) (item action.FilterItem, selected bool) {
+	item.Folder = folder
+	item.Effects = make([]string, 0)
+	selected, _ = data.GetValue(folder)
+	ids := data.ChildIDs(folder)
+	for _, id := range ids {
+		val, _ := data.GetValue(id)
+		if val {
+			item.Effects = append(item.Effects,
+				strings.TrimPrefix(id, folder+"/"))
+		}
+	}
+
+	if len(item.Effects) > 0 {
+		selected = true
+	}
+	return
 }

@@ -88,13 +88,7 @@ func (xd *ExportDialog) apply() {
 		path = uri.Path()
 		drivers := getDrivers(xd.labels)
 		act := BuildAction(xd.data, xd.effect, drivers, path)
-		err = act.Process()
-		if err != nil {
-			fyne.LogError("Export Code", err)
-		}
-
-		ShowActionResults(act, xd.window)
-
+		ConfirmAction(act, xd.window)
 	}, xd.window)
 
 	dlg.Resize(xd.window.Canvas().Size())
