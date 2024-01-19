@@ -4,6 +4,11 @@ import "gglow/glow"
 
 const DOTS = ".."
 
+const DRIVER_MYSQL = "mysql"
+const DRIVER_SQLLITE3 = "sqlite3"
+const DRIVER_POSTGRES = "postgres"
+const DRIVER_CODE = "code"
+
 type KeyValue struct {
 	Key   string
 	Value string

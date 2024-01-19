@@ -14,7 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, driver, path string) (act *action.Action) {
+func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []string, path string) (act *action.Action) {
 	newFilter := func(folder string, ids []string) (item action.FilterItem) {
 		item.Folder = folder
 		item.Effects = make([]string, 0)
@@ -31,12 +31,15 @@ func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, driver, path 
 	act = action.NewAction()
 	act.Method = "clone"
 	act.Input = effect.Accessor
-	output := &iohandler.Accessor{
-		Driver:   driver,
-		Path:     path,
-		Database: path,
+
+	for _, driver := range drivers {
+		output := &iohandler.Accessor{
+			Driver:   driver,
+			Path:     path,
+			Database: path,
+		}
+		act.Outputs = append(act.Outputs, output)
 	}
-	act.Outputs = append(act.Outputs, output)
 
 	folders := data.ChildIDs(binding.DataTreeRootID)
 	for _, id := range folders {
@@ -65,6 +68,7 @@ func BuildBoolTree(effect *effectio.EffectIo) binding.BoolTree {
 			}
 		}
 	}
+
 	return data
 }
 

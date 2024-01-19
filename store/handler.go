@@ -5,20 +5,25 @@ import (
 	"gglow/codeio"
 	"gglow/iohandler"
 	"gglow/sqlio"
+	"path/filepath"
+	"strings"
 )
 
 func makeDSN(config *iohandler.Accessor) (dsn string) {
 	switch config.Driver {
-	case "sqlite3":
+	case iohandler.DRIVER_SQLLITE3:
+		if !strings.HasSuffix(config.Path, ".db") {
+			config.Path = filepath.Join(config.Path, "glow.db")
+		}
 		dsn = config.Path
-	case "mysql":
+	case iohandler.DRIVER_MYSQL:
 		if config.Path == "" {
 			dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
 				config.User, config.Password, config.Host, config.Port, config.Database)
 		} else {
 			dsn = config.Path
 		}
-	case "postgres":
+	case iohandler.DRIVER_POSTGRES:
 		if config.Path == "" {
 			dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 				config.Host, config.Port, config.User, config.Password, config.Database)
@@ -36,7 +41,7 @@ func NewIoHandler(config *iohandler.Accessor) (handler iohandler.IoHandler, err 
 }
 
 func NewOutHandler(config *iohandler.Accessor) (handler iohandler.OutHandler, err error) {
-	if config.Driver == "code" {
+	if config.Driver == iohandler.DRIVER_CODE {
 		handler, err = codeio.NewCodeHandler(config.Path)
 		return
 	}

@@ -168,7 +168,9 @@ func (ui *Ui) addShortCuts() {
 		&GlobalShortCut{Shortcut: CtrlE, Action: export})
 
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
-		&fyne.MenuItem{Label: "Export", Shortcut: CtrlE, Action: export})
+		&fyne.MenuItem{Label: text.ExportLabel.String(),
+			Shortcut: CtrlE, Action: export})
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
-		&fyne.MenuItem{Label: "Quit", Shortcut: CtrlQ, Action: exit})
+		&fyne.MenuItem{Label: text.QuitLabel.String(),
+			Shortcut: CtrlQ, Action: exit})
 }

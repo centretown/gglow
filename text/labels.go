@@ -49,6 +49,13 @@ const (
 	RemoveLabel
 	TrashLabel
 	InsertLabel
+	NextLabel
+	CloseLabel
+	ExportLabel
+	QuitLabel
+	SelectLabel
+	CodeLabel
+	DataLabel
 )
 
 var entryLabels = []string{
@@ -65,7 +72,9 @@ var entryLabels = []string{
 	"Interval (ms)", "Override",
 	"Cut", "Copy", "Paste", "Edit", "Picker",
 	"Layout", "Add Effect", "Add Folder", "Title", "Folder",
-	"Save", "New", "Remove", "Trash", "Insert",
+	"Save", "New", "Remove", "Trash",
+	"Insert", "Next", "Close", "Export", "Quit",
+	"Select", "Code", "Data",
 }
 
 func (id LabelID) String() string {
