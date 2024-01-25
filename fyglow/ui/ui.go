@@ -162,22 +162,11 @@ func (ui *Ui) addShortCuts() {
 		manageDialog.Show()
 	}
 
-	export := func() {
-		exportDialog := NewExportDialog(ui.effect, ui.window)
-		exportDialog.Resize(ui.window.Canvas().Size())
-		exportDialog.Start()
-	}
-
 	AddGlobalShortCut(ui.window,
 		&GlobalShortCut{Shortcut: CtrlQ, Action: exit})
 	AddGlobalShortCut(ui.window,
-		&GlobalShortCut{Shortcut: CtrlE, Action: export})
-	AddGlobalShortCut(ui.window,
 		&GlobalShortCut{Shortcut: CtrlM, Action: manage})
 
-	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
-		&fyne.MenuItem{Label: text.ExportLabel.String(),
-			Shortcut: CtrlE, Action: export})
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
 		&fyne.MenuItem{Label: "manage",
 			Shortcut: CtrlM, Action: manage})

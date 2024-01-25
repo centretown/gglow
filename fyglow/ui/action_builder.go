@@ -4,13 +4,11 @@ import (
 	"gglow/action"
 	"gglow/fyglow/effectio"
 	"gglow/iohandler"
-	"gglow/text"
 	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"gopkg.in/yaml.v3"
 )
@@ -69,47 +67,12 @@ func ConfirmObject(act *action.Action) fyne.CanvasObject {
 	return scroll
 }
 
-func ConfirmAction(act *action.Action, window fyne.Window) func(bool) {
-	return func(confirm bool) {
-		if confirm {
-			err := act.Process()
-			if err != nil {
-				fyne.LogError("ConfirmAction", err)
-			}
-			ShowActionResultsDialog(act, window)
-		}
-	}
-}
-
-func ConfirmActionDialog(act *action.Action, window fyne.Window) {
-	dlg := dialog.NewCustomConfirm(text.ConfirmLabel.String(),
-		text.ProceedLabel.String(), text.CancelLabel.String(),
-		ConfirmObject(act),
-		ConfirmAction(act, window), window)
-	dlg.Resize(window.Canvas().Size())
-	dlg.Show()
-}
-
 func ShowActionResultsObject(act *action.Action) fyne.CanvasObject {
 	buf, _ := yaml.Marshal(act)
 	seg := string(buf)
 	rich := widget.NewRichTextWithText(seg)
 	scroll := container.NewScroll(rich)
 	return scroll
-}
-
-func ShowActionResultsDialog(act *action.Action, window fyne.Window) {
-	var title string
-	if act.HasErrors() {
-		title = text.ActionError.String()
-	} else {
-		title = text.ActionSuccess.String()
-	}
-
-	dlg := dialog.NewCustom(title, text.CloseLabel.String(),
-		ShowActionResultsObject(act), window)
-	dlg.Resize(window.Canvas().Size())
-	dlg.Show()
 }
 
 func WrapVertical(top, bottom fyne.CanvasObject) fyne.CanvasObject {
