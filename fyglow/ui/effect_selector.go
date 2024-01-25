@@ -41,7 +41,7 @@ func driversFromLabels(options []string) (list []string) {
 func NewEffectSelector(data binding.BoolTree,
 	listener binding.DataListener,
 	top fyne.CanvasObject) fyne.CanvasObject {
-	tree := NewEffectTree(data, listener, createCheck, updateCheck(data, listener))
+	tree := NewEffectTreeWithListener(data, listener, CreateCheck, UpdateCheck(data, listener))
 	return container.NewBorder(
 		container.NewBorder(nil, widget.NewSeparator(), nil, nil, top),
 		nil, nil, nil, tree)

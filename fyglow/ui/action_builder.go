@@ -76,9 +76,8 @@ func ShowActionResultsObject(act *action.Action) fyne.CanvasObject {
 }
 
 func WrapVertical(top, bottom fyne.CanvasObject) fyne.CanvasObject {
-	vbox := container.NewVBox(widget.NewSeparator(), widget.NewSeparator())
 	return container.NewBorder(
-		container.NewBorder(nil, vbox, nil, nil, top),
+		container.NewBorder(nil, widget.NewSeparator(), nil, nil, top),
 		nil, nil, nil, bottom)
 }
 
@@ -102,26 +101,35 @@ func SelectBoolFilter(data binding.BoolTree, folder string) (item *action.Filter
 }
 
 func NewEffectTree(data binding.DataTree,
-	listener binding.DataListener,
 	create func(branch bool) fyne.CanvasObject,
 	update func(widget.TreeNodeID, bool, fyne.CanvasObject)) *widget.Tree {
 	return widget.NewTree(data.ChildIDs,
-		isBranch(data),
+		IsBranch(data),
 		create,
 		update)
 }
 
-func isBranch(data binding.DataTree) func(string) bool {
+func NewEffectTreeWithListener(data binding.DataTree,
+	listener binding.DataListener,
+	create func(branch bool) fyne.CanvasObject,
+	update func(widget.TreeNodeID, bool, fyne.CanvasObject)) *widget.Tree {
+	return widget.NewTree(data.ChildIDs,
+		IsBranch(data),
+		create,
+		update)
+}
+
+func IsBranch(data binding.DataTree) func(string) bool {
 	return func(id string) bool {
 		return len(data.ChildIDs(id)) > 0
 	}
 }
 
-func createCheck(branch bool) fyne.CanvasObject {
+func CreateCheck(branch bool) fyne.CanvasObject {
 	return widget.NewCheck("NewCheck template", func(b bool) {})
 }
 
-func updateCheck(data binding.DataTree,
+func UpdateCheck(data binding.DataTree,
 	listener binding.DataListener) func(widget.TreeNodeID, bool, fyne.CanvasObject) {
 
 	return func(id widget.TreeNodeID, branch bool, o fyne.CanvasObject) {
@@ -131,5 +139,17 @@ func updateCheck(data binding.DataTree,
 		bb := i.(binding.Bool)
 		check.Bind(bb)
 		bb.AddListener(listener)
+	}
+}
+
+func CreateLabel(branch bool) fyne.CanvasObject {
+	return widget.NewLabel("NewLabel template")
+}
+
+func UpdateLabel(data binding.DataTree) func(widget.TreeNodeID, bool, fyne.CanvasObject) {
+
+	return func(id widget.TreeNodeID, branch bool, o fyne.CanvasObject) {
+		label := o.(*widget.Label)
+		label.SetText(id)
 	}
 }

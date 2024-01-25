@@ -51,9 +51,9 @@ func NewManager(effect *effectio.EffectIo, window fyne.Window) *Manager {
 	}
 
 	mgr.listener = binding.NewDataListener(mgr.listen)
-	mgr.tree = NewEffectTree(mgr.data, mgr.listener,
-		createCheck,
-		updateCheck(mgr.data, mgr.listener))
+	mgr.tree = NewEffectTreeWithListener(mgr.data, mgr.listener,
+		CreateCheck,
+		UpdateCheck(mgr.data, mgr.listener))
 
 	mgr.tabList[STEP_FOLDER] = mgr.destinationTab()
 	mgr.path.AddListener(binding.NewDataListener(func() {

@@ -35,13 +35,14 @@ type Ui struct {
 	frameEditor *FrameEditor
 	layerEditor *LayerEditor
 
-	editor  *fyne.Container
-	split   *container.Split
-	isSplit bool
+	editor    *fyne.Container
+	splitView *container.Split
+	view      int
 
 	mainContainer *fyne.Container
 	isMobile      bool
 	mainMenu      *fyne.Menu
+	tree          *widget.Tree
 }
 
 func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *resource.GlowTheme) *Ui {
@@ -54,16 +55,16 @@ func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *r
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
 		mainMenu:    fyne.NewMenu(""),
+		tree:        NewTreeSelector(effect),
 	}
 
 	window.SetContent(ui.BuildContent())
-
 	return ui
 }
 
 func (ui *Ui) OnExit() {
 	ui.stripPlayer.OnExit()
-	ui.preferences.SetBool(settings.ContentSplit.String(), ui.isSplit)
+	ui.preferences.SetInt(settings.ContentView.String(), ui.view)
 }
 
 func (ui *Ui) layoutContent() *fyne.Container {
@@ -71,6 +72,7 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		ui.layerEditor.Container)
 
 	editButton := widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {})
+	treeButton := widget.NewButtonWithIcon("", theme.ListIcon(), func() {})
 	popUp := widget.NewPopUpMenu(ui.mainMenu, ui.window.Canvas())
 	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
 	menuButton.OnTapped = func() {
@@ -80,7 +82,7 @@ func (ui *Ui) layoutContent() *fyne.Container {
 	}
 
 	selectorMenu := container.NewBorder(nil, nil,
-		container.NewHBox(menuButton, editButton), nil, ui.effectSelect.SelectEntry)
+		container.NewHBox(menuButton, editButton, treeButton), nil, ui.effectSelect.SelectEntry)
 
 	if ui.isMobile {
 		dropDown := dialog.NewCustom(text.EditLabel.String(), "hide", ui.editor, ui.window)
@@ -91,23 +93,40 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
 	} else {
 
-		ui.isSplit = ui.preferences.BoolWithFallback(settings.ContentSplit.String(), true)
-		ui.split = container.NewHSplit(ui.editor, ui.playContainer)
+		ui.view = ui.preferences.IntWithFallback(settings.ContentView.String(), 1)
+		ui.splitView = container.NewHSplit(ui.editor, ui.playContainer)
 
-		setSplit := func(isSplit bool) {
-			if isSplit {
-				ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.split}
-			} else {
+		setSplit := func(view int) {
+			ui.view = view
+			switch view {
+			case 0:
 				ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.playContainer}
+				return
+			case 1:
+				ui.splitView.Leading = ui.editor
+			case 2:
+				ui.splitView.Leading = ui.tree
 			}
+			ui.splitView.Refresh()
+			ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.splitView}
 		}
 
 		ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
-		setSplit(ui.isSplit)
+		setSplit(ui.view)
 
 		editButton.OnTapped = func() {
-			ui.isSplit = !ui.isSplit
-			setSplit(ui.isSplit)
+			if ui.view == 1 {
+				setSplit(0)
+			} else {
+				setSplit(1)
+			}
+		}
+		treeButton.OnTapped = func() {
+			if ui.view == 2 {
+				setSplit(0)
+			} else {
+				setSplit(2)
+			}
 		}
 	}
 

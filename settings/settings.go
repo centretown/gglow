@@ -7,7 +7,7 @@ const (
 	StripRows
 	ContentWidth
 	ContentHeight
-	ContentSplit
+	ContentView
 	GlowThemeVariant
 	GlowThemeScale
 	AccessFile
@@ -18,7 +18,7 @@ var settings = []string{
 	"strip_rows",
 	"content_width",
 	"content_height",
-	"content_split",
+	"content_view",
 	"theme_variant",
 	"theme_scale",
 	"access_file",
