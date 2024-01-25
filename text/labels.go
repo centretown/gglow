@@ -58,6 +58,12 @@ const (
 	DataLabel
 	ConfirmLabel
 	ProceedLabel
+	DestinationLabel
+	ProfileLabel
+	ActionError
+	ActionSuccess
+	ManageLabel
+	ReviewLabel
 )
 
 var entryLabels = []string{
@@ -78,6 +84,10 @@ var entryLabels = []string{
 	"Insert", "Next", "Close", "Export", "Quit",
 	"Select", "Code", "Data",
 	"Confirm", "Proceed",
+	"Destination", "Profile",
+	"Action has errors. Check the log.",
+	"Action was successful!",
+	"Manage", "Review",
 }
 
 func (id LabelID) String() string {

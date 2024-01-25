@@ -10,7 +10,7 @@ import (
 type Action struct {
 	Method      string
 	Input       *iohandler.Accessor
-	FilterItems []FilterItem
+	FilterItems []*FilterItem
 	Outputs     []*iohandler.Accessor
 	Notes       []string
 	Errors      []string
@@ -20,7 +20,7 @@ type Action struct {
 func NewAction() *Action {
 	a := &Action{
 		Input:       &iohandler.Accessor{},
-		FilterItems: make([]FilterItem, 0),
+		FilterItems: make([]*FilterItem, 0),
 		Outputs:     make([]*iohandler.Accessor, 0),
 		Notes:       make([]string, 0),
 		Errors:      make([]string, 0),

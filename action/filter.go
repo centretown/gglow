@@ -2,7 +2,7 @@ package action
 
 type Filter map[string]map[string]bool
 
-func NewFilter(filters []FilterItem) Filter {
+func NewFilter(filters []*FilterItem) Filter {
 	filterMap := make(map[string]map[string]bool)
 	for _, filter := range filters {
 		effectMap := make(map[string]bool)
