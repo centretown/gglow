@@ -19,9 +19,28 @@ type Accessor struct {
 	Effect   string
 }
 
+type AccessorView struct {
+	Driver   string
+	Path     string
+	Host     string
+	Port     string
+	Database string
+}
+
 func NewAccessor() *Accessor {
 	cf := &Accessor{}
 	return cf
+}
+
+func NewAccessorView(accessor *Accessor) *AccessorView {
+	av := &AccessorView{
+		Driver:   accessor.Driver,
+		Path:     accessor.Path,
+		Host:     accessor.Host,
+		Port:     accessor.Port,
+		Database: accessor.Database,
+	}
+	return av
 }
 
 func LoadAccessor(path string) (accessor *Accessor, err error) {

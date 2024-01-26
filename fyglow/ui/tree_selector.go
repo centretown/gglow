@@ -21,7 +21,7 @@ func OnTreeSelected(effect *effectio.EffectIo, data binding.BoolTree) func(widge
 		if len(segment) < 1 {
 			return
 		}
-		effect.SetCurrentFolder(segment[0])
+		effect.LoadFolder(segment[0])
 		if len(segment) < 2 {
 			return
 		}

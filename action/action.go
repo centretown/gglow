@@ -5,6 +5,8 @@ import (
 	"gglow/iohandler"
 	"gglow/store"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Action struct {
@@ -17,6 +19,15 @@ type Action struct {
 	filter      Filter
 }
 
+type ActionView struct {
+	Method      string
+	Input       *iohandler.AccessorView
+	FilterItems []*FilterItem
+	Outputs     []*iohandler.AccessorView
+	Notes       []string
+	Errors      []string
+}
+
 func NewAction() *Action {
 	a := &Action{
 		Input:       &iohandler.Accessor{},
@@ -26,6 +37,23 @@ func NewAction() *Action {
 		Errors:      make([]string, 0),
 	}
 	return a
+}
+
+func (a *Action) NewActionView() string {
+	av := &ActionView{
+		Method:      a.Method,
+		Input:       iohandler.NewAccessorView(a.Input),
+		FilterItems: a.FilterItems,
+		Notes:       a.Notes,
+		Errors:      a.Errors,
+		Outputs:     make([]*iohandler.AccessorView, len(a.Outputs)),
+	}
+	for i := range a.Outputs {
+		av.Outputs[i] = iohandler.NewAccessorView(a.Outputs[i])
+	}
+	buf, _ := yaml.Marshal(av)
+	return string(buf)
+
 }
 
 func (a *Action) Process() (err error) {
@@ -178,7 +206,6 @@ func (action *Action) writeDatabase(dataIn iohandler.IoHandler, dataOut iohandle
 	for _, folder := range folders {
 
 		if action.filter.IsSelected(folder) {
-			// if dataIn.IsFolder(folder) && action.filter.IsSelected(folder) {
 			action.AddNote(fmt.Sprintf("add folder %s", folder))
 			items, err := dataIn.SetCurrentFolder(folder)
 			if err != nil {

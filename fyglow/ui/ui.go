@@ -72,17 +72,17 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		ui.layerEditor.Container)
 
 	editButton := widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {})
-	treeButton := widget.NewButtonWithIcon("", theme.ListIcon(), func() {})
-	popUp := widget.NewPopUpMenu(ui.mainMenu, ui.window.Canvas())
+	listButton := widget.NewButtonWithIcon("", theme.ListIcon(), func() {})
+	mainMenu := widget.NewPopUpMenu(ui.mainMenu, ui.window.Canvas())
 	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
 	menuButton.OnTapped = func() {
-		popUp.Move(menuButton.Position().Add(fyne.Delta{DX: 0,
+		mainMenu.Move(menuButton.Position().Add(fyne.Delta{DX: 0,
 			DY: menuButton.MinSize().Height}))
-		popUp.Show()
+		mainMenu.Show()
 	}
 
 	selectorMenu := container.NewBorder(nil, nil,
-		container.NewHBox(menuButton, editButton, treeButton), nil, ui.effectSelect.SelectEntry)
+		container.NewHBox(menuButton, editButton, listButton), nil, ui.effectSelect.Select)
 
 	if ui.isMobile {
 		dropDown := dialog.NewCustom(text.EditLabel.String(), "hide", ui.editor, ui.window)
@@ -92,45 +92,56 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		}
 		ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
 	} else {
-
-		ui.view = ui.preferences.IntWithFallback(settings.ContentView.String(), 1)
-		ui.splitView = container.NewHSplit(ui.editor, ui.playContainer)
-
-		setSplit := func(view int) {
-			ui.view = view
-			switch view {
-			case 0:
-				ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.playContainer}
-				return
-			case 1:
-				ui.splitView.Leading = ui.editor
-			case 2:
-				ui.splitView.Leading = ui.tree
-			}
-			ui.splitView.Refresh()
-			ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.splitView}
-		}
-
-		ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
-		setSplit(ui.view)
-
-		editButton.OnTapped = func() {
-			if ui.view == 1 {
-				setSplit(0)
-			} else {
-				setSplit(1)
-			}
-		}
-		treeButton.OnTapped = func() {
-			if ui.view == 2 {
-				setSplit(0)
-			} else {
-				setSplit(2)
-			}
-		}
+		ui.LayoutDesktop(selectorMenu, editButton, listButton)
 	}
 
 	return ui.mainContainer
+}
+
+func (ui *Ui) LayoutDesktop(selectorMenu fyne.CanvasObject,
+	editButton, listButton *widget.Button) {
+
+	const (
+		PLAY_VIEW = iota
+		EDIT_VIEW
+		LIST_VIEW
+	)
+
+	ui.view = ui.preferences.IntWithFallback(settings.ContentView.String(), EDIT_VIEW)
+	ui.splitView = container.NewHSplit(ui.editor, ui.playContainer)
+
+	setView := func(view int) {
+		ui.view = view
+		switch view {
+		case PLAY_VIEW:
+			ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.playContainer}
+			return
+		case EDIT_VIEW:
+			ui.splitView.Leading = ui.editor
+		case LIST_VIEW:
+			ui.splitView.Leading = ui.tree
+		}
+		ui.splitView.Refresh()
+		ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.splitView}
+	}
+
+	ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
+	setView(ui.view)
+
+	editButton.OnTapped = func() {
+		if ui.view == EDIT_VIEW {
+			setView(PLAY_VIEW)
+		} else {
+			setView(EDIT_VIEW)
+		}
+	}
+	listButton.OnTapped = func() {
+		if ui.view == LIST_VIEW {
+			setView(PLAY_VIEW)
+		} else {
+			setView(LIST_VIEW)
+		}
+	}
 }
 
 func (ui *Ui) BuildContent() *fyne.Container {
@@ -187,7 +198,7 @@ func (ui *Ui) addShortCuts() {
 		&GlobalShortCut{Shortcut: CtrlM, Action: manage})
 
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
-		&fyne.MenuItem{Label: "manage",
+		&fyne.MenuItem{Label: text.ManageLabel.String(),
 			Shortcut: CtrlM, Action: manage})
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
 		&fyne.MenuItem{Label: text.QuitLabel.String(),

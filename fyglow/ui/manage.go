@@ -64,11 +64,11 @@ func NewManager(effect *effectio.EffectIo, window fyne.Window) *Manager {
 
 	mgr.reviewLabel = widget.NewLabel(text.ReviewLabel.String())
 	mgr.tabList[STEP_REVIEW] = container.NewTabItem(text.ReviewLabel.String(),
-		WrapVertical(mgr.reviewLabel, ConfirmObject(mgr.act)))
+		WrapVertical(mgr.reviewLabel, ConfirmView(mgr.act)))
 
 	confirm := widget.NewLabel(text.ConfirmLabel.String())
 	mgr.tabList[STEP_CONFIRM] = container.NewTabItem(text.ConfirmLabel.String(),
-		WrapVertical(confirm, ConfirmObject(mgr.act)))
+		WrapVertical(confirm, ConfirmView(mgr.act)))
 
 	mgr.tabs = container.NewAppTabs(mgr.tabList...)
 	mgr.tabs.OnSelected = mgr.onSelected(effect, confirm)
@@ -94,7 +94,7 @@ func (mgr *Manager) onSelected(effect *effectio.EffectIo, confirm fyne.CanvasObj
 			path, _ := mgr.path.Get()
 			mgr.act = BuildAction(mgr.data, effect, []string{mgr.driver}, path)
 			mgr.tabList[STEP_CONFIRM].Content =
-				WrapVertical(confirm, ConfirmObject(mgr.act))
+				WrapVertical(confirm, ConfirmView(mgr.act))
 			mgr.nextButton.SetText(text.ProceedLabel.String())
 			mgr.nextButton.Importance = widget.HighImportance
 			mgr.nextButton.Refresh()
@@ -139,7 +139,7 @@ func (mgr *Manager) onProceed() {
 		mgr.reviewLabel.SetText(text.ActionSuccess.String())
 	}
 	mgr.tabList[STEP_REVIEW].Content =
-		WrapVertical(mgr.reviewLabel, ConfirmObject(mgr.act))
+		WrapVertical(mgr.reviewLabel, ConfirmView(mgr.act))
 	mgr.tabs.EnableIndex(STEP_REVIEW)
 	mgr.tabs.SelectIndex(STEP_REVIEW)
 }

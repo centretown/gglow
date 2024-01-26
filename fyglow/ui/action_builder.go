@@ -10,7 +10,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
-	"gopkg.in/yaml.v3"
 )
 
 const separator = "/"
@@ -59,18 +58,8 @@ func BuildBoolTree(effect *effectio.EffectIo) binding.BoolTree {
 	return data
 }
 
-func ConfirmObject(act *action.Action) fyne.CanvasObject {
-	buf, _ := yaml.Marshal(act)
-	seg := string(buf)
-	rich := widget.NewRichTextWithText(seg)
-	scroll := container.NewScroll(rich)
-	return scroll
-}
-
-func ShowActionResultsObject(act *action.Action) fyne.CanvasObject {
-	buf, _ := yaml.Marshal(act)
-	seg := string(buf)
-	rich := widget.NewRichTextWithText(seg)
+func ConfirmView(act *action.Action) fyne.CanvasObject {
+	rich := widget.NewRichTextWithText(act.NewActionView())
 	scroll := container.NewScroll(rich)
 	return scroll
 }
@@ -147,7 +136,6 @@ func CreateLabel(branch bool) fyne.CanvasObject {
 }
 
 func UpdateLabel(data binding.DataTree) func(widget.TreeNodeID, bool, fyne.CanvasObject) {
-
 	return func(id widget.TreeNodeID, branch bool, o fyne.CanvasObject) {
 		label := o.(*widget.Label)
 		label.SetText(id)
