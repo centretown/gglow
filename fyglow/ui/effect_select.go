@@ -59,28 +59,3 @@ func (fs *EffectSelect) onChange(title string) {
 		fs.effect.LoadEffect(title)
 	}
 }
-
-// func (fs *EffectSelect) Parse(title string) (result string, complete bool) {
-// 	result = title
-// 	length := len(result)
-// 	if length < 1 {
-// 		fs.Select.SetOptions(fs.options)
-// 		return
-// 	}
-
-// 	search := strings.ToLower(result)
-// 	result, complete = fs.lookup[search]
-// 	if complete {
-// 		fs.Select.SetOptions(fs.options)
-// 		return
-// 	}
-
-// 	ls := make([]string, 0)
-// 	for _, s := range fs.options {
-// 		if strings.Contains(strings.ToLower(s), search) {
-// 			ls = append(ls, s)
-// 		}
-// 	}
-// 	fs.Select.SetOptions(ls)
-// 	return
-// }

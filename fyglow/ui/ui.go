@@ -43,6 +43,7 @@ type Ui struct {
 	isMobile      bool
 	mainMenu      *fyne.Menu
 	tree          *widget.Tree
+	data          binding.BoolTree
 }
 
 func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *resource.GlowTheme) *Ui {
@@ -55,9 +56,10 @@ func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *r
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
 		mainMenu:    fyne.NewMenu(""),
-		tree:        NewTreeSelector(effect),
+		data:        BuildBoolTree(effect),
 	}
 
+	ui.tree = NewTreeSelector(effect, ui.data)
 	window.SetContent(ui.BuildContent())
 	return ui
 }
@@ -81,8 +83,9 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		mainMenu.Show()
 	}
 
-	selectorMenu := container.NewBorder(nil, nil,
-		container.NewHBox(menuButton, editButton, listButton), nil, ui.effectSelect.Select)
+	var top, bottom, buttons, right fyne.CanvasObject = nil, nil,
+		container.NewHBox(menuButton, listButton, editButton), nil
+	selectorMenu := container.NewBorder(top, bottom, buttons, right, ui.effectSelect.Select)
 
 	if ui.isMobile {
 		dropDown := dialog.NewCustom(text.EditLabel.String(), "hide", ui.editor, ui.window)
@@ -186,20 +189,20 @@ func (ui *Ui) addShortCuts() {
 		os.Exit(0)
 	}
 
-	manage := func() {
-		manageDialog := NewManager(ui.effect, ui.window)
-		manageDialog.Resize(ui.window.Canvas().Size())
-		manageDialog.Show()
+	exwiz := NewExportWizard(ui.effect, ui.window)
+	export := func() {
+		exwiz.Resize(ui.window.Canvas().Size())
+		exwiz.Show()
 	}
 
 	AddGlobalShortCut(ui.window,
 		&GlobalShortCut{Shortcut: CtrlQ, Action: exit})
 	AddGlobalShortCut(ui.window,
-		&GlobalShortCut{Shortcut: CtrlM, Action: manage})
+		&GlobalShortCut{Shortcut: CtrlE, Action: export})
 
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
-		&fyne.MenuItem{Label: text.ManageLabel.String(),
-			Shortcut: CtrlM, Action: manage})
+		&fyne.MenuItem{Label: text.ExportLabel.String(),
+			Shortcut: CtrlE, Action: export})
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
 		&fyne.MenuItem{Label: text.QuitLabel.String(),
 			Shortcut: CtrlQ, Action: exit})

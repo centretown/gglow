@@ -21,7 +21,7 @@ var settings = []string{
 	"content_view",
 	"theme_variant",
 	"theme_scale",
-	"access_file",
+	"accessor",
 }
 
 func (s Settings) String() string {
