@@ -80,7 +80,7 @@ func NewStorageHandler(rootPath string) (*StorageHandler, error) {
 
 func (fh *StorageHandler) Refresh() ([]string, error) {
 	fh.Current = fh.RootURI
-	fh.folder = iohandler.DOTS
+	fh.folder = iohandler.AsFolder()
 	err := fh.makeLookupList()
 	return fh.keyList, err
 }
@@ -94,7 +94,7 @@ func (fh *StorageHandler) IsFolder(key string) bool {
 }
 
 func (fh *StorageHandler) RefreshFolder(folder string) ([]string, error) {
-	if folder == iohandler.DOTS {
+	if iohandler.IsFolder(folder) {
 		return fh.Refresh()
 	}
 
@@ -138,7 +138,7 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 	currentUri := fh.Current
 	isRoot := currentUri == fh.RootURI
 	if !isRoot {
-		fh.uriMap[iohandler.DOTS] = fh.Current
+		fh.uriMap[iohandler.AsFolder()] = fh.Current
 	}
 	fh.Current = currentUri
 
@@ -150,7 +150,7 @@ func (fh *StorageHandler) makeLookupList() (err error) {
 
 	fh.keyList = make([]string, 0, len(uriList)+1)
 	if !isRoot {
-		fh.keyList = append(fh.keyList, iohandler.DOTS)
+		fh.keyList = append(fh.keyList, iohandler.AsFolder())
 	}
 
 	for _, uri := range uriList {
@@ -197,13 +197,7 @@ func (fh *StorageHandler) CreateNewFolder(title string) error {
 
 func (fh *StorageHandler) WriteFolder(folder string) error {
 	fh.folder = folder
-	fmt.Println(folder, "folder")
 	folder = strings.TrimSpace(folder)
-	err := iohandler.ValidateFolderName(folder)
-	if err != nil {
-		return err
-	}
-
 	path := scheme + fh.Current.Path() + "/" + folder
 	uri, err := storage.ParseURI(path)
 	if err != nil {
@@ -216,7 +210,6 @@ func (fh *StorageHandler) WriteFolder(folder string) error {
 
 func (fh *StorageHandler) WriteEffect(title string, frame *glow.Frame) error {
 	title = strings.TrimSpace(title)
-
 	path := scheme + fh.Current.Path() + "/" + fh.serializer.FileName(title)
 	uri, err := storage.ParseURI(path)
 	if err != nil {
@@ -295,25 +288,6 @@ func (fh *StorageHandler) FolderName() string {
 
 func (fh *StorageHandler) EffectName() string {
 	return fh.title
-}
-
-func (fh *StorageHandler) ValidateNewFolderName(title string) error {
-	err := iohandler.ValidateFolderName(title)
-	if err != nil {
-		return err
-	}
-
-	err = fh.isDuplicate(title)
-	return err
-}
-
-func (fh *StorageHandler) ValidateNewEffectName(title string) error {
-	err := iohandler.ValidateEffectName(title)
-	if err != nil {
-		return err
-	}
-	err = fh.isDuplicate(title)
-	return err
 }
 
 func (fh *StorageHandler) OnExit() {

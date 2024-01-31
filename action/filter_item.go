@@ -18,12 +18,12 @@ func BuildFilterItem(folder string, h iohandler.IoHandler) (filter *FilterItem, 
 	filter = NewFilterItem()
 	filter.Folder = folder
 	var effects []string
-	effects, err = h.ReadFolder(folder)
+	effects, err = h.ListEffects(folder)
 	if err != nil {
 		return filter, err
 	}
 	for _, effect := range effects {
-		if effect == iohandler.DOTS {
+		if iohandler.IsFolder(effect) {
 			continue
 		}
 		filter.Effects = append(filter.Effects, effect)
@@ -33,7 +33,7 @@ func BuildFilterItem(folder string, h iohandler.IoHandler) (filter *FilterItem, 
 
 func BuildFilterItems(h iohandler.IoHandler) (list []*FilterItem, err error) {
 	list = make([]*FilterItem, 0)
-	folders, err := h.ReadFolder(iohandler.DOTS)
+	folders, err := h.ListFolders()
 	if err != nil {
 		return
 	}

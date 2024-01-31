@@ -48,14 +48,14 @@ var Schemas = []*Schema{
 }
 
 func (schema *Schema) listFolder(folder string) string {
-	if folder == "" || folder == iohandler.DOTS {
+	if folder == "" || iohandler.IsFolder(folder) {
 		return schema.selectFolderSQL
 	}
 	return fmt.Sprintf(schema.listEffectsSQL, folder)
 }
 
 func (schema *Schema) setFolder(folder string) string {
-	if folder == "" || folder == iohandler.DOTS {
+	if folder == "" || iohandler.IsFolder(folder) {
 		return schema.selectFolderSQL
 	}
 	return fmt.Sprintf(schema.listEffectsSQL, folder)

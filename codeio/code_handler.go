@@ -40,20 +40,21 @@ func (ch *CodeHandler) Create(path string) (err error) {
 	return err
 }
 
-func (ch *CodeHandler) WriteEffect(title string, frame *glow.Frame) error {
+func (ch *CodeHandler) UpdateEffect(folder, title string, frame *glow.Frame) error {
+
+	return ch.CreateEffect(folder, title, frame)
+}
+
+func (ch *CodeHandler) CreateEffect(folder, title string, frame *glow.Frame) error {
 	ch.currentFolder.AddItem(iohandler.NewEffectItem(title, frame))
 	return nil
 }
 
-func (ch *CodeHandler) WriteFolder(title string) error {
+func (ch *CodeHandler) CreateFolder(title string) error {
 	ch.currentEffects = make([]*iohandler.EffectItem, 0)
 	ch.currentFolder = iohandler.NewFolderList(title, ch.currentEffects)
 	ch.folders = append(ch.folders, ch.currentFolder)
 	return nil
-}
-
-func (ch *CodeHandler) SetCurrentFolder(key string) ([]string, error) {
-	return emptyList, nil
 }
 
 func (ch *CodeHandler) OnExit() (err error) {

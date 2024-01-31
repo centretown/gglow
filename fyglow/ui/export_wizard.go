@@ -43,7 +43,7 @@ type ExportWizard struct {
 func NewExportWizard(effect *effectio.EffectIo, window fyne.Window) *ExportWizard {
 	exz := &ExportWizard{
 		window:  window,
-		data:    BuildBoolTree(effect),
+		data:    effect.BuildTreeData(),
 		step:    binding.NewInt(),
 		path:    binding.NewString(),
 		tabList: make([]*container.TabItem, STEP_COUNT),

@@ -30,7 +30,7 @@ type Ui struct {
 	stripTools    *fyne.Container
 	playContainer *fyne.Container
 
-	effectSelect *EffectSelect
+	// effectSelect *widget.Select
 
 	frameEditor *FrameEditor
 	layerEditor *LayerEditor
@@ -43,7 +43,6 @@ type Ui struct {
 	isMobile      bool
 	mainMenu      *fyne.Menu
 	tree          *widget.Tree
-	data          binding.BoolTree
 }
 
 func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *resource.GlowTheme) *Ui {
@@ -56,10 +55,9 @@ func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *r
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
 		mainMenu:    fyne.NewMenu(""),
-		data:        BuildBoolTree(effect),
 	}
 
-	ui.tree = NewTreeSelector(effect, ui.data)
+	ui.tree = NewTreeSelector(effect)
 	window.SetContent(ui.BuildContent())
 	return ui
 }
@@ -83,9 +81,10 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		mainMenu.Show()
 	}
 
-	var top, bottom, buttons, right fyne.CanvasObject = nil, nil,
-		container.NewHBox(menuButton, listButton, editButton), nil
-	selectorMenu := container.NewBorder(top, bottom, buttons, right, ui.effectSelect.Select)
+	// var top, bottom, buttons, right fyne.CanvasObject = nil, nil,
+	// 	container.NewHBox(menuButton, listButton, editButton), nil
+	// selectorMenu := container.NewBorder(top, bottom, buttons, right, ui.effectSelect)
+	selectorMenu := container.NewHBox(menuButton, listButton, editButton)
 
 	if ui.isMobile {
 		dropDown := dialog.NewCustom(text.EditLabel.String(), "hide", ui.editor, ui.window)
@@ -157,7 +156,7 @@ func (ui *Ui) BuildContent() *fyne.Container {
 	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.effect, ui.stripLayout)
 	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
-	ui.effectSelect = NewEffectSelect(ui.effect)
+	// ui.effectSelect = NewEffectSelector(ui.effect)
 
 	ui.frameEditor = NewFrameEditor(ui.effect, ui.window, ui.mainMenu)
 	ui.layerEditor = NewLayerEditor(ui.effect, ui.window, ui.mainMenu)

@@ -32,9 +32,7 @@ func NewFrameTools(effect *effectio.EffectIo, window fyne.Window,
 	}
 
 	effectAdd := func() {
-		if !effect.IsRootFolder() {
-			addEffect.Start()
-		}
+		addEffect.Start()
 	}
 
 	folderAdd := func() {
@@ -58,13 +56,14 @@ func NewFrameTools(effect *effectio.EffectIo, window fyne.Window,
 	ft.Toolbar.Append(NewButtonItem(
 		widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {})))
 
-	effect.AddFolderListener(binding.NewDataListener(func() {
-		if effect.IsRootFolder() {
-			effectButton.Disable()
-		} else {
-			effectButton.Enable()
-		}
-	}))
+	// effect.AddFolderListener(binding.NewDataListener(func() {
+	// 	if effect.IsRootFolder() {
+	// 		effectButton.Disable()
+	// 	} else {
+	// 		effectButton.Enable()
+	// 	}
+	// }))
+
 	effect.AddChangeListener(binding.NewDataListener(func() {
 		if effect.HasChanged() {
 			saveButton.Enable()

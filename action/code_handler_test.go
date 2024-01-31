@@ -40,42 +40,37 @@ func TestCodeHandler(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = dataIn.SetRootCurrent()
+
+	folders, err := dataIn.ListFolders()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	list := dataIn.ListCurrent()
-	for _, item := range list {
-		items, err := dataIn.SetCurrentFolder(item)
+	for _, folder := range folders {
+		items, err := dataIn.ListEffects(folder)
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		_, err = dataOut.SetCurrentFolder(item)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		writeFolder(t, item, items, dataIn, dataOut)
+		writeFolder(t, folder, items, dataIn, dataOut)
 	}
 }
 
 func writeFolder(t *testing.T, folder string, items []string, dataIn iohandler.IoHandler,
 	dataOut iohandler.OutHandler) {
-	err := dataOut.WriteFolder(folder)
+
+	err := dataOut.CreateFolder(folder)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, item := range items {
-		if !dataIn.IsFolder(folder, item) {
-			frame, err := dataIn.ReadEffect(item)
+		if !iohandler.IsFolder(item) {
+			frame, err := dataIn.ReadEffect(folder, item)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = dataOut.WriteEffect(item, frame)
+			err = dataOut.CreateEffect(folder, item, frame)
 			if err != nil {
 				t.Fatal(err)
 			}

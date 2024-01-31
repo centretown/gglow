@@ -19,41 +19,34 @@ func TestSql(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	folders := []string{iohandler.DOTS, "effects", "examples"}
-	// for _, folder := range folders {
-	// 	readFolder(t, ioh, folder)
-	// }
+	folders, err := ioh.ListFolders()
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, folder := range folders {
-		listFolder(t, ioh, folder)
+		fmt.Println(folder)
+		list, err := ioh.ListKeys(folder)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, s := range list {
+			fmt.Println("\t", s)
+		}
+
+		listEffects(t, ioh, folder)
 	}
 }
 
-func readFolder(t *testing.T, ioh iohandler.IoHandler, folder string) {
-	list, err := ioh.ReadFolder(folder)
+func listEffects(t *testing.T, ioh iohandler.IoHandler, folder string) {
+	list, err := ioh.ListEffects(folder)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, item := range list {
-		if ioh.IsFolder(folder, item) {
+		if iohandler.IsFolder(item) {
 			fmt.Print(">")
 		}
 		fmt.Println(item)
-	}
-	fmt.Println(strings.Repeat("*", 20))
-}
-
-func listFolder(t *testing.T, ioh iohandler.IoHandler, folder string) {
-
-	list, err := ioh.ListFolder(folder)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, item := range list {
-		if ioh.IsFolder(item.Key, item.Value) {
-			fmt.Print(">")
-		}
-		fmt.Println(item.Key, item.Value)
 	}
 	fmt.Println(strings.Repeat("*", 20))
 }

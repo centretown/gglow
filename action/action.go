@@ -157,11 +157,6 @@ func (a *Action) updateDatabase(output *iohandler.Accessor) (err error) {
 		}
 	}
 
-	_, err = dataIn.SetRootCurrent()
-	if err != nil {
-		return a.AddError(err)
-	}
-	a.AddNote("writing database")
 	err = a.writeDatabase(dataIn, dataOut)
 	if err != nil {
 		return a.AddError(err)
@@ -171,18 +166,11 @@ func (a *Action) updateDatabase(output *iohandler.Accessor) (err error) {
 }
 
 func (a *Action) verifyInput(config *iohandler.Accessor, refresh bool) error {
-	st, err := store.NewIoHandler(config)
+	handler, err := store.NewIoHandler(config)
 	if err != nil {
 		return a.AddError(err)
 	}
-	defer st.OnExit()
-
-	if refresh {
-		_, err = st.SetRootCurrent()
-		if err != nil {
-			return a.AddError(err)
-		}
-	}
+	handler.OnExit()
 	return nil
 }
 
@@ -195,9 +183,9 @@ func (a *Action) verifyOutput(config *iohandler.Accessor) error {
 }
 
 func (action *Action) writeDatabase(dataIn iohandler.IoHandler, dataOut iohandler.OutHandler) error {
-	folders, err := dataIn.SetRootCurrent()
+	folders, err := dataIn.ListFolders()
 	if err != nil {
-		err = fmt.Errorf("dataIn RootFolder %s", err)
+		err = fmt.Errorf("dataIn ListFolders %s", err)
 		return err
 	}
 
@@ -207,24 +195,17 @@ func (action *Action) writeDatabase(dataIn iohandler.IoHandler, dataOut iohandle
 
 		if action.filter.IsSelected(folder) {
 			action.AddNote(fmt.Sprintf("add folder %s", folder))
-			items, err := dataIn.SetCurrentFolder(folder)
+			items, err := dataIn.ListEffects(folder)
 			if err != nil {
-				err = fmt.Errorf("set input %s", err)
-				return err
-			}
-
-			_, err = dataOut.SetCurrentFolder(folder)
-			if err != nil {
-				err = fmt.Errorf("set output %s", err)
+				err = fmt.Errorf("ReadFolder %s: %v", folder, err)
 				return err
 			}
 
 			err = action.writeFolder(folder, items, dataIn, dataOut)
 			if err != nil {
-				err = fmt.Errorf("write folder %s", err)
+				err = fmt.Errorf("writeFolder %s: %v", folder, err)
 				return err
 			}
-			dataIn.SetRootCurrent()
 		}
 	}
 	return nil
@@ -233,20 +214,19 @@ func (action *Action) writeDatabase(dataIn iohandler.IoHandler, dataOut iohandle
 func (action *Action) writeFolder(folder string, items []string, dataIn iohandler.IoHandler,
 	dataOut iohandler.OutHandler) error {
 
-	err := dataOut.WriteFolder(folder)
+	err := dataOut.CreateFolder(folder)
 	if err != nil {
 		return err
 	}
-
 	for _, item := range items {
-		if !dataIn.IsFolder(folder, item) && action.filter.IsSelected(folder, item) {
+		if !iohandler.IsFolder(item) && action.filter.IsSelected(folder, item) {
 			action.AddNote(fmt.Sprintf("add effect %s.%s", folder, item))
-			frame, err := dataIn.ReadEffect(item)
+			frame, err := dataIn.ReadEffect(folder, item)
 			if err != nil {
 				return err
 			}
 
-			err = dataOut.WriteEffect(item, frame)
+			err = dataOut.CreateEffect(folder, item, frame)
 			if err != nil {
 				return err
 			}

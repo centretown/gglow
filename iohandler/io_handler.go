@@ -2,7 +2,15 @@ package iohandler
 
 import "gglow/glow"
 
-const DOTS = ".."
+const dots = ".."
+
+func IsFolder(item string) bool {
+	return item == dots
+}
+
+func AsFolder() string {
+	return dots
+}
 
 const DRIVER_MYSQL = "mysql"
 const DRIVER_SQLLITE3 = "sqlite3"
@@ -10,40 +18,27 @@ const DRIVER_POSTGRES = "postgres"
 const DRIVER_CODE = "code"
 
 type KeyValue struct {
-	Key   string
-	Value string
+	Folder string
+	Effect string
 }
 
 type OutHandler interface {
 	Create(name string) error
-	WriteEffect(title string, frame *glow.Frame) error
-	WriteFolder(title string) error
-	SetCurrentFolder(key string) ([]string, error)
+	CreateEffect(folder, title string, frame *glow.Frame) error
+	UpdateEffect(folder, title string, frame *glow.Frame) error
+	CreateFolder(folder string) error
 	OnExit() error
 }
 
 type InHandler interface {
-	FolderName() string
-	EffectName() string
-	ReadEffect(title string) (*glow.Frame, error)
-	ListFolder(string) ([]KeyValue, error)
-	ReadFolder(string) ([]string, error)
-
-	ValidateNewFolderName(title string) error
-	ValidateNewEffectName(title string) error
-	IsFolder(folder, title string) bool
-	IsRootFolder() bool
-
-	ListCurrent() []string
-	SetCurrentFolder(key string) ([]string, error)
-	SetRootCurrent() ([]string, error)
-
+	ReadEffect(folder, title string) (*glow.Frame, error)
+	ListEffects(string) ([]string, error)
+	ListKeys(string) ([]KeyValue, error)
+	ListFolders() ([]string, error)
 	OnExit() error
 }
 
 type IoHandler interface {
 	InHandler
 	OutHandler
-	CreateNewEffect(title string, frame *glow.Frame) error
-	CreateNewFolder(title string) error
 }

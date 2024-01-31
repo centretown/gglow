@@ -1,4 +1,4 @@
-package iohandler
+package effectio
 
 import (
 	"fmt"

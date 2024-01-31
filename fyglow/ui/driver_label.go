@@ -12,7 +12,7 @@ var driverMap map[string]string = map[string]string{
 
 func DriverLabels() []string {
 	labels := make([]string, 0, len(driverMap))
-	for k, _ := range driverMap {
+	for k := range driverMap {
 		labels = append(labels, k)
 	}
 	return labels

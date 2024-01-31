@@ -103,14 +103,9 @@ func loadStorage(preferences fyne.Preferences) (iohandler.IoHandler, *iohandler.
 	}
 
 	storeHandler, err := store.NewIoHandler(accessor)
-	if err == nil {
-		_, err = storeHandler.SetRootCurrent()
-	}
-
 	if err != nil {
 		fyne.LogError("loadStorage", err)
 		os.Exit(1)
 	}
-
 	return storeHandler, accessor
 }

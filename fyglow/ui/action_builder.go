@@ -12,8 +12,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-const separator = "/"
-
 func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []string, path string) (act *action.Action) {
 	act = action.NewAction()
 	act.Method = "clone"
@@ -30,7 +28,7 @@ func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []str
 
 	folders := data.ChildIDs(binding.DataTreeRootID)
 	for _, id := range folders {
-		if filter, ok := SelectBoolFilter(data, id); ok {
+		if filter, ok := SelectActionFilter(data, id); ok {
 			act.FilterItems = append(act.FilterItems, filter)
 		}
 	}
@@ -38,24 +36,23 @@ func BuildAction(data binding.BoolTree, effect *effectio.EffectIo, drivers []str
 	return
 }
 
-func BuildBoolTree(effect *effectio.EffectIo) binding.BoolTree {
-	var data binding.BoolTree = binding.NewBoolTree()
-	folders, _ := effect.ListFolder(iohandler.DOTS)
-	for _, folder := range folders {
-		data.Append(binding.DataTreeRootID, folder.Key, false)
-	}
-
-	for _, folder := range folders {
-		ls, _ := effect.ListFolder(folder.Key)
-		for _, l := range ls {
-			if l.Key != iohandler.DOTS {
-				val := l.Value + separator + l.Key
-				data.Append(folder.Key, val, false)
-			}
+func SelectActionFilter(data binding.BoolTree, folder string) (item *action.FilterItem, selected bool) {
+	effects := make([]string, 0)
+	selected, _ = data.GetValue(folder)
+	for _, id := range data.ChildIDs(folder) {
+		if val, _ := data.GetValue(id); val {
+			effects = append(effects, strings.TrimPrefix(id, folder+effectio.PathSeparator))
 		}
 	}
 
-	return data
+	if len(effects) > 0 {
+		selected = true
+	}
+
+	if selected {
+		item = &action.FilterItem{Folder: folder, Effects: effects}
+	}
+	return
 }
 
 func ConfirmView(act *action.Action) fyne.CanvasObject {
@@ -68,25 +65,6 @@ func WrapVertical(top, bottom fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewBorder(
 		container.NewBorder(nil, widget.NewSeparator(), nil, nil, top),
 		nil, nil, nil, bottom)
-}
-
-func SelectBoolFilter(data binding.BoolTree, folder string) (item *action.FilterItem, selected bool) {
-	effects := make([]string, 0)
-	selected, _ = data.GetValue(folder)
-	for _, id := range data.ChildIDs(folder) {
-		if val, _ := data.GetValue(id); val {
-			effects = append(effects, strings.TrimPrefix(id, folder+separator))
-		}
-	}
-
-	if len(effects) > 0 {
-		selected = true
-	}
-
-	if selected {
-		item = &action.FilterItem{Folder: folder, Effects: effects}
-	}
-	return
 }
 
 func NewEffectTree(data binding.DataTree,
