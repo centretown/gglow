@@ -70,6 +70,33 @@ func (ui *Ui) OnExit() {
 	ui.preferences.SetFloat(settings.SplitOffset.String(), ui.splitView.Offset)
 }
 
+func (ui *Ui) BuildContent() *fyne.Container {
+	columns, rows := ui.getLightPreferences()
+	color := ui.theme.Color(resource.LightStripBackground, ui.theme.GetVariant())
+	ui.strip = NewLightStrip(columns*rows, rows, color)
+	ui.sourceStrip.Set(ui.strip)
+
+	ui.stripLayout = NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip, color)
+	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.effect, ui.stripLayout)
+	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
+
+	ui.frameEditor = NewFrameEditor(ui.effect, ui.window, ui.mainMenu)
+	ui.layerEditor = NewLayerEditor(ui.effect, ui.window, ui.mainMenu)
+
+	ui.playContainer = container.NewBorder(ui.stripTools, nil, nil, nil, ui.strip)
+
+	ui.sourceStrip.AddListener(binding.NewDataListener(func() {
+		strip, _ := ui.sourceStrip.Get()
+		ui.strip = strip.(*LightStrip)
+		ui.playContainer.Objects = []fyne.CanvasObject{ui.stripTools, ui.strip}
+		ui.playContainer.Refresh()
+		ui.stripPlayer.ResetStrip()
+	}))
+
+	ui.addShortCuts()
+	return ui.layoutContent()
+}
+
 func (ui *Ui) layoutContent() *fyne.Container {
 	ui.editor = container.NewBorder(ui.frameEditor.Container, nil, nil, nil,
 		ui.layerEditor.Container)
@@ -103,85 +130,58 @@ func (ui *Ui) layoutContent() *fyne.Container {
 		}
 		ui.mainContainer = container.NewBorder(viewTools, nil, nil, nil, ui.playContainer)
 	} else {
-		ui.LayoutDesktop(viewTools, editButton, listButton)
+		ui.layoutDesktop(viewTools, editButton, listButton)
 	}
 
 	return ui.mainContainer
 }
 
-func (ui *Ui) LayoutDesktop(selectorMenu fyne.CanvasObject,
+func (ui *Ui) layoutDesktop(selectorMenu fyne.CanvasObject,
 	editButton, listButton *widget.Button) {
-
-	const (
-		PLAY_VIEW = iota
-		EDIT_VIEW
-		LIST_VIEW
-	)
 
 	ui.view = ui.preferences.IntWithFallback(settings.ContentView.String(), LIST_VIEW)
 	ui.splitView = container.NewHSplit(ui.editor, ui.playContainer)
 	splitOffset := ui.preferences.FloatWithFallback(settings.SplitOffset.String(), 0)
 	ui.splitView.SetOffset(splitOffset)
 
-	setView := func(view int) {
-		ui.view = view
-		switch view {
-		case PLAY_VIEW:
-			ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.playContainer}
-			return
-		case EDIT_VIEW:
-			ui.splitView.Leading = ui.editor
-		case LIST_VIEW:
-			ui.splitView.Leading = ui.tree
-		}
-		ui.splitView.Refresh()
-		ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.splitView}
-	}
-
 	ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
-	setView(ui.view)
+	ui.setDesktopView(ui.view, selectorMenu)
 
 	editButton.OnTapped = func() {
 		if ui.view == EDIT_VIEW {
-			setView(PLAY_VIEW)
+			ui.setDesktopView(PLAY_VIEW, selectorMenu)
 		} else {
-			setView(EDIT_VIEW)
+			ui.setDesktopView(EDIT_VIEW, selectorMenu)
 		}
 	}
 	listButton.OnTapped = func() {
 		if ui.view == LIST_VIEW {
-			setView(PLAY_VIEW)
+			ui.setDesktopView(PLAY_VIEW, selectorMenu)
 		} else {
-			setView(LIST_VIEW)
+			ui.setDesktopView(LIST_VIEW, selectorMenu)
 		}
 	}
 }
 
-func (ui *Ui) BuildContent() *fyne.Container {
-	columns, rows := ui.getLightPreferences()
-	color := ui.theme.Color(resource.LightStripBackground, ui.theme.GetVariant())
-	ui.strip = NewLightStrip(columns*rows, rows, color)
-	ui.sourceStrip.Set(ui.strip)
+const (
+	PLAY_VIEW = iota
+	EDIT_VIEW
+	LIST_VIEW
+)
 
-	ui.stripLayout = NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip, color)
-	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.effect, ui.stripLayout)
-	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
-
-	ui.frameEditor = NewFrameEditor(ui.effect, ui.window, ui.mainMenu)
-	ui.layerEditor = NewLayerEditor(ui.effect, ui.window, ui.mainMenu)
-
-	ui.playContainer = container.NewBorder(ui.stripTools, nil, nil, nil, ui.strip)
-
-	ui.sourceStrip.AddListener(binding.NewDataListener(func() {
-		strip, _ := ui.sourceStrip.Get()
-		ui.strip = strip.(*LightStrip)
-		ui.playContainer.Objects = []fyne.CanvasObject{ui.stripTools, ui.strip}
-		ui.playContainer.Refresh()
-		ui.stripPlayer.ResetStrip()
-	}))
-
-	ui.addShortCuts()
-	return ui.layoutContent()
+func (ui *Ui) setDesktopView(view int, selectorMenu fyne.CanvasObject) {
+	ui.view = view
+	switch view {
+	case PLAY_VIEW:
+		ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.playContainer}
+		return
+	case EDIT_VIEW:
+		ui.splitView.Leading = ui.editor
+	case LIST_VIEW:
+		ui.splitView.Leading = ui.tree
+	}
+	ui.splitView.Refresh()
+	ui.mainContainer.Objects = []fyne.CanvasObject{selectorMenu, ui.splitView}
 }
 
 func (ui *Ui) getLightPreferences() (columns, rows int) {
@@ -209,9 +209,9 @@ func (ui *Ui) addShortCuts() {
 		&GlobalShortCut{Shortcut: CtrlE, Action: export})
 
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
-		&fyne.MenuItem{Label: text.ExportLabel.String(),
+		&fyne.MenuItem{Icon: resource.IconFileShare(), Label: text.ExportLabel.String(),
 			Shortcut: CtrlE, Action: export})
 	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
-		&fyne.MenuItem{Label: text.QuitLabel.String(),
+		&fyne.MenuItem{Icon: resource.IconExit(), Label: text.QuitLabel.String(),
 			Shortcut: CtrlQ, Action: exit})
 }

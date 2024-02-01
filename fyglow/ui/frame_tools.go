@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"gglow/fyglow/effectio"
+	"gglow/fyglow/resource"
 	"gglow/text"
 
 	"fyne.io/fyne/v2"
@@ -44,11 +45,11 @@ func NewFrameTools(effect *effectio.EffectIo, window fyne.Window,
 	ft.Toolbar.Append(saveButton)
 
 	effectButton := NewButtonItem(
-		widget.NewButtonWithIcon("", theme.ContentAddIcon(), effectAdd))
+		widget.NewButtonWithIcon("", resource.IconFrameAdd(), effectAdd))
 	ft.Toolbar.Append(effectButton)
 
 	ft.Toolbar.Append(NewButtonItem(
-		widget.NewButtonWithIcon("", theme.ContentRemoveIcon(), func() {})))
+		widget.NewButtonWithIcon("", resource.IconFrameRemove(), func() {})))
 
 	ft.Toolbar.Append(NewButtonItem(
 		widget.NewButtonWithIcon("", theme.FolderNewIcon(), folderAdd)))
@@ -88,6 +89,7 @@ func NewFrameTools(effect *effectio.EffectIo, window fyne.Window,
 		Action: func() { fmt.Println("Trash Folder") },
 	}
 	itemFolders := &fyne.MenuItem{
+		Icon:      theme.FolderIcon(),
 		Label:     text.FolderLabel.String(),
 		ChildMenu: &fyne.Menu{Label: "", Items: []*fyne.MenuItem{itemNewFolder, itemTrash}},
 	}
@@ -100,15 +102,16 @@ func NewFrameTools(effect *effectio.EffectIo, window fyne.Window,
 		Shortcut: CtrlS,
 	}
 	itemNew := &fyne.MenuItem{Label: text.NewLabel.String(),
-		Icon:     theme.ContentAddIcon(),
+		Icon:     resource.IconFrameAdd(),
 		Action:   effectAdd,
 		Shortcut: CtrlN,
 	}
 	itemRemove := &fyne.MenuItem{Label: text.RemoveLabel.String(),
-		Icon:   theme.ContentRemoveIcon(),
+		Icon:   resource.IconFrameRemove(),
 		Action: func() { fmt.Println("Remove Effect") },
 	}
 	itemEffects := &fyne.MenuItem{
+		Icon:  resource.IconEffect(),
 		Label: text.EffectsLabel.String(),
 		ChildMenu: &fyne.Menu{Label: "",
 			Items: []*fyne.MenuItem{itemSave, itemNew, itemRemove}},
