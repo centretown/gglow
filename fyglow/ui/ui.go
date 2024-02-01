@@ -30,8 +30,6 @@ type Ui struct {
 	stripTools    *fyne.Container
 	playContainer *fyne.Container
 
-	// effectSelect *widget.Select
-
 	frameEditor *FrameEditor
 	layerEditor *LayerEditor
 
@@ -42,6 +40,8 @@ type Ui struct {
 	mainContainer *fyne.Container
 	isMobile      bool
 	mainMenu      *fyne.Menu
+	folderName    binding.String
+	effectName    binding.String
 	tree          *widget.Tree
 }
 
@@ -55,6 +55,8 @@ func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *r
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
 		mainMenu:    fyne.NewMenu(""),
+		folderName:  binding.NewString(),
+		effectName:  binding.NewString(),
 	}
 
 	ui.tree = NewTreeSelector(effect)
@@ -65,6 +67,7 @@ func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *r
 func (ui *Ui) OnExit() {
 	ui.stripPlayer.OnExit()
 	ui.preferences.SetInt(settings.ContentView.String(), ui.view)
+	ui.preferences.SetFloat(settings.SplitOffset.String(), ui.splitView.Offset)
 }
 
 func (ui *Ui) layoutContent() *fyne.Container {
@@ -75,26 +78,32 @@ func (ui *Ui) layoutContent() *fyne.Container {
 	listButton := widget.NewButtonWithIcon("", theme.ListIcon(), func() {})
 	mainMenu := widget.NewPopUpMenu(ui.mainMenu, ui.window.Canvas())
 	menuButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
+	menuButton.Importance = widget.HighImportance
 	menuButton.OnTapped = func() {
 		mainMenu.Move(menuButton.Position().Add(fyne.Delta{DX: 0,
 			DY: menuButton.MinSize().Height}))
 		mainMenu.Show()
 	}
 
-	// var top, bottom, buttons, right fyne.CanvasObject = nil, nil,
-	// 	container.NewHBox(menuButton, listButton, editButton), nil
-	// selectorMenu := container.NewBorder(top, bottom, buttons, right, ui.effectSelect)
-	selectorMenu := container.NewHBox(menuButton, listButton, editButton)
+	lbl := binding.NewSprintf("%s/%s", ui.folderName, ui.effectName)
+	effectLabel := widget.NewLabelWithData(lbl)
+	effectLabel.Importance = widget.SuccessImportance
+	ui.effect.AddFrameListener(binding.NewDataListener(func() {
+		ui.folderName.Set(ui.effect.FolderName())
+		ui.effectName.Set(ui.effect.EffectName())
+	}))
 
+	viewTools := container.NewBorder(nil, nil,
+		container.NewHBox(menuButton, listButton, editButton), effectLabel)
 	if ui.isMobile {
 		dropDown := dialog.NewCustom(text.EditLabel.String(), "hide", ui.editor, ui.window)
 		editButton.OnTapped = func() {
 			dropDown.Resize(ui.window.Canvas().Size())
 			dropDown.Show()
 		}
-		ui.mainContainer = container.NewBorder(selectorMenu, nil, nil, nil, ui.playContainer)
+		ui.mainContainer = container.NewBorder(viewTools, nil, nil, nil, ui.playContainer)
 	} else {
-		ui.LayoutDesktop(selectorMenu, editButton, listButton)
+		ui.LayoutDesktop(viewTools, editButton, listButton)
 	}
 
 	return ui.mainContainer
@@ -109,8 +118,10 @@ func (ui *Ui) LayoutDesktop(selectorMenu fyne.CanvasObject,
 		LIST_VIEW
 	)
 
-	ui.view = ui.preferences.IntWithFallback(settings.ContentView.String(), EDIT_VIEW)
+	ui.view = ui.preferences.IntWithFallback(settings.ContentView.String(), LIST_VIEW)
 	ui.splitView = container.NewHSplit(ui.editor, ui.playContainer)
+	splitOffset := ui.preferences.FloatWithFallback(settings.SplitOffset.String(), 0)
+	ui.splitView.SetOffset(splitOffset)
 
 	setView := func(view int) {
 		ui.view = view
@@ -155,8 +166,6 @@ func (ui *Ui) BuildContent() *fyne.Container {
 	ui.stripLayout = NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip, color)
 	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.effect, ui.stripLayout)
 	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
-
-	// ui.effectSelect = NewEffectSelector(ui.effect)
 
 	ui.frameEditor = NewFrameEditor(ui.effect, ui.window, ui.mainMenu)
 	ui.layerEditor = NewLayerEditor(ui.effect, ui.window, ui.mainMenu)

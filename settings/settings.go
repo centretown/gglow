@@ -11,6 +11,7 @@ const (
 	GlowThemeVariant
 	GlowThemeScale
 	AccessFile
+	SplitOffset
 )
 
 var settings = []string{
@@ -22,6 +23,7 @@ var settings = []string{
 	"theme_variant",
 	"theme_scale",
 	"accessor",
+	"split_offset",
 }
 
 func (s Settings) String() string {

@@ -36,7 +36,7 @@ type EffectIo struct {
 	saveActions []func(*glow.Frame)
 }
 
-func NewEffect(io iohandler.IoHandler, preferences fyne.Preferences, accessor *iohandler.Accessor) *EffectIo {
+func NewEffect(io iohandler.IoHandler, accessor *iohandler.Accessor, preferences fyne.Preferences) *EffectIo {
 
 	eff := &EffectIo{
 		IoHandler:   io,
@@ -91,12 +91,6 @@ func (eff *EffectIo) ListFolders() []string {
 }
 
 func (eff *EffectIo) Select(selection string) {
-	// eff.selection = selection
-	// if iohandler.IsFolder(selection) {
-	// 	eff.alertFolder()
-	// 	return
-	// }
-
 	split := strings.Split(selection, PathSeparator)
 	if len(split) < 1 {
 		return
@@ -120,16 +114,6 @@ func (eff *EffectIo) LoadEffect(title string) error {
 	eff.SetUnchanged()
 	return nil
 }
-
-// func (eff *EffectIo) loadFolder(folder string) []string {
-// 	ls, err := eff.IoHandler.SetCurrentFolder(folder)
-// 	if err != nil {
-// 		fyne.LogError("loadfolder", err)
-// 		return ls
-// 	}
-// 	eff.alertFolder()
-// 	return ls
-// }
 
 func (eff *EffectIo) GetFrame() *glow.Frame {
 	return eff.frame

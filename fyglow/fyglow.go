@@ -46,7 +46,7 @@ func main() {
 	theme := resource.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
 	window := app.NewWindow(text.GlowLabel.String())
-	effect := effectio.NewEffect(storageHandler, preferences, accessor)
+	effect := effectio.NewEffect(storageHandler, accessor, preferences)
 	ui := ui.NewUi(app, window, effect, theme)
 
 	window.SetCloseIntercept(func() {

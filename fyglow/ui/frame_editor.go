@@ -15,11 +15,8 @@ import (
 
 type FrameEditor struct {
 	*fyne.Container
-	effect *effectio.EffectIo
-	// layerSelect *widget.Select
+	effect     *effectio.EffectIo
 	fields     *effectio.FrameFields
-	folderName binding.String
-	effectName binding.String
 	rateBounds *IntEntryBounds
 	rateBox    *RangeIntBox
 	isEditing  bool
@@ -29,19 +26,14 @@ func NewFrameEditor(effect *effectio.EffectIo, window fyne.Window, menu *fyne.Me
 
 	fe := &FrameEditor{
 		effect:     effect,
-		folderName: binding.NewString(),
-		effectName: binding.NewString(),
 		rateBounds: RateBounds,
 		fields:     effectio.NewFrameFields(),
 	}
 
 	tools := container.NewCenter(NewFrameTools(effect, window, menu))
-	folderLabel := widget.NewLabelWithData(fe.folderName)
-	effectLabel := widget.NewLabelWithData(fe.effectName)
 	ratelabel := widget.NewLabel(text.RateLabel.String())
 	fe.rateBox = NewRangeIntBox(fe.fields.Interval, fe.rateBounds)
 	frm := container.New(layout.NewFormLayout(),
-		folderLabel, effectLabel,
 		ratelabel, fe.rateBox.Container)
 	fe.Container = container.NewBorder(tools, nil, nil, nil, frm)
 
@@ -55,9 +47,6 @@ func NewFrameEditor(effect *effectio.EffectIo, window fyne.Window, menu *fyne.Me
 		}
 	}))
 
-	effect.AddFolderListener(binding.NewDataListener(func() {
-		fe.folderName.Set(effect.FolderName())
-	}))
 	fe.effect.AddFrameListener(binding.NewDataListener(fe.setFields))
 	return fe
 }
@@ -73,8 +62,6 @@ func (fe *FrameEditor) setFields() {
 	frame := fe.effect.GetFrame()
 	fe.fields.FromFrame(frame)
 	fe.rateBox.Entry.SetText(strconv.FormatInt(int64(frame.Interval), 10))
-	fe.folderName.Set(fe.effect.FolderName())
-	fe.effectName.Set(fe.effect.EffectName())
 	fe.isEditing = true
 }
 
