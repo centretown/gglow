@@ -30,7 +30,7 @@ func NewFrameEditor(effect *effectio.EffectIo, window fyne.Window, menu *fyne.Me
 		fields:     effectio.NewFrameFields(),
 	}
 
-	tools := container.NewCenter(NewFrameTools(effect, window, menu))
+	tools := container.NewCenter(NewFrameToolbar(effect))
 	ratelabel := widget.NewLabel(text.RateLabel.String())
 	fe.rateBox = NewRangeIntBox(fe.fields.Interval, fe.rateBounds)
 	frm := container.New(layout.NewFormLayout(),

@@ -1,4 +1,5 @@
 {
+    "editor.parameterHints.enabled": false,
     "svg.preview.background": "transparent",
     "sqltools.connections": [
         {

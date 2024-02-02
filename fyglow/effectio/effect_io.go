@@ -289,13 +289,13 @@ func (eff *EffectIo) AddEffect(title string, frame *glow.Frame) (err error) {
 	return
 }
 
-func (eff *EffectIo) SaveEffect() (err error) {
+func (eff *EffectIo) SaveEffect() {
 	for _, saveAction := range eff.saveActions {
 		saveAction(eff.frame)
 	}
 
 	title := eff.EffectName()
-	err = eff.IoHandler.UpdateEffect(eff.folderName, title, eff.frame)
+	err := eff.IoHandler.UpdateEffect(eff.folderName, title, eff.frame)
 	if err != nil {
 		fyne.LogError("SaveEffect", err)
 		return
@@ -303,7 +303,6 @@ func (eff *EffectIo) SaveEffect() (err error) {
 
 	eff.setFrame(eff.frame, eff.layerIndex)
 	eff.SetUnchanged()
-	return
 }
 
 func (eff *EffectIo) OnSave(f func(*glow.Frame)) {

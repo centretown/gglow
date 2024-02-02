@@ -41,25 +41,19 @@ type LayerEditor struct {
 	hueBounds  *IntEntryBounds
 	scanBounds *IntEntryBounds
 
-	tools     *LayerTools
 	isEditing bool
 }
 
 func NewLayerEditor(effect *effectio.EffectIo, window fyne.Window, menu *fyne.Menu) *LayerEditor {
 
 	le := &LayerEditor{
-		window: window,
-
-		effect: effect,
-		layer:  effect.GetCurrentLayer(),
-
-		fields: effectio.NewLayerFields(),
-		tools:  NewLayerTools(effect, window, menu),
-
-		rateBounds: RateBounds,
-		hueBounds:  HueShiftBounds,
-		scanBounds: ScanBounds,
-
+		window:            window,
+		effect:            effect,
+		layer:             effect.GetCurrentLayer(),
+		fields:            effectio.NewLayerFields(),
+		rateBounds:        RateBounds,
+		hueBounds:         HueShiftBounds,
+		scanBounds:        ScanBounds,
 		selectOrigin:      widget.NewSelect(text.OriginLabels, func(s string) {}),
 		selectOrientation: widget.NewSelect(text.OrientationLabels, func(s string) {}),
 	}
@@ -68,16 +62,13 @@ func NewLayerEditor(effect *effectio.EffectIo, window fyne.Window, menu *fyne.Me
 
 	form := le.createForm()
 	scroll := container.NewVScroll(form)
-	tools := container.NewCenter(le.tools)
+	tools := container.NewCenter(NewLayerToolbar())
 	layerSelect := NewLayerSelect(effect)
 	fixed := container.NewVBox(tools, layerSelect)
 
 	le.Container = container.NewBorder(fixed, nil, nil, nil, scroll)
-
-	le.effect.AddFrameListener(binding.NewDataListener(le.setFields))
-
-	le.effect.AddLayerListener(binding.NewDataListener(le.setFields))
-
+	effect.AddFrameListener(binding.NewDataListener(le.setFields))
+	effect.AddLayerListener(binding.NewDataListener(le.setFields))
 	effect.OnSave(le.apply)
 	return le
 }

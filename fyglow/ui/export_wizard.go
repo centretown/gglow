@@ -86,6 +86,11 @@ func NewExportWizard(effect *effectio.EffectIo, window fyne.Window) *ExportWizar
 	return exz
 }
 
+func (exz *ExportWizard) Start() {
+	exz.Resize(exz.window.Canvas().Size())
+	exz.Show()
+}
+
 func (exz *ExportWizard) onSelected(effect *effectio.EffectIo, confirm fyne.CanvasObject) func(ti *container.TabItem) {
 	return func(ti *container.TabItem) {
 		current := exz.tabs.SelectedIndex()

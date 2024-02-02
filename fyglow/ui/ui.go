@@ -5,7 +5,6 @@ import (
 	"gglow/fyglow/resource"
 	"gglow/settings"
 	"gglow/text"
-	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -54,11 +53,11 @@ func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *r
 		effect:      effect,
 		sourceStrip: binding.NewUntyped(),
 		isMobile:    app.Driver().Device().IsMobile(),
-		mainMenu:    fyne.NewMenu(""),
 		folderName:  binding.NewString(),
 		effectName:  binding.NewString(),
 	}
 
+	ui.mainMenu = BuildMenu(effect, window)
 	ui.tree = NewTreeSelector(effect)
 	window.SetContent(ui.BuildContent())
 	return ui
@@ -93,7 +92,6 @@ func (ui *Ui) BuildContent() *fyne.Container {
 		ui.stripPlayer.ResetStrip()
 	}))
 
-	ui.addShortCuts()
 	return ui.layoutContent()
 }
 
@@ -190,28 +188,4 @@ func (ui *Ui) getLightPreferences() (columns, rows int) {
 	rows = ui.preferences.IntWithFallback(settings.StripRows.String(),
 		resource.StripRowsDefault)
 	return
-}
-
-func (ui *Ui) addShortCuts() {
-	exit := func() {
-		os.Exit(0)
-	}
-
-	exwiz := NewExportWizard(ui.effect, ui.window)
-	export := func() {
-		exwiz.Resize(ui.window.Canvas().Size())
-		exwiz.Show()
-	}
-
-	AddGlobalShortCut(ui.window,
-		&GlobalShortCut{Shortcut: CtrlQ, Action: exit})
-	AddGlobalShortCut(ui.window,
-		&GlobalShortCut{Shortcut: CtrlE, Action: export})
-
-	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
-		&fyne.MenuItem{Icon: resource.IconFileShare(), Label: text.ExportLabel.String(),
-			Shortcut: CtrlE, Action: export})
-	ui.mainMenu.Items = append(ui.mainMenu.Items, &fyne.MenuItem{IsSeparator: true},
-		&fyne.MenuItem{Icon: resource.IconExit(), Label: text.QuitLabel.String(),
-			Shortcut: CtrlQ, Action: exit})
 }
