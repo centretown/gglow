@@ -23,16 +23,17 @@ type Ui struct {
 	theme       *resource.GlowTheme
 	sourceStrip binding.Untyped
 
-	strip         *LightStrip
-	stripLayout   *LightStripLayout
-	stripPlayer   *LightStripPlayer
-	stripTools    *fyne.Container
+	strip       *LightStrip
+	stripLayout *LightStripLayout
+	stripPlayer *LightStripPlayer
+	stripTools  *fyne.Container
+
 	playContainer *fyne.Container
+	editor        *fyne.Container
+	frameEditor   *FrameEditor
+	layerEditor   *LayerEditor
+	tree          *widget.Tree
 
-	frameEditor *FrameEditor
-	layerEditor *LayerEditor
-
-	editor    *fyne.Container
 	splitView *container.Split
 	view      int
 
@@ -41,7 +42,6 @@ type Ui struct {
 	mainMenu      *fyne.Menu
 	folderName    binding.String
 	effectName    binding.String
-	tree          *widget.Tree
 }
 
 func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *resource.GlowTheme) *Ui {
@@ -60,6 +60,17 @@ func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *r
 	ui.mainMenu = BuildMenu(effect, window)
 	ui.tree = NewTreeSelector(effect)
 	window.SetContent(ui.BuildContent())
+	window.Show()
+
+	folder := effect.FolderName()
+	if len(folder) > 0 {
+		ui.tree.OpenBranch(folder)
+		// name := effect.EffectName()
+		// if len(name) > 0 {
+		// 	ui.tree.Select(folder + effectio.PathSeparator + name)
+		// }
+	}
+	effect.SetActive()
 	return ui
 }
 

@@ -2,7 +2,6 @@ package ui
 
 import (
 	"gglow/fyglow/effectio"
-	"gglow/glow"
 	"gglow/text"
 
 	"fyne.io/fyne/v2"
@@ -22,10 +21,8 @@ func NewEffectDialog(effect *effectio.EffectIo, window fyne.Window) (ef *EffectD
 	ef.NameEntry.Validator = validation.NewAllStrings(ef.validateFileName)
 
 	ef.Apply = func() {
-		frame := glow.NewFrame()
-		frame.Interval = uint32(RateBounds.OnVal)
 		name, _ := ef.Name.Get()
-		err := ef.effect.AddEffect(name, frame)
+		err := ef.effect.AddEffect(name)
 		if err != nil {
 			fyne.LogError(name, err)
 		}

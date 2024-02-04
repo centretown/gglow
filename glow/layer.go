@@ -22,7 +22,7 @@ type Layer struct {
 func NewLayer() *Layer {
 	var layer Layer
 	layer.Chroma.Colors = append(layer.Chroma.Colors,
-		HSV{Hue: 0, Saturation: 100, Value: 100})
+		HSV{Hue: 180, Saturation: 100, Value: 100})
 	return &layer
 }
 

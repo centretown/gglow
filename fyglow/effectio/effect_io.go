@@ -119,15 +119,17 @@ func (eff *EffectIo) GetFrame() *glow.Frame {
 	return eff.frame
 }
 
-func (eff *EffectIo) setFrame(frame *glow.Frame, layerIndex int) {
-	eff.frame = frame
-
-	summaries := make([]string, 0, len(frame.Layers))
-	for i, layer := range frame.Layers {
+func (eff *EffectIo) updateSummaries(layers []*glow.Layer) {
+	summaries := make([]string, 0, len(layers))
+	for i, layer := range layers {
 		summaries = append(summaries, SummarizeLayer(layer, i+1))
 	}
 	eff.summaryList = summaries
+}
 
+func (eff *EffectIo) setFrame(frame *glow.Frame, layerIndex int) {
+	eff.frame = frame
+	eff.updateSummaries(frame.Layers)
 	eff.setLayer(layerIndex)
 	eff.alertFrame()
 	eff.alertLayer()
@@ -173,18 +175,19 @@ func (eff *EffectIo) insertLayer(pos int) {
 	layer := glow.NewLayer()
 	layers := make([]*glow.Layer, count+1)
 
-	j := 0
+	var j int
 	for i := range layers {
 		if i == pos {
 			layers[i] = layer
-		} else {
-			layers[i] = eff.frame.Layers[j]
-			j++
+			continue
 		}
+		layers[i] = eff.frame.Layers[j]
+		j++
 	}
 	eff.frame.Layers = layers
+	eff.updateSummaries(eff.frame.Layers)
 	eff.setLayer(pos)
-	eff.alertLayer()
+	eff.alertFrame()
 	eff.SetChanged()
 }
 
@@ -269,21 +272,25 @@ func (eff *EffectIo) ValidateNewEffectName(title string) error {
 	return ValidateEffectName(title)
 }
 
-func (eff *EffectIo) CreateNewEffect(title string, frame *glow.Frame) error {
-	if eff.EffectExists(title) {
-		return fmt.Errorf("%s already exists", title)
-	}
-	return eff.CreateEffect(eff.folderName, title, frame)
+func (eff *EffectIo) keyName(a, b string) string {
+	return a + PathSeparator + b
 }
 
-func (eff *EffectIo) AddEffect(title string, frame *glow.Frame) (err error) {
-	err = eff.CreateNewEffect(title, frame)
+func (eff *EffectIo) AddEffect(title string) (err error) {
+	if eff.EffectExists(title) {
+		err = fmt.Errorf("%s already exists", title)
+		return
+	}
+
+	frame := glow.NewFrame()
+	frame.Interval = uint32(48)
+	err = eff.CreateEffect(eff.folderName, title, frame)
 	if err != nil {
 		fyne.LogError(title, err)
 	}
 	eff.effectName = title
 	eff.frame = frame
-	eff.data.Append(eff.folderName, title, false)
+	eff.data.Append(eff.folderName, eff.keyName(eff.folderName, title), false)
 	eff.alertFolder()
 	eff.alertFrame()
 	return
@@ -325,15 +332,15 @@ func (eff *EffectIo) BuildTreeData() binding.BoolTree {
 	var data binding.BoolTree = binding.NewBoolTree()
 	folders, _ := eff.ListKeys(iohandler.AsFolder())
 	for _, folder := range folders {
-		data.Append(binding.DataTreeRootID, folder.Folder, false)
+		data.Append(binding.DataTreeRootID, folder.Key, false)
 	}
 
 	for _, folder := range folders {
-		ls, _ := eff.ListKeys(folder.Folder)
+		ls, _ := eff.ListKeys(folder.Key)
 		for _, l := range ls {
-			if !iohandler.IsFolder(l.Folder) {
-				val := l.Effect + PathSeparator + l.Folder
-				data.Append(folder.Folder, val, false)
+			if !iohandler.IsFolder(l.Key) {
+				val := eff.keyName(l.Value, l.Key)
+				data.Append(folder.Key, val, false)
 			}
 		}
 	}

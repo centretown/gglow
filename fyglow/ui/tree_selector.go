@@ -15,6 +15,7 @@ func NewTreeSelector(effect *effectio.EffectIo) *widget.Tree {
 
 func OnTreeSelected(effect *effectio.EffectIo, tree *widget.Tree) func(widget.TreeNodeID) {
 	return func(uid widget.TreeNodeID) {
+
 		if tree.IsBranch(uid) {
 			tree.OpenBranch(uid)
 			return

@@ -18,8 +18,8 @@ const DRIVER_POSTGRES = "postgres"
 const DRIVER_CODE = "code"
 
 type KeyValue struct {
-	Folder string
-	Effect string
+	Key   string
+	Value string
 }
 
 type OutHandler interface {

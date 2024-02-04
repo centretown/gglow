@@ -36,17 +36,15 @@ func init() {
 func main() {
 	var err error
 	app := app.NewWithID(resource.AppID)
+	app.SetIcon(resource.DarkGander())
 	preferences := app.Preferences()
-
 	storageHandler, accessor := loadStorage(preferences)
 	fmt.Println(accessPath, accessor.Driver, accessor.Path)
-
-	app.SetIcon(resource.DarkGander())
+	effect := effectio.NewEffect(storageHandler, accessor, preferences)
 
 	theme := resource.NewGlowTheme(preferences)
 	app.Settings().SetTheme(theme)
 	window := app.NewWindow(text.GlowLabel.String())
-	effect := effectio.NewEffect(storageHandler, accessor, preferences)
 	ui := ui.NewUi(app, window, effect, theme)
 
 	window.SetCloseIntercept(func() {
@@ -60,6 +58,10 @@ func main() {
 		}
 
 		ui.OnExit()
+		err := effect.OnExit()
+		if err != nil {
+			fyne.LogError("ONEXIT", err)
+		}
 		size := window.Canvas().Size()
 		preferences.SetInt(settings.ContentWidth.String(), int(size.Width))
 		preferences.SetInt(settings.ContentHeight.String(), int(size.Height))
@@ -72,8 +74,6 @@ func main() {
 		window.Resize(fyne.Size{Width: float32(width), Height: float32(height)})
 	}
 
-	window.Show()
-	effect.SetActive()
 	app.Run()
 }
 

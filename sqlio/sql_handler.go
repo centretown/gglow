@@ -164,7 +164,7 @@ func (sqlh *SqlHandler) ListKeys(folder string) (list []iohandler.KeyValue, err 
 		if err != nil {
 			break
 		}
-		list = append(list, iohandler.KeyValue{Folder: scanFolder, Effect: scanTitle})
+		list = append(list, iohandler.KeyValue{Key: scanFolder, Value: scanTitle})
 	}
 	return
 }
@@ -176,7 +176,7 @@ func (sqlh *SqlHandler) ListFolders() (ls []string, err error) {
 	}
 	ls = make([]string, len(kvs))
 	for i, v := range kvs {
-		ls[i] = v.Folder
+		ls[i] = v.Key
 	}
 	return
 }
