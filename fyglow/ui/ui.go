@@ -23,10 +23,11 @@ type Ui struct {
 	theme       *resource.GlowTheme
 	sourceStrip binding.Untyped
 
-	strip       *LightStrip
-	stripLayout *LightStripLayout
-	stripPlayer *LightStripPlayer
-	stripTools  *fyne.Container
+	strip        *LightStrip
+	stripProfile *ProfileDialog
+	stripPlayer  *LightStripPlayer
+	stripTools   *fyne.Container
+	Rows, Cols   int
 
 	playContainer *fyne.Container
 	editor        *fyne.Container
@@ -57,7 +58,7 @@ func NewUi(app fyne.App, window fyne.Window, effect *effectio.EffectIo, theme *r
 		effectName:  binding.NewString(),
 	}
 
-	ui.mainMenu = BuildMenu(effect, window)
+	ui.mainMenu = BuildMenu(effect, ui)
 	ui.tree = NewTreeSelector(effect)
 	window.SetContent(ui.BuildContent())
 	window.Show()
@@ -81,13 +82,14 @@ func (ui *Ui) OnExit() {
 }
 
 func (ui *Ui) BuildContent() *fyne.Container {
-	columns, rows := ui.getLightPreferences()
+	ui.Cols, ui.Rows = ui.getLightPreferences()
+	cols, rows := ui.Cols, ui.Rows
 	color := ui.theme.Color(resource.LightStripBackground, ui.theme.GetVariant())
-	ui.strip = NewLightStrip(columns*rows, rows, color)
+	ui.strip = NewLightStrip(cols*rows, rows, color)
 	ui.sourceStrip.Set(ui.strip)
 
-	ui.stripLayout = NewLightStripLayout(ui.window, ui.app.Preferences(), ui.sourceStrip, color)
-	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.effect, ui.stripLayout)
+	ui.stripProfile = NewProfileDialog(ui.window, ui.app.Preferences(), ui.sourceStrip, color)
+	ui.stripPlayer = NewLightStripPlayer(ui.sourceStrip, ui.effect, ui.stripProfile)
 	ui.stripTools = container.New(layout.NewCenterLayout(), ui.stripPlayer)
 
 	ui.frameEditor = NewFrameEditor(ui.effect, ui.window, ui.mainMenu)

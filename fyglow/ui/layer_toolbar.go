@@ -9,7 +9,6 @@ func NewLayerToolbar() *widget.Toolbar {
 	toolbar.Append(NewButtonItemFromMenu(MenuLayerAdd))
 	toolbar.Append(NewButtonItemFromMenu(MenuLayerInsert))
 	toolbar.Append(NewButtonItemFromMenu(MenuLayerRemove))
-	// AddGlobalShortCut(window,
-	// 	&GlobalShortCut{Shortcut: CtrlL, Action: lt.addLayer})
+	toolbar.Append(NewButtonItemFromMenu(MenuLayerImage))
 	return toolbar
 }

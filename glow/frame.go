@@ -97,6 +97,14 @@ func (frame *Frame) AddLayers(layers ...*Layer) {
 	frame.updateLayers()
 }
 
+func (frame *Frame) LoadImages() {
+	for _, layer := range frame.Layers {
+		if len(layer.ImageName) > 0 {
+			layer.LoadImage(int(layer.Grid.Rows), int(layer.Grid.Rows))
+		}
+	}
+}
+
 func FrameDeepCopy(source *Frame) (frame *Frame, err error) {
 
 	var (

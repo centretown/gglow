@@ -64,6 +64,7 @@ const (
 	ActionSuccess
 	ManageLabel
 	ReviewLabel
+	ImageLabel
 )
 
 var entryLabels = []string{
@@ -87,7 +88,7 @@ var entryLabels = []string{
 	"Destination", "Profile",
 	"Action has errors. Check the log.",
 	"Action was successful!",
-	"Manage", "Review",
+	"Manage", "Review", "Image",
 }
 
 func (id LabelID) String() string {

@@ -65,10 +65,11 @@ func NewLayerEditor(effect *effectio.EffectIo, window fyne.Window, menu *fyne.Me
 	tools := container.NewCenter(NewLayerToolbar())
 	layerSelect := NewLayerSelect(effect)
 	fixed := container.NewVBox(tools, layerSelect)
-
 	le.Container = container.NewBorder(fixed, nil, nil, nil, scroll)
-	effect.AddFrameListener(binding.NewDataListener(le.setFields))
-	effect.AddLayerListener(binding.NewDataListener(le.setFields))
+
+	listener := binding.NewDataListener(le.setFields)
+	effect.AddFrameListener(listener)
+	effect.AddLayerListener(listener)
 	effect.OnSave(le.apply)
 	return le
 }

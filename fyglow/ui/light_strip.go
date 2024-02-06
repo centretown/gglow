@@ -14,8 +14,6 @@ import (
 const (
 	minStripWidth  float32 = 320
 	minStripHeight float32 = 120
-	maxRows        int     = 20
-	maxCols        int     = 50
 )
 
 type LightStrip struct {

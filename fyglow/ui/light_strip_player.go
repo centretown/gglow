@@ -38,7 +38,7 @@ type LightStripPlayer struct {
 }
 
 func NewLightStripPlayer(sourceStrip binding.Untyped, effect *effectio.EffectIo,
-	lightStripLayout *LightStripLayout) *LightStripPlayer {
+	lightStripLayout *ProfileDialog) *LightStripPlayer {
 
 	sb := &LightStripPlayer{
 		effect:       effect,
@@ -176,6 +176,7 @@ func (sb *LightStripPlayer) spin() {
 		if frame.Interval == 0 {
 			frame.Interval = glow.DefaultInterval
 		}
+		frame.LoadImages()
 	}
 
 	copyFrame(sb.effect.GetFrame())

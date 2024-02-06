@@ -33,6 +33,12 @@ func NewRangeIntBox(field binding.Int, bounds *IntEntryBounds) *RangeIntBox {
 	return rb
 }
 
+func (rb *RangeIntBox) SetMax(max int) {
+	if max > rb.Bounds.MinVal {
+		rb.Bounds.MaxVal = max
+	}
+}
+
 func (rb *RangeIntBox) Enable(b bool) {
 	if b {
 		rb.Decrease.Enable()

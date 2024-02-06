@@ -1,22 +1,28 @@
 package glow
 
-import "fmt"
+import (
+	"fmt"
+	"gglow/pic"
+	"image"
+	"image/color"
+)
 
 type Layer struct {
-	Length uint16 `yaml:"length" json:"length"`
-	Rows   uint16 `yaml:"rows" json:"rows"`
-	Grid   Grid   `yaml:"grid" json:"grid"`
-	Chroma Chroma `yaml:"chroma" json:"chroma"`
-
-	HueShift int16  `yaml:"hue_shift" json:"hue_shift"`
-	Scan     uint16 `yaml:"scan" json:"scan"`
-	Begin    uint16 `yaml:"begin" json:"begin"`
-	End      uint16 `yaml:"end" json:"end"`
-	Rate     uint32 `yaml:"rate" json:"rate"`
+	Length    uint16 `yaml:"length" json:"length"`
+	Rows      uint16 `yaml:"rows" json:"rows"`
+	Grid      Grid   `yaml:"grid" json:"grid"`
+	Chroma    Chroma `yaml:"chroma" json:"chroma"`
+	HueShift  int16  `yaml:"hue_shift" json:"hue_shift"`
+	Scan      uint16 `yaml:"scan" json:"scan"`
+	Begin     uint16 `yaml:"begin" json:"begin"`
+	End       uint16 `yaml:"end" json:"end"`
+	Rate      uint32 `yaml:"rate" json:"rate"`
+	ImageName string `yaml:"image_name" json:"image_name"`
 
 	position uint16
 	first    uint16
 	last     uint16
+	picture  image.Image
 }
 
 func NewLayer() *Layer {
@@ -98,6 +104,11 @@ func (layer *Layer) setBounds() {
 }
 
 func (layer *Layer) Spin(light Light) {
+	if layer.picture != nil {
+		layer.spinImage(light)
+		return
+	}
+
 	startAt := layer.first
 	endAt := layer.last
 	if layer.Scan > 0 {
@@ -130,4 +141,28 @@ func (layer *Layer) MakeCode() string {
 		layer.Chroma.MakeCode(),
 		layer.HueShift, layer.Scan, layer.Begin, layer.End)
 	return s
+}
+
+func (layer *Layer) LoadImage(rows, cols int) (err error) {
+	layer.picture, err = pic.LoadPicPath(layer.ImageName, rows, cols)
+	return
+}
+
+func (layer *Layer) spinImage(light Light) {
+	if layer.picture == nil {
+		return
+	}
+	pic := layer.picture
+	b := pic.Bounds()
+	for x := b.Min.X; x < b.Max.X && x < int(layer.Grid.columns); x++ {
+		for y := b.Min.Y; y < b.Max.Y && y < int(layer.Rows); y++ {
+			c := pic.At(x, y)
+			r, g, b, a := c.RGBA()
+			if a != 0 {
+				light.Set(uint16(y)*layer.Rows+uint16(x),
+					color.RGBA{uint8(r), uint8(g), uint8(b), 255})
+			}
+		}
+	}
+
 }

@@ -16,9 +16,10 @@ const PathSeparator = "/"
 type EffectIo struct {
 	iohandler.IoHandler
 
-	Accessor *iohandler.Accessor
-	frame    *glow.Frame
-	layer    *glow.Layer
+	Accessor   *iohandler.Accessor
+	frame      *glow.Frame
+	layer      *glow.Layer
+	Rows, Cols int
 
 	selection   string
 	folderName  string
