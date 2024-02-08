@@ -26,7 +26,7 @@ type HSV struct {
 
 func (hsv *HSV) FromColor(c color.Color) {
 	r, g, b, a := c.RGBA()
-	rgba := color.RGBA{
+	rgba := color.NRGBA{
 		uint8(r),
 		uint8(g),
 		uint8(b),
@@ -35,7 +35,7 @@ func (hsv *HSV) FromColor(c color.Color) {
 	hsv.FromRGB(rgba)
 }
 
-func (hsv *HSV) FromRGB(color color.RGBA) {
+func (hsv *HSV) FromRGB(color color.NRGBA) {
 	var red float32 = float32(color.R) / 255.0
 	var green float32 = float32(color.G) / 255.0
 	var blue float32 = float32(color.B) / 255.0
@@ -70,7 +70,7 @@ func (hsv *HSV) FromRGB(color color.RGBA) {
 	hsv.Value = major
 }
 
-func (hsv *HSV) ToRGB() color.RGBA {
+func (hsv *HSV) ToRGB() color.NRGBA {
 	var major float64 = float64(hsv.Value * hsv.Saturation)
 	var minor float64 = major *
 		(1.0 -
@@ -99,7 +99,7 @@ func (hsv *HSV) ToRGB() color.RGBA {
 	}
 
 	intensity := float64(hsv.Value) - major
-	var color color.RGBA
+	var color color.NRGBA
 	color.R = uint8(math.Round((red + intensity) * 255.0))
 	color.G = uint8(math.Round((green + intensity) * 255.0))
 	color.B = uint8(math.Round((blue + intensity) * 255.0))

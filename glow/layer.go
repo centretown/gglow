@@ -160,7 +160,7 @@ func (layer *Layer) spinImage(light Light) {
 			r, g, b, a := c.RGBA()
 			if a != 0 {
 				light.Set(uint16(y)*layer.Rows+uint16(x),
-					color.RGBA{uint8(r), uint8(g), uint8(b), 255})
+					color.NRGBA{uint8(r), uint8(g), uint8(b), 255})
 			}
 		}
 	}

@@ -90,6 +90,7 @@ func (frame *Frame) Spin(light Light) {
 	for i := range frame.Layers {
 		frame.Layers[i].Spin(light)
 	}
+	light.Refresh()
 }
 
 func (frame *Frame) AddLayers(layers ...*Layer) {

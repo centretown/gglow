@@ -1,40 +1,41 @@
 package ui
 
 import (
+	"image"
 	"image/color"
-	"math"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
 const (
-	minStripWidth  float32 = 320
-	minStripHeight float32 = 120
+	minStripWidth  float32 = 240
+	minStripHeight float32 = 240
 )
 
 type LightStrip struct {
 	widget.BaseWidget
 	background *canvas.Rectangle
-	// image      *canvas.Image
-	colorOff color.RGBA
-	lights   []*canvas.Circle
-	length   int
-	rows     int
+	image      *canvas.Image
+	colorOff   color.NRGBA
+	lights     *image.NRGBA
+	length     int
+	rows       int
+	cols       int
 }
 
 func NewLightStrip(length, rows int, background color.Color) *LightStrip {
 	strip := &LightStrip{
 		background: canvas.NewRectangle(color.Black),
-		// image:      canvas.NewImageFromResource(resource.DarkGander()),
-		length: length,
-		rows:   rows,
+		length:     length,
+		rows:       rows,
+		cols:       length / rows,
 	}
 
-	strip.colorOff = color.RGBA{48, 24, 16, 0}
+	strip.colorOff = color.NRGBA{48, 24, 16, 255}
 	strip.buildLights()
+	strip.image = canvas.NewImageFromImage(strip.lights)
 	strip.ExtendBaseWidget(strip)
 	return strip
 }
@@ -47,31 +48,31 @@ func (strip *LightStrip) Rows() uint16 {
 }
 
 // glow.Light interface
-func (strip *LightStrip) Get(i uint16) color.RGBA {
-	r, g, b, a := strip.lights[i].FillColor.RGBA()
-	return color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
+func (strip *LightStrip) Get(i uint16) color.NRGBA {
+	var x, y int = int(i) % strip.cols, int(i) / strip.cols
+	n := strip.lights.NRGBAAt(x, y)
+	return n
 }
 
 // glow.Light interface
-func (strip *LightStrip) Set(i uint16, color color.RGBA) {
-	c := strip.lights[i]
-	c.FillColor = color
-	c.Refresh()
+func (strip *LightStrip) Set(i uint16, c color.NRGBA) {
+	var x, y int = int(i) % strip.cols, int(i) / strip.cols
+	strip.lights.SetNRGBA(x, y, c)
 }
 
 func (strip *LightStrip) TurnOff() {
-	for i := range strip.lights {
-		l := strip.lights[i]
-		l.FillColor = strip.colorOff
-		l.Refresh()
+	c := strip.colorOff
+	for x := 0; x < strip.cols; x++ {
+		for y := 0; y < strip.rows; y++ {
+			strip.lights.SetNRGBA(x, y, c)
+		}
 	}
 }
 
 func (strip *LightStrip) buildLights() {
-	strip.lights = make([]*canvas.Circle, int(strip.length))
-	for i := range strip.lights {
-		strip.lights[i] = canvas.NewCircle(strip.colorOff)
-	}
+	rect := image.Rect(0, 0, strip.cols, strip.rows)
+	strip.lights = image.NewNRGBA(rect)
+	strip.TurnOff()
 }
 
 type lightStripRenderer struct {
@@ -80,15 +81,8 @@ type lightStripRenderer struct {
 }
 
 func (strip *LightStrip) CreateRenderer() fyne.WidgetRenderer {
-	objects := make([]fyne.CanvasObject, 0, len(strip.lights)+1)
-	objects = append(objects, strip.background)
-
-	for _, l := range strip.lights {
-		objects = append(objects, l)
-	}
-
 	lsr := lightStripRenderer{
-		objects: objects,
+		objects: []fyne.CanvasObject{strip.background, strip.image},
 		strip:   strip,
 	}
 
@@ -98,31 +92,8 @@ func (strip *LightStrip) CreateRenderer() fyne.WidgetRenderer {
 func (lsr *lightStripRenderer) Layout(size fyne.Size) {
 	lsr.strip.background.Resize(size)
 	lsr.strip.background.Refresh()
-
-	rows := int(lsr.strip.rows)
-	cols := int(lsr.strip.length) / rows
-
-	cellSize := min(size.Width/float32(cols), size.Height/float32(rows))
-	cellSize = float32(math.Floor(float64(cellSize)))
-
-	diameter := float32(math.Ceil(float64(cellSize / 2)))
-	circleSize := fyne.Size{Width: diameter, Height: diameter}
-
-	pad := theme.InnerPadding()
-	xOrigin := (size.Width-cellSize*float32(cols))/2 + pad
-	yOrigin := (size.Height-cellSize*float32(rows))/2 + theme.Padding()
-
-	getPos := func(row, col int) (x, y float32) {
-		x = float32(col)*cellSize + xOrigin
-		y = float32(row)*cellSize + yOrigin
-		return x, y
-	}
-
-	for i, light := range lsr.strip.lights {
-		light.Resize(circleSize)
-		x, y := getPos(i/cols, i%cols)
-		light.Move(fyne.Position{X: x, Y: y})
-	}
+	lsr.strip.image.Resize(size)
+	lsr.strip.image.Refresh()
 }
 
 func (lsr *lightStripRenderer) MinSize() (size fyne.Size) {

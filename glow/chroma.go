@@ -10,7 +10,7 @@ type Chroma struct {
 	HueShift int16  `yaml:"hue_shift" json:"hue_shift"`
 	Colors   []HSV  `yaml:"colors" json:"colors"`
 	// segmentSize uint16
-	quick_color color.RGBA
+	quick_color color.NRGBA
 }
 
 func (chroma *Chroma) Setup(length uint16,
@@ -40,7 +40,7 @@ func (chroma *Chroma) Validate() error {
 	return nil
 }
 
-func (chroma *Chroma) Map(index uint16) color.RGBA {
+func (chroma *Chroma) Map(index uint16) color.NRGBA {
 	segmentCount := uint16(len(chroma.Colors)) - 1
 	if segmentCount == 0 || index == 0 {
 		return chroma.quick_color

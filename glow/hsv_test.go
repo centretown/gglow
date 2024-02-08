@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var test_colors = []color.RGBA{
+var test_colors = []color.NRGBA{
 	{255, 0, 0, 255},
 	{127, 0, 0, 255},
 	{63, 0, 0, 255},
@@ -36,7 +36,7 @@ func TestHSVfConversions(t *testing.T) {
 	var hsvf HSV
 	for i, item := range test_colors {
 		hsvf.FromRGB(item)
-		var color color.RGBA = hsvf.ToRGB()
+		var color color.NRGBA = hsvf.ToRGB()
 		if color != item {
 			t.Errorf("%d want(%d,%d,%d) hsv(%f,%f,%f) got(%d,%d,%d)",
 				i, item.R, item.G, item.B,
