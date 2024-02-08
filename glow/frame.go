@@ -100,7 +100,8 @@ func (frame *Frame) AddLayers(layers ...*Layer) {
 func (frame *Frame) LoadImages() {
 	for _, layer := range frame.Layers {
 		if len(layer.ImageName) > 0 {
-			layer.LoadImage(int(layer.Grid.Rows), int(layer.Grid.Rows))
+			fmt.Println("load image", layer.ImageName, int(layer.Grid.Rows), int(layer.Grid.columns))
+			layer.LoadImage(int(layer.Grid.Rows), int(layer.Grid.columns))
 		}
 	}
 }

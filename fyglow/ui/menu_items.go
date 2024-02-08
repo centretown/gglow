@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -25,7 +24,6 @@ const (
 	MenuLayerAdd
 	MenuLayerInsert
 	MenuLayerRemove
-	MenuLayerImage
 	MenuFileshare
 	MenuQuit
 	MENU_ITEM_COUNT
@@ -38,11 +36,6 @@ func BuildMenu(effect *effectio.EffectIo, ui *Ui) (menu *fyne.Menu) {
 	addFolder := NewFolderDialog(effect, ui.window)
 	addEffect := NewEffectDialog(effect, ui.window)
 	expWizard := NewExportWizard(effect, ui.window)
-	imageLoad := NewImageLoader(effect, ui)
-
-	imageClick := func() {
-		imageLoad.Show()
-	}
 
 	MenuItems = [MENU_ITEM_COUNT]*fyne.MenuItem{
 		{
@@ -107,11 +100,6 @@ func BuildMenu(effect *effectio.EffectIo, ui *Ui) (menu *fyne.Menu) {
 			Action: effect.RemoveLayer,
 		},
 		{
-			Label:  text.ImageLabel.String(),
-			Icon:   theme.FileImageIcon(),
-			Action: imageClick,
-		},
-		{
 			Label:    text.ExportLabel.String(),
 			Icon:     resource.IconFileShare(),
 			Shortcut: CtrlE,
@@ -171,24 +159,4 @@ func NewButtonItemFromMenu(id int) (bi *ButtonItem) {
 	return NewButtonItem(
 		widget.NewButtonWithIcon("", MenuItems[id].Icon,
 			MenuItems[id].Action))
-}
-
-func NewImageLoader(effect *effectio.EffectIo, ui *Ui) *dialog.FileDialog {
-	dlg := dialog.NewFileOpen(func(uc fyne.URIReadCloser, err error) {
-		if err != nil {
-			fyne.LogError("Image loader", err)
-			return
-		}
-		uc.Close()
-		// cols, rows := ui.getLightPreferences()
-		layer := effect.GetCurrentLayer()
-		layer.ImageName = uc.URI().Path()
-		// err = layer.LoadImage(uc.URI().Path(), rows, cols)
-		// if err != nil {
-		// 	fyne.LogError("Image loader", err)
-		// 	return
-		// }
-		effect.SaveEffect()
-	}, ui.window)
-	return dlg
 }

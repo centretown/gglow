@@ -11,7 +11,9 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-const MaxRGBLights int = 2500
+const maxRows = 256
+const maxCols = 256
+const MaxRGBLights int = maxCols * maxRows
 
 type ProfileDialog struct {
 	*dialog.CustomDialog
@@ -34,8 +36,8 @@ func NewProfileDialog(parent fyne.Window, p fyne.Preferences,
 		rows:        binding.NewInt(),
 		background:  background,
 
-		boundsRow: &IntEntryBounds{1, 50, 0, 0},
-		boundsCol: &IntEntryBounds{1, 50, 0, 0},
+		boundsRow: &IntEntryBounds{1, maxRows, 0, 0},
+		boundsCol: &IntEntryBounds{1, maxCols, 0, 0},
 	}
 
 	ll.columns.Set(p.Int(settings.StripColumns.String()))

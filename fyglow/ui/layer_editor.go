@@ -4,7 +4,9 @@ import (
 	"gglow/fyglow/effectio"
 	"gglow/glow"
 	"gglow/text"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -40,6 +42,9 @@ type LayerEditor struct {
 	rateBounds *IntEntryBounds
 	hueBounds  *IntEntryBounds
 	scanBounds *IntEntryBounds
+
+	imageLabel  *widget.Label
+	imageButton *widget.Button
 
 	isEditing bool
 }
@@ -159,6 +164,12 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		patchBox.Add(patch)
 	}
 
+	imageLoad := NewImageLoader(le.effect, le.window)
+	le.imageLabel = widget.NewLabel(imageName(le.layer.ImageName))
+	le.imageButton = widget.NewButton("Image...", func() {
+		imageLoad.Start()
+	})
+
 	sep := widget.NewSeparator()
 	frm := container.New(layout.NewFormLayout(),
 		sep, sep,
@@ -172,7 +183,9 @@ func (le *LayerEditor) createForm() *fyne.Container {
 		huelabel, le.hueBox.Container,
 		sep, sep,
 		rateCheckLabel, le.checkRate,
-		ratelabel, le.rateBox.Container)
+		ratelabel, le.rateBox.Container,
+		le.imageButton, le.imageLabel,
+	)
 	return frm
 }
 
@@ -199,6 +212,8 @@ func (le *LayerEditor) setFields() {
 	le.rateBox.Entry.SetText(strconv.FormatInt(int64(le.layer.Rate), 10))
 	le.rateBox.Enable(le.bOverride)
 
+	le.imageLabel.SetText(imageName(le.layer.ImageName))
+
 	for i, p := range le.patches {
 		if i < len(le.fields.Colors) {
 			p.SetHSVColor(le.fields.Colors[i])
@@ -224,4 +239,13 @@ func (le *LayerEditor) setColors() {
 		}
 	}
 	le.fields.Colors = colors
+}
+
+func imageName(path string) (name string) {
+	_, name = filepath.Split(path)
+	ext := filepath.Ext(name)
+	if len(ext) > 0 {
+		name, _ = strings.CutSuffix(name, ext)
+	}
+	return
 }

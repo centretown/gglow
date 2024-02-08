@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"gglow/fyglow/resource"
 	"image/color"
 	"math"
 
@@ -19,19 +18,19 @@ const (
 type LightStrip struct {
 	widget.BaseWidget
 	background *canvas.Rectangle
-	image      *canvas.Image
-	colorOff   color.RGBA
-	lights     []*canvas.Circle
-	length     int
-	rows       int
+	// image      *canvas.Image
+	colorOff color.RGBA
+	lights   []*canvas.Circle
+	length   int
+	rows     int
 }
 
 func NewLightStrip(length, rows int, background color.Color) *LightStrip {
 	strip := &LightStrip{
-		background: canvas.NewRectangle(color.Transparent),
-		image:      canvas.NewImageFromResource(resource.DarkGander()),
-		length:     length,
-		rows:       rows,
+		background: canvas.NewRectangle(color.Black),
+		// image:      canvas.NewImageFromResource(resource.DarkGander()),
+		length: length,
+		rows:   rows,
 	}
 
 	strip.colorOff = color.RGBA{48, 24, 16, 0}

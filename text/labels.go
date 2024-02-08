@@ -65,6 +65,7 @@ const (
 	ManageLabel
 	ReviewLabel
 	ImageLabel
+	ImageLoad
 )
 
 var entryLabels = []string{
@@ -88,7 +89,7 @@ var entryLabels = []string{
 	"Destination", "Profile",
 	"Action has errors. Check the log.",
 	"Action was successful!",
-	"Manage", "Review", "Image",
+	"Manage", "Review", "Image", "Image Loader",
 }
 
 func (id LabelID) String() string {

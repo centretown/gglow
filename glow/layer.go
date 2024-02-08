@@ -164,5 +164,4 @@ func (layer *Layer) spinImage(light Light) {
 			}
 		}
 	}
-
 }
