@@ -1,4 +1,4 @@
-package pic
+package glow
 
 import (
 	"image"

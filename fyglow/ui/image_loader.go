@@ -3,7 +3,6 @@ package ui
 import (
 	"gglow/fyglow/effectio"
 	"gglow/glow"
-	"gglow/pic"
 	"gglow/text"
 	"image"
 	"image/color"
@@ -36,7 +35,7 @@ type ImageLoader struct {
 	pickDialog    *dialog.FileDialog
 	path          string
 	height, width int
-	filter        pic.ResampleItem
+	filter        glow.ResampleItem
 }
 
 func NewImageLoader(effect *effectio.EffectIo, window fyne.Window) *ImageLoader {
@@ -46,7 +45,7 @@ func NewImageLoader(effect *effectio.EffectIo, window fyne.Window) *ImageLoader 
 		effect: effect,
 		height: ViewWidth,
 		width:  ViewHeight,
-		filter: pic.Box,
+		filter: glow.Box,
 	}
 
 	ld.pickDialog = imagePicker(ld.updatePath, window)
@@ -57,9 +56,9 @@ func NewImageLoader(effect *effectio.EffectIo, window fyne.Window) *ImageLoader 
 	ld.view.Resize(DesiredSize(float32(ld.width), float32(ld.height),
 		window.Canvas().Size()))
 
-	sel := widget.NewSelect(pic.ResampleList, nil)
+	sel := widget.NewSelect(glow.ResampleList, nil)
 	sel.SetSelectedIndex(int(ld.filter))
-	sel.OnChanged = func(string) { ld.filter = pic.ResampleItem(sel.SelectedIndex()) }
+	sel.OnChanged = func(string) { ld.filter = glow.ResampleItem(sel.SelectedIndex()) }
 
 	content := container.NewBorder(container.NewCenter(ld.pickLabel), nil,
 		sel, nil, ld.view)
@@ -99,7 +98,7 @@ func (ld *ImageLoader) updatePath(path string, refresh bool) {
 	ld.path = path
 	ld.pickLabel.SetText(path)
 	if len(path) > 1 {
-		ld.picture, err = pic.ResamplePath(path, ld.height, ld.width, ld.filter.Filter())
+		ld.picture, err = glow.ResamplePath(path, ld.height, ld.width, ld.filter.Filter())
 		if err != nil {
 			fyne.LogError("Image Loader", err)
 		}

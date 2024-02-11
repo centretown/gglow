@@ -2,7 +2,6 @@ package glow
 
 import (
 	"fmt"
-	"gglow/pic"
 	"image"
 	"image/color"
 )
@@ -144,7 +143,7 @@ func (layer *Layer) MakeCode() string {
 }
 
 func (layer *Layer) LoadImage(rows, cols int) (err error) {
-	layer.picture, err = pic.LoadPicPath(layer.ImageName, rows, cols)
+	layer.picture, err = LoadPicPath(layer.ImageName, rows, cols)
 	return
 }
 

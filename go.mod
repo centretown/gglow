@@ -1,10 +1,9 @@
 module gglow
 
-go 1.21.1
+go 1.22.0
 
 require (
 	fyne.io/fyne/v2 v2.4.3
-	gioui.org v0.4.2
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-sql-driver/mysql v1.7.1
