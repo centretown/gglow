@@ -10,6 +10,7 @@ import (
 )
 
 var grad_colors = [][]color.NRGBA{
+	{},
 	{
 		color.NRGBA{255, 255, 255, 255},
 	},
@@ -125,7 +126,6 @@ func TestLinearGradient(t *testing.T) {
 
 	for ci := range grad_colors {
 		for ri := range grad_rectangles {
-			// ci, ri := 5, 0
 			dst := image.NewNRGBA(grad_rectangles[ri])
 			var lg = NewLinearGradient(TopLeft, Vertical, grad_colors[ci])
 			lg.Draw(dst)

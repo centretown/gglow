@@ -1,6 +1,8 @@
 package glow
 
-import "image/color"
+import (
+	"image/color"
+)
 
 type DeltaSegment struct {
 	C          color.NRGBA
@@ -73,5 +75,8 @@ func NewDelta(stops []color.NRGBA, length int) *Delta {
 }
 
 func (dlt *Delta) Point(i int) color.NRGBA {
-	return dlt.segments[i*dlt.count/dlt.length].Point(i)
+	index := i * dlt.count / dlt.length
+	// compensate for rarely occuring rounding error
+	index -= B2I(dlt.segments[index].Begin > i)
+	return dlt.segments[index].Point(i)
 }

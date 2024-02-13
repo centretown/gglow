@@ -44,7 +44,15 @@ func (lg *LinearGradient) Draw(dst *image.NRGBA) {
 	if lg.Stops == nil || len(lg.Stops) == 0 {
 		lg.Stops = append(lg.Stops, color.NRGBA{255, 255, 255, 255})
 	}
-	lg.DrawVertical(dst, xext, yext)
+
+	switch lg.Orientation {
+	case Horizontal:
+		lg.DrawHorizontal(dst, xext, yext)
+	case Vertical:
+		lg.DrawVertical(dst, xext, yext)
+	case Diagonal:
+		lg.DrawDiagonal(dst, xext, yext)
+	}
 	fmt.Println(lg.Stops)
 }
 
@@ -55,9 +63,9 @@ func (lg *LinearGradient) DrawHorizontal(dst *image.NRGBA, xext, yext Extent) {
 	)
 
 	i := 0
-	for y := yext.Begin; y < yext.End; y += yext.Inc {
+	for y := yext.Begin; y != yext.End; y += yext.Inc {
 		cc := delta.Point(i)
-		for x := xext.Begin; x < xext.End; x += xext.Inc {
+		for x := xext.Begin; x != xext.End; x += xext.Inc {
 			dst.SetNRGBA(x, y, cc)
 		}
 		i++
@@ -71,9 +79,9 @@ func (lg *LinearGradient) DrawVertical(dst *image.NRGBA, xext, yext Extent) {
 	)
 
 	i := 0
-	for x := xext.Begin; x < xext.End; x += xext.Inc {
-		for y := yext.Begin; y < yext.End; y += yext.Inc {
-			cc := delta.Point(i)
+	for x := xext.Begin; x != xext.End; x += xext.Inc {
+		cc := delta.Point(i)
+		for y := yext.Begin; y != yext.End; y += yext.Inc {
 			dst.SetNRGBA(x, y, cc)
 		}
 		i++
@@ -81,8 +89,18 @@ func (lg *LinearGradient) DrawVertical(dst *image.NRGBA, xext, yext Extent) {
 }
 
 func (lg *LinearGradient) DrawDiagonal(dst *image.NRGBA, xext, yext Extent) {
-	for y := yext.Begin; y < yext.End; y += yext.Inc {
-		for x := xext.Begin; x < xext.End; x += xext.Inc {
+	var (
+		dy, dx        = dst.Bounds().Dy(), dst.Bounds().Dx()
+		length        = dy * dx
+		delta  *Delta = NewDelta(lg.Stops, length)
+	)
+
+	i := 0
+	for y := yext.Begin; y != yext.End; y += yext.Inc {
+		for x := xext.Begin; x != xext.End; x += xext.Inc {
+			cc := delta.Point(i)
+			dst.SetNRGBA(x, y, cc)
 		}
+		i++
 	}
 }
