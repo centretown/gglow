@@ -22,7 +22,8 @@ func NewDeltaSegment(from, to color.NRGBA) *DeltaSegment {
 
 func (dlt *DeltaSegment) Point(absolute int) color.NRGBA {
 	relative := absolute - dlt.Begin
-	length := dlt.End - dlt.Begin + B2I(dlt.End == dlt.Begin)
+	length := dlt.End - dlt.Begin
+	length += B2I(length == 0)
 	// length := dlt.End - dlt.Begin
 	return color.NRGBA{
 		R: dlt.C.R + uint8(dlt.R*relative/length),
@@ -76,7 +77,7 @@ func NewDelta(stops []color.NRGBA, length int) *Delta {
 
 func (dlt *Delta) Point(i int) color.NRGBA {
 	index := i * dlt.count / dlt.length
-	// compensate for rarely occuring rounding error
+	// compensate for rare integer division
 	index -= B2I(dlt.segments[index].Begin > i)
 	return dlt.segments[index].Point(i)
 }

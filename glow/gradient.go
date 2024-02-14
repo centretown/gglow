@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"math"
 )
 
 type LinearGradient struct {
@@ -106,24 +107,40 @@ func (lg *LinearGradient) DrawAngle(dst *image.NRGBA, xext, yext Extent) {
 	}
 }
 
+const iMUL = 1000
+
+// const i45 = iMUL * 45
+
 func (lg *LinearGradient) DrawDiagonal(dst *image.NRGBA, xext, yext Extent) {
 	var (
 		height, width        = dst.Bounds().Dy(), dst.Bounds().Dx()
 		length               = height * width
 		delta         *Delta = NewDelta(lg.Stops, length)
+		colour        color.NRGBA
+		point         int
 	)
-	i := 0
 
-	rise := height
-	run := width
+	angle := 30.0
+	radians := 2 * angle * math.Pi / 360
+	ry := int(1000 * math.Sin(radians))
+	rx := int(1000 * math.Cos(radians))
+	fmt.Println(ry, rx)
+	rx *= width
+	ry *= height
+	// rx, ry := angle2divisors(angle, width, height)
+	fmt.Println(ry, rx)
 
+	yi := 0
 	for y := yext.Begin; y != yext.End; y += yext.Inc {
-		j := 0
+		xi := 0
 		for x := xext.Begin; x != xext.End; x += xext.Inc {
-			cc := delta.Point((i*run + j*rise) / 2)
-			dst.SetNRGBA(x, y, cc)
-			j++
+			// cc := delta.Point((i*width + j*height) / 2)
+			point = (yi*rx/1000 + xi*ry/1000) / 2
+			colour = delta.Point(point)
+			dst.SetNRGBA(x, y, colour)
+			xi++
 		}
-		i++
+		yi++
 	}
+
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"math"
 	"testing"
 
 	"github.com/disintegration/imaging"
@@ -135,6 +136,16 @@ func TestLinearGradient(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
+	}
+
+}
+
+func TestAngle2Divisors(t *testing.T) {
+	degrees := []float64{0, 11.25, 22.5, 45, 67.5, 90, 180, 360}
+	for i, degree := range degrees {
+		radians := 2 * degree * math.Pi / 360
+		fmt.Printf("%02d\tdeg: %8.3f\trad: %5.3f\tsin: %5.3f\tcos: %5.3f\n",
+			i, degree, radians, math.Sin(radians), math.Cos(radians))
 	}
 
 }
