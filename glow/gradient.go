@@ -88,18 +88,41 @@ func (lg *LinearGradient) DrawVertical(dst *image.NRGBA, xext, yext Extent) {
 	}
 }
 
-func (lg *LinearGradient) DrawDiagonal(dst *image.NRGBA, xext, yext Extent) {
+func (lg *LinearGradient) DrawAngle(dst *image.NRGBA, xext, yext Extent) {
 	var (
-		dy, dx        = dst.Bounds().Dy(), dst.Bounds().Dx()
-		length        = dy * dx
-		delta  *Delta = NewDelta(lg.Stops, length)
+		height, width        = dst.Bounds().Dy(), dst.Bounds().Dx()
+		length               = height * width
+		delta         *Delta = NewDelta(lg.Stops, length)
 	)
-
 	i := 0
 	for y := yext.Begin; y != yext.End; y += yext.Inc {
+		j := 0
 		for x := xext.Begin; x != xext.End; x += xext.Inc {
-			cc := delta.Point(i)
+			cc := delta.Point((i*width + j*height) / 2)
 			dst.SetNRGBA(x, y, cc)
+			j++
+		}
+		i++
+	}
+}
+
+func (lg *LinearGradient) DrawDiagonal(dst *image.NRGBA, xext, yext Extent) {
+	var (
+		height, width        = dst.Bounds().Dy(), dst.Bounds().Dx()
+		length               = height * width
+		delta         *Delta = NewDelta(lg.Stops, length)
+	)
+	i := 0
+
+	rise := height
+	run := width
+
+	for y := yext.Begin; y != yext.End; y += yext.Inc {
+		j := 0
+		for x := xext.Begin; x != xext.End; x += xext.Inc {
+			cc := delta.Point((i*run + j*rise) / 2)
+			dst.SetNRGBA(x, y, cc)
+			j++
 		}
 		i++
 	}

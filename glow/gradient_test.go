@@ -24,10 +24,10 @@ var grad_colors = [][]color.NRGBA{
 		color.NRGBA{0, 255, 0, 255},
 	},
 	{
-		color.NRGBA{255, 0, 0, 255},
-		color.NRGBA{0, 255, 255, 255},
-		color.NRGBA{0, 255, 0, 255},
-		color.NRGBA{0, 0, 255, 255},
+		color.NRGBA{21, 21, 0, 255},
+		color.NRGBA{21, 119, 33, 255},
+		color.NRGBA{0, 64, 0, 255},
+		color.NRGBA{0, 31, 0, 255},
 	},
 	{
 		color.NRGBA{255, 0, 0, 255},
@@ -127,7 +127,7 @@ func TestLinearGradient(t *testing.T) {
 	for ci := range grad_colors {
 		for ri := range grad_rectangles {
 			dst := image.NewNRGBA(grad_rectangles[ri])
-			var lg = NewLinearGradient(TopLeft, Vertical, grad_colors[ci])
+			var lg = NewLinearGradient(TopRight, Diagonal, grad_colors[ci])
 			lg.Draw(dst)
 			title = fmt.Sprintf("%s/gradient-%02x-%02x.png", folder, ri, ci)
 			err := imaging.Save(dst, title)
